@@ -66,6 +66,7 @@
   - Visible in all Git tools
   - Easy migration to Option C later
 - [ ] Document decision in `/design/ADR-001-link-storage.md`
+- [x] Create comprehensive whitepaper at `/docs/gitmind-whitepaper.md`
 - [ ] Implementation spec:
   ```bash
   # Directory structure
@@ -88,7 +89,7 @@
 
 ### Repository Structure (Monorepo)
 - [x] Move `/server/` and `/webapp/` to `/demos/archive/poc-2025-06-10/`
-- [ ] Create directory structure:
+- [x] Create directory structure:
   ```
   neuroglyph/              # This monorepo (root)
   ├── cli/                 # gitmind CLI (Rust)
@@ -100,8 +101,8 @@
   ├── lore/                # Philosophy & Gonzai
   └── testdata/            # Test fixtures
   ```
-- [ ] Update root `.gitignore` for Rust artifacts (`target/`, `Cargo.lock`)
-- [ ] Create root `Makefile` for common tasks
+- [x] Update root `.gitignore` for Rust artifacts (`target/`, `Cargo.lock`)
+- [x] Create root `Makefile` for common tasks
 
 ### Demo Repository Setup
 - [ ] Create `/demo/vault/` with 5-10 example documents
@@ -110,9 +111,9 @@
 - [ ] Create `/demo/README.md` explaining the demo structure
 - [ ] Add quick-start script that sets up demo environment
 
-### Rust CLI Project Initialization
-- [ ] Create `cli/` directory
-- [ ] Create `cli/Cargo.toml` with:
+### Rust CLI Project Initialization ✅ DONE
+- [x] Create `cli/` directory
+- [x] Create `cli/Cargo.toml` with:
   ```toml
   [package]
   name = "gitmind"
@@ -126,16 +127,19 @@
   serde_json = "1"
   thiserror = "1"
   ```
-- [ ] Set up CLI structure:
-  - [ ] `cli/src/main.rs` - CLI entry point
-  - [ ] `cli/src/lib.rs` - Core library
+- [x] Set up CLI structure:
+  - [x] `cli/src/main.rs` - CLI entry point
+  - [x] `cli/src/lib.rs` - Core library
   - [ ] `cli/src/git_store.rs` - F001 implementation
   - [ ] `cli/src/link_types.rs` - Link type definitions
-  - [ ] `cli/src/error.rs` - Error types
+  - [x] `cli/src/error.rs` - Error types
 
 ### Development Environment
 - [x] Create `Dockerfile.dev` for Rust development
 - [x] Add Rust targets to `docker-compose.yml`
+- [x] Create Docker test infrastructure that runs in non-TTY mode
+- [x] Fix GitHub Actions deprecated artifact actions (v3 → v4)
+- [x] Add working-directory for cross-platform CI tests
 - [x] Set up GitHub Actions for CI:
   - [x] Rust formatting check (`cargo fmt`)
   - [x] Linting (`cargo clippy`)
@@ -149,12 +153,12 @@
 ### Three Commands Only - Ship Fast, Learn Fast
 - [ ] Implement ONLY these commands:
   ```bash
-  gitmind init      # Creates .gitmind/links/ directory
+  gitmind init      # Creates .gitmind/links/ directory ✅
   gitmind link A B  # Creates link file, stages, commits
   gitmind list      # Shows all links in current repo
   ```
 - [ ] Implementation details:
-  - [ ] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
+  - [x] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
   - [ ] `link`: 
     1. Build canonical content: `CROSS_REF: A -> B  # ts:1736637876`
     2. Hash content to get filename

@@ -12,9 +12,11 @@ This file contains important instructions for Claude and other AI assistants wor
 
 ## Critical Rules
 
-### 1. NEVER Make Git Commits
+### 1. NEVER Make Git Commits or Operations in Working Repo
 - The user will explicitly ask if they want commits made
 - Default to NO commits unless specifically requested
+- NEVER run git operations in the working repository
+- All git operations must be in Docker containers or temp directories
 - This is a hard rule with no exceptions
 
 ### 2. License Headers (SPDX)
@@ -65,10 +67,25 @@ neuroglyph/
 
 ### 5. Development Practices
 
+#### Development Philosophy
+- **TDD (Test-Driven Development)**: Write tests first, then implementation
+- **SOLID Principles**: Single responsibility, Open/closed, Liskov substitution, Interface segregation, Dependency inversion
+- **KISS**: Keep It Simple, Stupid - avoid unnecessary complexity
+- **YAGNI**: You Aren't Gonna Need It - don't add functionality until needed
+- **Test Double-Friendly Design**: Use dependency injection and traits to enable test doubles when needed
+
 #### Testing
 - All tests run in Docker for consistency
 - Use `make test` to run the full test suite
 - Pre-push hooks enforce test passing
+- Write tests BEFORE implementation (TDD)
+- Each function should have corresponding tests
+- **Always use real Git repos in tests** - our entire stack relies on Git
+- **NEVER run Git operations in the actual repo** - only in Docker/temp dirs
+- Create temporary Git repositories for each test
+- All Git operations must be isolated from the working repository
+- Use dependency injection and traits for clean architecture
+- Test doubles are only for contriving edge cases, not replacing Git
 
 #### Git Hooks
 - Git LFS is configured for binary files
@@ -79,6 +96,8 @@ neuroglyph/
 - Rust code uses standard formatting (`cargo fmt`)
 - Always run clippy (`cargo clippy`)
 - Follow conventional commits
+- Keep functions small and focused (SOLID)
+- Avoid premature optimization (YAGNI)
 
 ### 6. Key Technical Details
 
@@ -86,7 +105,9 @@ neuroglyph/
 - Links stored in `.gitmind/links/` directory
 - Format: `LINK_TYPE: source -> target  # ts:timestamp`
 - Files named by SHA of content
-- No external database - Git IS the database
+- **Git IS the database** - no external storage
+- Every operation uses Git's content-addressable storage
+- Testing must use real Git operations to be valid
 
 #### Architecture
 - CLI first approach (no server required)
@@ -127,6 +148,12 @@ When starting work, always check:
 2. Use conventional commits when asked to commit
 3. Check for Git LFS files in `.gitattributes`
 4. Run tests before any push (automatic via hooks)
+5. When asked for commit messages, provide them in this format:
+   ```bash
+   git add <files> && git commit -m "type(scope): message"
+   ```
+6. Suggest commits after completing each task from TASKLIST.md
+7. Keep TASKLIST.md up-to-date as tasks are completed
 
 ## Final Reminders
 - Apache 2.0, not MIT!
@@ -134,6 +161,38 @@ When starting work, always check:
 - SPDX headers on all new files!
 - Test everything in Docker!
 - Keep Gonzai chaotic! 🐵✨
+
+## Development Workflow Example
+
+When implementing a new feature:
+1. **Start with tests** (TDD):
+   ```rust
+   #[test]
+   fn test_init_creates_directory() {
+       // Create isolated temp directory for test
+       let temp_dir = TempDir::new()?;
+       // Initialize git repo in temp dir, NOT in working repo
+       let git_ops = GitOperations::new(temp_dir.path());
+       git_ops.init_repository()?;
+       assert!(temp_dir.path().join(".gitmind/links").exists());
+   }
+   ```
+2. **Design with traits and DI** for testability:
+   ```rust
+   trait GitBackend {
+       fn init(&self) -> Result<()>;
+       fn add_file(&self, path: &Path) -> Result<()>;
+   }
+   
+   struct LinkManager<G: GitBackend> {
+       git: G,
+   }
+   ```
+3. **Write minimal code** to make tests pass (KISS)
+4. **Use real Git repos** in tests, test doubles only when needed
+5. **Refactor** if needed while keeping tests green
+6. **Don't add extra features** (YAGNI)
+7. **Keep each module focused** on one responsibility (SRP)
 
 ---
 *Last updated: June 2025*
