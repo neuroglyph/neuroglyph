@@ -61,6 +61,9 @@ Thumbs.db
 .claude/
 # CLAUDE.md is intentionally tracked for AI assistant instructions
 
+# Obsidian
+.obsidian/
+
 # IDE
 .idea/
 *.swp
