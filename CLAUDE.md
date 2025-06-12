@@ -155,6 +155,12 @@ When starting work, always check:
 6. Suggest commits after completing each task from TASKLIST.md
 7. Keep TASKLIST.md up-to-date as tasks are completed
 
+## Development Workflow Guidelines
+
+### Tech Design and Feature Tracking
+- Whenever we make a significant tech design decision, document it in `design/decisions`
+- Whenever we complete a feature, update the document in `design/features` to reflect its status
+
 ## Final Reminders
 - Apache 2.0, not MIT!
 - No commits without permission!
