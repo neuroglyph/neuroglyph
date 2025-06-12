@@ -17,33 +17,33 @@ help:
 
 # Start development environment
 dev: docker-build
-	docker-compose run --rm dev
+	docker compose run --rm dev
 
 # Run all tests exactly as CI would
 test: docker-build
-	docker-compose run --rm test
+	docker compose run --rm test
 
 # Quick test run (no format/clippy)
 test-quick: docker-build
-	docker-compose run --rm dev cargo test
+	docker compose run --rm dev cargo test
 
 # Format code
 fmt: docker-build
-	docker-compose run --rm dev cargo fmt
+	docker compose run --rm dev cargo fmt
 
 # Run clippy
 clippy: docker-build
-	docker-compose run --rm dev cargo clippy -- -D warnings
+	docker compose run --rm dev cargo clippy -- -D warnings
 
 # Clean build artifacts
 clean:
-	docker-compose down
+	docker compose down
 	docker volume rm neuroglyph_target-cache || true
 	rm -rf cli/target/
 
 # Build Docker images
 docker-build:
-	docker-compose build
+	docker compose build
 
 # Install git hooks (including Git LFS)
 install-hooks:
