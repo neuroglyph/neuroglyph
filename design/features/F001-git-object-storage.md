@@ -1,9 +1,18 @@
 # F001: Git Object Storage for Relationships
 
-**Status:** Planned  
+**Status:** In Progress  
 **Priority:** Critical  
 **Complexity:** High  
 **Estimation:** 5-8 days  
+**Decision:** [ADR-001 - Link Storage Model](/design/decisions/ADR-001-link-storage.md)
+
+## Implementation Progress
+
+- [x] Storage model decision (Option B: `.gitmind/links/`)
+- [x] `gitmind init` command creates directory structure
+- [ ] Link creation and storage
+- [ ] Link querying and listing
+- [ ] SHA-based content addressing  
 
 ---
 

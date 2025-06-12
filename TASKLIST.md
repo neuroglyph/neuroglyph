@@ -61,11 +61,13 @@
 ## 📦 Phase 1: Project Setup & Core Implementation
 
 ### Critical Architecture Decision: F001 Link Storage ✅ DECIDED
+**Feature:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md)
 - [x] **DECISION: Option B - Tracked files in `.gitmind/links/`**
   - Clean, debuggable, grepable
   - Visible in all Git tools
   - Easy migration to Option C later
 - [ ] Document decision in `/design/ADR-001-link-storage.md`
+- [x] Create comprehensive whitepaper at `/docs/gitmind-whitepaper.md`
 - [ ] Implementation spec:
   ```bash
   # Directory structure
@@ -88,7 +90,7 @@
 
 ### Repository Structure (Monorepo)
 - [x] Move `/server/` and `/webapp/` to `/demos/archive/poc-2025-06-10/`
-- [ ] Create directory structure:
+- [x] Create directory structure:
   ```
   neuroglyph/              # This monorepo (root)
   ├── cli/                 # gitmind CLI (Rust)
@@ -100,8 +102,8 @@
   ├── lore/                # Philosophy & Gonzai
   └── testdata/            # Test fixtures
   ```
-- [ ] Update root `.gitignore` for Rust artifacts (`target/`, `Cargo.lock`)
-- [ ] Create root `Makefile` for common tasks
+- [x] Update root `.gitignore` for Rust artifacts (`target/`, `Cargo.lock`)
+- [x] Create root `Makefile` for common tasks
 
 ### Demo Repository Setup
 - [ ] Create `/demo/vault/` with 5-10 example documents
@@ -110,9 +112,9 @@
 - [ ] Create `/demo/README.md` explaining the demo structure
 - [ ] Add quick-start script that sets up demo environment
 
-### Rust CLI Project Initialization
-- [ ] Create `cli/` directory
-- [ ] Create `cli/Cargo.toml` with:
+### Rust CLI Project Initialization ✅ DONE
+- [x] Create `cli/` directory
+- [x] Create `cli/Cargo.toml` with:
   ```toml
   [package]
   name = "gitmind"
@@ -126,16 +128,19 @@
   serde_json = "1"
   thiserror = "1"
   ```
-- [ ] Set up CLI structure:
-  - [ ] `cli/src/main.rs` - CLI entry point
-  - [ ] `cli/src/lib.rs` - Core library
+- [x] Set up CLI structure:
+  - [x] `cli/src/main.rs` - CLI entry point
+  - [x] `cli/src/lib.rs` - Core library
   - [ ] `cli/src/git_store.rs` - F001 implementation
   - [ ] `cli/src/link_types.rs` - Link type definitions
-  - [ ] `cli/src/error.rs` - Error types
+  - [x] `cli/src/error.rs` - Error types
 
 ### Development Environment
 - [x] Create `Dockerfile.dev` for Rust development
 - [x] Add Rust targets to `docker-compose.yml`
+- [x] Create Docker test infrastructure that runs in non-TTY mode
+- [x] Fix GitHub Actions deprecated artifact actions (v3 → v4)
+- [x] Add working-directory for cross-platform CI tests
 - [x] Set up GitHub Actions for CI:
   - [x] Rust formatting check (`cargo fmt`)
   - [x] Linting (`cargo clippy`)
@@ -145,23 +150,44 @@
 ---
 
 ## 🚀 Phase 1a: Minimal Viable Gitmind (Week 1)
+**Features:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md), [F013 - CLI Tools](/design/features/F013-cli-tools.md), [F016 - Link Hygiene](/design/features/F016-link-hygiene.md)
 
-### Three Commands Only - Ship Fast, Learn Fast
-- [ ] Implement ONLY these commands:
+### ~~Three~~ Five Commands - Ship Fast, Learn Fast (+ Essential Hygiene)
+- [x] Implement core commands:
   ```bash
-  gitmind init      # Creates .gitmind/links/ directory
-  gitmind link A B  # Creates link file, stages, commits
-  gitmind list      # Shows all links in current repo
+  gitmind init      # Creates .gitmind/links/ directory ✅
+  gitmind link A B  # Creates link file, stages, commits ✅
+  gitmind list      # Shows all links in current repo ✅
   ```
-- [ ] Implementation details:
-  - [ ] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
-  - [ ] `link`: 
+- [x] Implement hygiene commands (F016):
+  ```bash
+  gitmind unlink A B  # Remove specific link ✅
+  gitmind check       # Find and fix broken links ✅
+  ```
+- [x] Implementation details:
+  - [x] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
+  - [x] `link`: 
     1. Build canonical content: `CROSS_REF: A -> B  # ts:1736637876`
-    2. Hash content to get filename
+    2. Hash content to get filename (SHA-1)
     3. Write to `.gitmind/links/<sha>.link`
     4. `git add .gitmind/links/<sha>.link`
     5. `git commit -m "link(F001): A -> B"`
-  - [ ] `list`: Read all `.gitmind/links/*.link`, parse and display
+    6. Support link types: CROSS_REF, DEPENDS_ON, IMPLEMENTS, INSPIRED_BY
+    7. Validate source and target paths exist
+  - [x] `list`: Read all `.gitmind/links/*.link`, parse and display
+    - [x] Support filtering by source file
+    - [x] Support filtering by target file
+    - [x] Show link types and timestamps
+  - [x] `unlink`: Remove link between files ✅
+    - [x] Find SHA-based link file
+    - [x] `git rm .gitmind/links/<sha>.link`
+    - [x] `git commit -m "unlink(F016): A -/-> B"`
+    - [x] Support --all and --to flags
+  - [x] `check`: Validate link integrity ✅
+    - [x] Scan all links for missing targets
+    - [x] Report broken links
+    - [x] --fix flag to remove broken links
+    - [x] --dry-run flag to preview changes
 - [ ] Create demo video showing these 3 commands
 - [ ] Ship binaries for Linux/macOS
 - [ ] Post "Show HN" with minimal demo
@@ -172,6 +198,7 @@
 ## 🔨 Phase 2: Full CLI Implementation
 
 ### F001: Complete Git Storage (Week 2-3)
+**Feature:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md)
 
 #### Basic Git Operations
 - [ ] Implement `GitStore` struct with gitoxide
@@ -182,6 +209,7 @@
       source: PathBuf,
       target: PathBuf,
       timestamp: u64,
+      metadata: Option<HashMap<String, String>>,
   }
   
   impl Link {
@@ -200,14 +228,41 @@
   ```
 - [ ] Store link files in `.gitmind/links/<sha>.link`
 - [ ] Parse link files back into Link structs
+- [ ] Support metadata in links (author, context, confidence)
+- [ ] Implement bidirectional lookups (find all files linking to target)
+- [ ] Automatic deduplication via content hashing
+- [ ] Performance: Sub-second queries for <10,000 edges
+- [ ] Backward compatibility with plain text format
 - [ ] (Optional) Create lightweight refs in `refs/semlinks/<sha>` for future migration
 
 #### CLI Commands
 - [ ] `gitmind init` - Initialize semlink refs in current repo
-- [ ] `gitmind link <source> <target>` - Create relationship
+- [ ] `gitmind link <source> <target> [--type TYPE]` - Create relationship
 - [ ] `gitmind show <sha>` - Display relationship details
 - [ ] `gitmind list` - List all relationships
 - [ ] `gitmind graph --json` - Export graph as JSON
+- [ ] `gitmind import` - Import relationships:
+  - [ ] CSV format: `gitmind import links.csv`
+  - [ ] JSON format support
+  - [ ] Obsidian vault import
+- [ ] `gitmind export` - Export relationships:
+  - [ ] Cypher format: `--format cypher`
+  - [ ] GraphML format: `--format graphml`
+  - [ ] DOT format for Graphviz
+- [ ] `gitmind query` - Query relationships:
+  - [ ] Natural language queries: `"find all related to AI"`
+  - [ ] GraphQL-style: `--gql 'MATCH (n)-[:REFERENCES]->(m) RETURN n,m'`
+  - [ ] Filter by type, source, target
+- [ ] `gitmind at <commit>` - Time travel queries
+- [ ] `gitmind stats` - Show graph statistics
+- [ ] `gitmind optimize` - Optimize graph storage
+- [ ] `gitmind gc --aggressive` - Garbage collection
+- [ ] `gitmind config` - Configuration management:
+  - [ ] `gitmind config cache.size 1GB`
+  - [ ] `gitmind config gonzai.personality playful`
+- [ ] `gitmind viz`:
+  - [ ] `--ascii` - Terminal visualization
+  - [ ] `--browser` - Open web interface
 
 #### Testing Infrastructure
 - [ ] Create `/testdata/` directory with:
@@ -221,22 +276,38 @@
 - [ ] Benchmark performance with 1K, 10K, 100K links
 
 ### F002: Relationship Extraction (Week 2)
+**Feature:** [F002 - Relationship Extraction](/design/features/F002-relationship-extraction.md)
 
 #### Markdown Parser
 - [ ] Implement Markdown link extraction
 - [ ] Support multiple link formats:
-  - [ ] `[text](path.md)`
-  - [ ] `[[wiki-links]]`
-  - [ ] `../cross-repo/links.md`
+  - [ ] Standard Markdown: `[text](path.md)`
+  - [ ] Reference-style: `[text][ref]` with `[ref]: path.md`
+  - [ ] Wiki-style: `[[wiki-links]]`
+  - [ ] Image embeds: `![alt](image.png)`
+  - [ ] Anchor links: `[text](file.md#section)`
+  - [ ] Cross-repo: `../cross-repo/links.md`
 - [ ] Handle relative vs absolute paths
+- [ ] Resolve symlinks and junction points
+- [ ] Validate target existence
+- [ ] Capture link text for context
+- [ ] Extract surrounding paragraph for semantic analysis
+- [ ] Record line numbers for precise tracking
+- [ ] Identify link type (reference, embed, citation)
 
 #### Batch Operations
 - [ ] `gitmind scan` - Extract all links from current repo
 - [ ] `gitmind scan --watch` - Monitor for changes
 - [ ] Progress reporting for large repos
 - [ ] Incremental scanning (only changed files)
+- [ ] Performance requirements:
+  - [ ] Process 100 markdown files in <1 second
+  - [ ] Parallel processing for large repositories
+  - [ ] Memory usage <100MB for 10,000 files
+- [ ] Support configurable repository mappings
 
 #### Git Hooks
+**Feature:** [F003 - Git Hook Integration](/design/features/F003-git-hook-integration.md)
 - [ ] Generate post-commit hook script
 - [ ] `gitmind install-hooks` command
 - [ ] Hook configuration options
@@ -246,6 +317,7 @@
 ## 🌐 Phase 2: Optional Services
 
 ### Daemon Implementation (Week 4)
+**Features:** [F006 - Web Visualization](/design/features/F006-web-visualization.md), [F007 - Realtime Updates](/design/features/F007-realtime-updates.md)
 - [ ] Create `gitmind serve` subcommand
 - [ ] Implement minimal HTTP server (using `axum` or `warp`)
 - [ ] Add WebSocket support for real-time updates
@@ -256,6 +328,7 @@
   - [ ] `WS /api/stream` - Real-time updates
 
 ### Web UI Migration (Week 5)
+**Feature:** [F006 - Web Visualization](/design/features/F006-web-visualization.md)
 - [ ] Move existing D3.js code to `/examples/web-demo/webapp/`
 - [ ] Update to connect to Rust daemon instead of Node.js
 - [ ] Add configuration for daemon URL
@@ -289,8 +362,22 @@
 
 ### Additional Interfaces
 - [ ] TUI/ncurses interface for terminal usage
-- [ ] Integration with git aliases
-- [ ] Shell completions (bash, zsh, fish)
+- [ ] Integration with git aliases:
+  ```gitconfig
+  [alias]
+      mind = !gitmind
+      mindlog = !gitmind query "nodes modified in last commit"
+      mindshow = !gitmind viz --focus
+  ```
+- [ ] Shell completions (bash, zsh, fish):
+  - [ ] Autocomplete for files
+  - [ ] Autocomplete for subcommands
+  - [ ] Recent query history
+- [ ] REPL mode with interactive commands
+- [ ] Batch mode for processing multiple operations
+- [ ] Watch mode: auto-update on file changes
+- [ ] Pipeline integration (GitHub Actions, pre-commit hooks)
+- [ ] JSON output for all commands (--json flag)
 
 ### Distribution
 - [ ] Set up release process with `cargo-release`
@@ -304,6 +391,7 @@
 ## 🚀 Phase 4: Advanced Features
 
 ### Chaos Engine (Week 8)
+**Feature:** Chaos-driven discovery (Gonzai engine)
 - [ ] Port existing `chaos-worker.sh` to Rust
 - [ ] Design chaos algorithm with safety limits
 - [ ] Implement `gitmind chaos --rate 5/s` subcommand
@@ -317,6 +405,7 @@
 
 
 ### Performance Optimization
+**Feature:** [F012 - Performance Optimization](/design/features/F012-performance-optimization.md)
 - [ ] Implement caching layer:
   - [ ] BoltDB or SQLite as cache ONLY (not source of truth)
   - [ ] In-memory cache per invocation

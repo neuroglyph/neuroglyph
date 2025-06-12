@@ -43,7 +43,7 @@ clean:
 
 # Build Docker images
 docker-build:
-	docker compose build
+	COMPOSE_BAKE=true docker compose build
 
 # Install git hooks (including Git LFS)
 install-hooks:
