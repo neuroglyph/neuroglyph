@@ -1,0 +1,41 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Pre-push hook that runs tests in Docker
+# This ensures all tests pass before pushing to remote
+
+set -e
+
+echo "🧪 Running pre-push tests in Docker..."
+echo "This ensures your code will pass CI checks."
+echo ""
+
+# Check if Docker is running
+if ! docker info >/dev/null 2>&1; then
+    echo "❌ Docker is not running. Please start Docker and try again."
+    exit 1
+fi
+
+# Check if we're in the right directory
+if [ ! -f "Makefile" ]; then
+    echo "❌ Not in project root directory"
+    exit 1
+fi
+
+# Run the same test suite that CI will run
+echo "Running: make test"
+if ! make test; then
+    echo ""
+    echo "❌ Tests failed! Please fix issues before pushing."
+    echo ""
+    echo "Tips:"
+    echo "  - Run 'make fmt' to fix formatting issues"
+    echo "  - Run 'make clippy' to see linting errors"
+    echo "  - Run 'make test-quick' for just unit tests"
+    exit 1
+fi
+
+echo ""
+echo "✅ All tests passed! Proceeding with push..."
+echo ""
+
+exit 0

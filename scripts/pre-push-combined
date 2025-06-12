@@ -1,0 +1,44 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Combined pre-push hook for tests and Git LFS
+
+set -e
+
+# First, run Git LFS pre-push if it exists
+command -v git-lfs >/dev/null 2>&1 || { printf >&2 "\n%s\n\n" "This repository is configured for Git LFS but 'git-lfs' was not found on your path. If you no longer wish to use Git LFS, remove this hook by deleting the 'pre-push' file in the hooks directory (set by 'core.hookspath'; usually '.git/hooks')."; exit 2; }
+git lfs pre-push "$@"
+
+echo "🧪 Running pre-push tests in Docker..."
+echo "This ensures your code will pass CI checks."
+echo ""
+
+# Check if Docker is running
+if ! docker info >/dev/null 2>&1; then
+    echo "❌ Docker is not running. Please start Docker and try again."
+    exit 1
+fi
+
+# Check if we're in the right directory
+if [ ! -f "Makefile" ]; then
+    echo "❌ Not in project root directory"
+    exit 1
+fi
+
+# Run the same test suite that CI will run
+echo "Running: make test"
+if ! make test; then
+    echo ""
+    echo "❌ Tests failed! Please fix issues before pushing."
+    echo ""
+    echo "Tips:"
+    echo "  - Run 'make fmt' to fix formatting issues"
+    echo "  - Run 'make clippy' to see linting errors"
+    echo "  - Run 'make test-quick' for just unit tests"
+    exit 1
+fi
+
+echo ""
+echo "✅ All tests passed! Proceeding with push..."
+echo ""
+
+exit 0

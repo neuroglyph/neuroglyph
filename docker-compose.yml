@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: Apache-2.0
+version: '3.8'
+
+services:
+  # Development environment for CLI
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: neuroglyph-cli-dev
+    volumes:
+      - .:/workspace:rw
+      - cargo-cache:/home/developer/.cargo
+      - target-cache:/workspace/target
+    working_dir: /workspace/cli
+    environment:
+      - CARGO_HOME=/home/developer/.cargo
+      - USER=developer
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Test runner - exactly what CI will run
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: neuroglyph-cli-test
+    volumes:
+      - .:/workspace:ro
+      - cargo-cache:/home/developer/.cargo
+      - target-cache:/workspace/target
+    working_dir: /workspace/cli
+    environment:
+      - CARGO_HOME=/home/developer/.cargo
+      - CI=true
+    command: |
+      bash -c "
+        set -e
+        echo '=== Running format check ==='
+        cargo fmt --check
+        echo '=== Running clippy ==='
+        cargo clippy -- -D warnings
+        echo '=== Running tests ==='
+        cargo test
+        echo '=== All checks passed! ==='
+      "
+
+volumes:
+  cargo-cache:
+  target-cache:
