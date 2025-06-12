@@ -86,6 +86,8 @@ neuroglyph/
 - All Git operations must be isolated from the working repository
 - Use dependency injection and traits for clean architecture
 - Test doubles are only for contriving edge cases, not replacing Git
+- **Always test behavior, not implementation** - Tests verify what the system does, not how
+- **One test file per component** - Each test file focuses on testing one component's behavior
 
 #### Git Hooks
 - Git LFS is configured for binary files
@@ -98,6 +100,8 @@ neuroglyph/
 - Follow conventional commits
 - Keep functions small and focused (SOLID)
 - Avoid premature optimization (YAGNI)
+- **One file = one thing** - Each file contains one struct/enum/trait/type
+- **Single Responsibility Principle** - Each module/struct has one reason to change
 
 ### 6. Key Technical Details
 
@@ -199,6 +203,11 @@ When implementing a new feature:
 5. **Refactor** if needed while keeping tests green
 6. **Don't add extra features** (YAGNI)
 7. **Keep each module focused** on one responsibility (SRP)
+
+## Important Development Practices
+
+### Logging and Journal
+- When asked, leave your impressions or thoughts to lore/CLAUDE_DEV_THOUGHTS.md by appending them to that file. That is your dev journal. Feel free to write to it freely, when you get ideas, when you have insights you want to log.
 
 ---
 *Last updated: June 2025*
