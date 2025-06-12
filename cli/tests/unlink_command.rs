@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // © 2025 J. Kirby Ross / Neuroglyph Collective
 
-use assert_cmd::Command;
-use predicates::prelude::*;
+use gitmind::App;
 use std::fs;
 use std::process::Command as StdCommand;
 use tempfile::TempDir;
@@ -32,12 +31,9 @@ fn test_unlink_removes_specific_link() {
         .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["init"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     // Create test files
     let source = "source.md";
@@ -46,49 +42,29 @@ fn test_unlink_removes_specific_link() {
     fs::write(repo_path.join(target), "# Target").unwrap();
 
     // Create a link
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source, target, "--type", "CROSS_REF"])
-        .assert()
-        .success();
+    let result = app.link(source, target, "CROSS_REF");
+    assert_eq!(result.code, 0, "link should succeed");
+    assert!(result.value.is_some(), "link should return SHA");
 
-    // Verify link exists by running list command
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("CROSS_REF: source.md -> target.md"));
+    // Verify link exists
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 1, "should have one link");
+    assert_eq!(links[0].source, source);
+    assert_eq!(links[0].target, target);
+    assert_eq!(links[0].link_type, "CROSS_REF");
 
     // Unlink the files
-    let mut cmd = Command::cargo_bin("gitmind").unwrap();
-    cmd.current_dir(repo_path)
-        .args(["unlink", source, target])
-        .assert()
-        .success();
+    let result = app.unlink(source, target, None);
+    assert_eq!(result.code, 0, "unlink should succeed");
+    assert_eq!(result.value, Some(1), "should remove one link");
 
     // Verify link is removed
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(
-        output.status.success(),
-        "list command failed with stderr: {}",
-        stderr
-    );
-    assert!(
-        stdout.contains("No links found"),
-        "Expected 'No links found' but got: '{}'",
-        stdout
-    );
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 0, "should have no links");
 
     // Verify Git commit was made
     let output = StdCommand::new("git")
@@ -126,12 +102,9 @@ fn test_unlink_with_type_removes_only_matching_type() {
         .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["init"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     // Create test files
     let source = "source.md";
@@ -140,48 +113,39 @@ fn test_unlink_with_type_removes_only_matching_type() {
     fs::write(repo_path.join(target), "# Target").unwrap();
 
     // Create two links with different types
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source, target, "--type", "CROSS_REF"])
-        .assert()
-        .success();
+    let result = app.link(source, target, "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
+    assert!(result.value.is_some());
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source, target, "--type", "DEPENDS_ON"])
-        .assert()
-        .success();
+    let result = app.link(source, target, "DEPENDS_ON");
+    assert_eq!(result.code, 0, "second link should succeed");
+    assert!(result.value.is_some());
 
     // Verify both links exist
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("CROSS_REF: source.md -> target.md"));
-    assert!(stdout.contains("DEPENDS_ON: source.md -> target.md"));
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 2, "should have two links");
+    assert!(links
+        .iter()
+        .any(|l| l.link_type == "CROSS_REF" && l.source == source && l.target == target));
+    assert!(links
+        .iter()
+        .any(|l| l.link_type == "DEPENDS_ON" && l.source == source && l.target == target));
 
     // Unlink only CROSS_REF type
-    let mut cmd = Command::cargo_bin("gitmind").unwrap();
-    cmd.current_dir(repo_path)
-        .args(["unlink", source, target, "--type", "CROSS_REF"])
-        .assert()
-        .success();
+    let result = app.unlink(source, target, Some("CROSS_REF"));
+    assert_eq!(result.code, 0, "unlink should succeed");
+    assert_eq!(result.value, Some(1), "should remove one link");
 
     // Verify only one link remains
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(!stdout.contains("CROSS_REF: source.md -> target.md"));
-    assert!(stdout.contains("DEPENDS_ON: source.md -> target.md"));
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 1, "should have one link remaining");
+    assert_eq!(links[0].link_type, "DEPENDS_ON");
+    assert_eq!(links[0].source, source);
+    assert_eq!(links[0].target, target);
 }
 
 #[test]
@@ -209,12 +173,9 @@ fn test_unlink_all_from_source() {
         .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["init"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     // Create test files
     let source = "source.md";
@@ -225,52 +186,36 @@ fn test_unlink_all_from_source() {
     fs::write(repo_path.join(target2), "# Target 2").unwrap();
 
     // Create multiple links from source
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source, target1, "--type", "CROSS_REF"])
-        .assert()
-        .success();
+    let result = app.link(source, target1, "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
+    assert!(result.value.is_some());
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source, target2, "--type", "DEPENDS_ON"])
-        .assert()
-        .success();
+    let result = app.link(source, target2, "DEPENDS_ON");
+    assert_eq!(result.code, 0, "second link should succeed");
+    assert!(result.value.is_some());
 
     // Verify links exist
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("CROSS_REF: source.md -> target1.md"));
-    assert!(stdout.contains("DEPENDS_ON: source.md -> target2.md"));
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 2, "should have two links");
+    assert!(links
+        .iter()
+        .any(|l| l.link_type == "CROSS_REF" && l.source == source && l.target == target1));
+    assert!(links
+        .iter()
+        .any(|l| l.link_type == "DEPENDS_ON" && l.source == source && l.target == target2));
 
     // Unlink all from source
-    let mut cmd = Command::cargo_bin("gitmind").unwrap();
-    cmd.current_dir(repo_path)
-        .args(["unlink", source, "--all"])
-        .assert()
-        .success();
+    let result = app.unlink_all_from(source, None);
+    assert_eq!(result.code, 0, "unlink all should succeed");
+    assert_eq!(result.value, Some(2), "should remove two links");
 
     // Verify all links from source are removed
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    assert!(output.status.success(), "list command should succeed");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(
-        stdout.contains("No links found"),
-        "Expected 'No links found' but got: '{}'",
-        stdout
-    );
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 0, "should have no links");
 }
 
 #[test]
@@ -298,12 +243,9 @@ fn test_unlink_all_to_target() {
         .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["init"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     // Create test files
     let source1 = "source1.md";
@@ -314,52 +256,36 @@ fn test_unlink_all_to_target() {
     fs::write(repo_path.join(target), "# Target").unwrap();
 
     // Create multiple links to target
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source1, target, "--type", "CROSS_REF"])
-        .assert()
-        .success();
+    let result = app.link(source1, target, "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
+    assert!(result.value.is_some());
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["link", source2, target, "--type", "DEPENDS_ON"])
-        .assert()
-        .success();
+    let result = app.link(source2, target, "DEPENDS_ON");
+    assert_eq!(result.code, 0, "second link should succeed");
+    assert!(result.value.is_some());
 
     // Verify links exist
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(stdout.contains("CROSS_REF: source1.md -> target.md"));
-    assert!(stdout.contains("DEPENDS_ON: source2.md -> target.md"));
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 2, "should have two links");
+    assert!(links
+        .iter()
+        .any(|l| l.link_type == "CROSS_REF" && l.source == source1 && l.target == target));
+    assert!(links
+        .iter()
+        .any(|l| l.link_type == "DEPENDS_ON" && l.source == source2 && l.target == target));
 
     // Unlink all to target
-    let mut cmd = Command::cargo_bin("gitmind").unwrap();
-    cmd.current_dir(repo_path)
-        .args(["unlink", "--to", target])
-        .assert()
-        .success();
+    let result = app.unlink_to(target, None);
+    assert_eq!(result.code, 0, "unlink to target should succeed");
+    assert_eq!(result.value, Some(2), "should remove two links");
 
     // Verify all links to target are removed
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["list"])
-        .output()
-        .unwrap();
-    assert!(output.status.success(), "list command should succeed");
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    assert!(
-        stdout.contains("No links found"),
-        "Expected 'No links found' but got: '{}'",
-        stdout
-    );
+    let result = app.list(None, None);
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 0, "should have no links");
 }
 
 #[test]
@@ -387,12 +313,9 @@ fn test_unlink_non_existent_link_succeeds_with_message() {
         .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&repo_path)
-        .args(["init"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     // Create test files but no link
     let source = "source.md";
@@ -401,12 +324,12 @@ fn test_unlink_non_existent_link_succeeds_with_message() {
     fs::write(repo_path.join(target), "# Target").unwrap();
 
     // Try to unlink non-existent link
-    let mut cmd = Command::cargo_bin("gitmind").unwrap();
-    cmd.current_dir(repo_path)
-        .args(["unlink", source, target])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("No matching links found"));
+    let result = app.unlink(source, target, None);
+    assert_eq!(
+        result.code, 0,
+        "unlink should succeed even when no links exist"
+    );
+    assert_eq!(result.value, Some(0), "should remove zero links");
 }
 
 #[test]
@@ -422,10 +345,11 @@ fn test_unlink_requires_gitmind_init() {
         .unwrap();
 
     // Try to unlink
-    let mut cmd = Command::cargo_bin("gitmind").unwrap();
-    cmd.current_dir(repo_path)
-        .args(["unlink", "a.md", "b.md"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("gitmind not initialized"));
+    let app = App::new(repo_path);
+    let result = app.unlink("a.md", "b.md", None);
+    assert_eq!(
+        result.code, 3,
+        "unlink should fail with NotInitialized code"
+    );
+    assert_eq!(result.value, None, "failed operation should have no value");
 }

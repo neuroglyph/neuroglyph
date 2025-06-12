@@ -3,42 +3,40 @@
 
 //! Tests for the link command behavior
 
-use assert_cmd::Command;
-use predicates::prelude::*;
+use gitmind::App;
 use std::fs;
+use std::process::Command as StdCommand;
 use tempfile::TempDir;
 
 /// Helper to set up a git repo with gitmind initialized
 fn setup_gitmind_repo() -> TempDir {
     let temp_dir = TempDir::new().unwrap();
+    let repo_path = temp_dir.path();
 
     // Initialize git
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["init"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Configure git user
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["config", "user.name", "Test User"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["config", "user.email", "test@example.com"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("init")
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     temp_dir
 }
@@ -47,32 +45,32 @@ fn setup_gitmind_repo() -> TempDir {
 fn link_creates_semantic_link_between_files() {
     // Given: A gitmind repo with two files
     let temp_dir = setup_gitmind_repo();
-    fs::write(temp_dir.path().join("notes.md"), "# Notes").unwrap();
-    fs::write(temp_dir.path().join("ideas.md"), "# Ideas").unwrap();
+    let repo_path = temp_dir.path();
+    fs::write(repo_path.join("notes.md"), "# Notes").unwrap();
+    fs::write(repo_path.join("ideas.md"), "# Ideas").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // When: Creating a link between them
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "notes.md", "ideas.md"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Created link"));
+    let app = App::new(repo_path);
+    let result = app.link("notes.md", "ideas.md", "CROSS_REF");
 
-    // Then: A link file is created with correct content
-    let links_dir = temp_dir.path().join(".gitmind/links");
+    // Then: Link creation succeeds and SHA is returned
+    assert_eq!(result.code, 0, "link should succeed");
+    assert!(result.value.is_some(), "link should return SHA");
+
+    // And: A link file is created with correct content
+    let links_dir = repo_path.join(".gitmind/links");
     let entries: Vec<_> = fs::read_dir(&links_dir).unwrap().collect();
     assert_eq!(entries.len(), 1);
 
@@ -85,31 +83,32 @@ fn link_creates_semantic_link_between_files() {
 fn link_supports_custom_link_types() {
     // Given: A gitmind repo with spec and implementation files
     let temp_dir = setup_gitmind_repo();
-    fs::write(temp_dir.path().join("spec.md"), "# Spec").unwrap();
-    fs::write(temp_dir.path().join("impl.rs"), "// Code").unwrap();
+    let repo_path = temp_dir.path();
+    fs::write(repo_path.join("spec.md"), "# Spec").unwrap();
+    fs::write(repo_path.join("impl.rs"), "// Code").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // When: Creating a link with custom type
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "spec.md", "impl.rs", "--type", "IMPLEMENTS"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("spec.md", "impl.rs", "IMPLEMENTS");
 
-    // Then: The link file contains the custom type
-    let links_dir = temp_dir.path().join(".gitmind/links");
+    // Then: Link creation succeeds
+    assert_eq!(result.code, 0, "link should succeed");
+    assert!(result.value.is_some(), "link should return SHA");
+
+    // And: The link file contains the custom type
+    let links_dir = repo_path.join(".gitmind/links");
     let entries: Vec<_> = fs::read_dir(&links_dir).unwrap().collect();
     let link_file = entries[0].as_ref().unwrap().path();
     let content = fs::read_to_string(&link_file).unwrap();
@@ -120,77 +119,73 @@ fn link_supports_custom_link_types() {
 fn link_fails_when_source_file_missing() {
     // Given: A gitmind repo without the source file
     let temp_dir = setup_gitmind_repo();
+    let repo_path = temp_dir.path();
 
     // When: Trying to create a link with missing source
-    // Then: It fails with appropriate error
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "missing.md", "target.md"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Source file not found"));
+    let app = App::new(repo_path);
+    let result = app.link("missing.md", "target.md", "CROSS_REF");
+
+    // Then: It fails with SourceNotFound exit code
+    assert_eq!(result.code, 5, "link should fail with SourceNotFound code");
+    assert_eq!(result.value, None, "failed operation should have no value");
 }
 
 #[test]
 fn link_fails_when_target_file_missing() {
     // Given: A gitmind repo with only source file
     let temp_dir = setup_gitmind_repo();
-    fs::write(temp_dir.path().join("source.md"), "# Source").unwrap();
+    let repo_path = temp_dir.path();
+    fs::write(repo_path.join("source.md"), "# Source").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add source"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // When: Trying to create a link with missing target
-    // Then: It fails with appropriate error
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "source.md", "missing.md"])
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("Target file not found"));
+    let app = App::new(repo_path);
+    let result = app.link("source.md", "missing.md", "CROSS_REF");
+
+    // Then: It fails with TargetNotFound exit code
+    assert_eq!(result.code, 6, "link should fail with TargetNotFound code");
+    assert_eq!(result.value, None, "failed operation should have no value");
 }
 
 #[test]
 fn link_automatically_commits_to_git() {
     // Given: A gitmind repo with two files
     let temp_dir = setup_gitmind_repo();
-    fs::write(temp_dir.path().join("a.md"), "# A").unwrap();
-    fs::write(temp_dir.path().join("b.md"), "# B").unwrap();
+    let repo_path = temp_dir.path();
+    fs::write(repo_path.join("a.md"), "# A").unwrap();
+    fs::write(repo_path.join("b.md"), "# B").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Initial files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // When: Creating a link
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "a.md", "b.md"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("a.md", "b.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "link should succeed");
 
     // Then: The link is committed to git
-    let output = Command::new("git")
-        .current_dir(&temp_dir)
+    let output = StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["log", "--oneline", "-1"])
         .output()
         .unwrap();
@@ -203,39 +198,38 @@ fn link_automatically_commits_to_git() {
 fn link_deduplicates_identical_links() {
     // Given: A gitmind repo with two files and an existing link
     let temp_dir = setup_gitmind_repo();
-    fs::write(temp_dir.path().join("x.md"), "# X").unwrap();
-    fs::write(temp_dir.path().join("y.md"), "# Y").unwrap();
+    let repo_path = temp_dir.path();
+    fs::write(repo_path.join("x.md"), "# X").unwrap();
+    fs::write(repo_path.join("y.md"), "# Y").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "x.md", "y.md"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("x.md", "y.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
 
     // When: Creating the same link again
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "x.md", "y.md"])
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Link already exists"));
+    let result = app.link("x.md", "y.md", "CROSS_REF");
 
-    // Then: Only one link file exists
-    let links_dir = temp_dir.path().join(".gitmind/links");
+    // Then: It fails with LinkAlreadyExists exit code
+    assert_eq!(
+        result.code, 7,
+        "duplicate link should fail with LinkAlreadyExists code"
+    );
+    assert_eq!(result.value, None, "failed operation should have no value");
+
+    // And: Only one link file exists
+    let links_dir = repo_path.join(".gitmind/links");
     let entries: Vec<_> = fs::read_dir(&links_dir).unwrap().collect();
     assert_eq!(entries.len(), 1);
 }

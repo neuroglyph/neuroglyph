@@ -7,6 +7,7 @@ use sha1::{Digest, Sha1};
 use std::fmt;
 
 /// Represents a semantic link between two files
+#[derive(Debug, PartialEq)]
 pub struct Link {
     pub link_type: String,
     pub source: String,

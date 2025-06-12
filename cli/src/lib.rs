@@ -6,8 +6,9 @@
 pub mod commands;
 pub mod error;
 pub mod link;
+pub mod result;
 
-use error::Result;
+use result::{CommandResult, IntoCommandResult};
 use std::path::Path;
 
 /// Main application logic
@@ -25,38 +26,48 @@ impl App {
     }
 
     /// Initialize gitmind in the current repository
-    pub fn init(&self) -> Result<()> {
+    pub fn init(&self) -> CommandResult<()> {
         let cmd = commands::InitCommand::new(&self.working_dir);
-        cmd.execute()
+        cmd.execute().into_command_result()
     }
 
     /// Create a semantic link between two files
-    pub fn link(&self, source: &str, target: &str, link_type: &str) -> Result<String> {
+    pub fn link(&self, source: &str, target: &str, link_type: &str) -> CommandResult<String> {
         let cmd = commands::LinkCommand::new(&self.working_dir);
-        cmd.execute(source, target, link_type)
+        cmd.execute(source, target, link_type).into_command_result()
     }
 
     /// List all semantic links
-    pub fn list(&self, source: Option<&str>, target: Option<&str>) -> Result<Vec<link::Link>> {
+    pub fn list(
+        &self,
+        source: Option<&str>,
+        target: Option<&str>,
+    ) -> CommandResult<Vec<link::Link>> {
         let cmd = commands::ListCommand::new(&self.working_dir);
-        cmd.execute(source, target)
+        cmd.execute(source, target).into_command_result()
     }
 
     /// Remove a specific link between two files
-    pub fn unlink(&self, source: &str, target: &str, link_type: Option<&str>) -> Result<usize> {
+    pub fn unlink(
+        &self,
+        source: &str,
+        target: &str,
+        link_type: Option<&str>,
+    ) -> CommandResult<usize> {
         let cmd = commands::UnlinkCommand::new(&self.working_dir);
-        cmd.execute(source, target, link_type)
+        cmd.execute(source, target, link_type).into_command_result()
     }
 
     /// Remove all links from a source file
-    pub fn unlink_all_from(&self, source: &str, link_type: Option<&str>) -> Result<usize> {
+    pub fn unlink_all_from(&self, source: &str, link_type: Option<&str>) -> CommandResult<usize> {
         let cmd = commands::UnlinkCommand::new(&self.working_dir);
         cmd.execute_all_from(source, link_type)
+            .into_command_result()
     }
 
     /// Remove all links to a target file
-    pub fn unlink_to(&self, target: &str, link_type: Option<&str>) -> Result<usize> {
+    pub fn unlink_to(&self, target: &str, link_type: Option<&str>) -> CommandResult<usize> {
         let cmd = commands::UnlinkCommand::new(&self.working_dir);
-        cmd.execute_to(target, link_type)
+        cmd.execute_to(target, link_type).into_command_result()
     }
 }

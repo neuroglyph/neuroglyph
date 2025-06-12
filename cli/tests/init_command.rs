@@ -3,30 +3,29 @@
 
 //! Tests for the init command behavior
 
-use assert_cmd::Command;
-use predicates::prelude::*;
+use gitmind::App;
+use std::process::Command as StdCommand;
 use tempfile::TempDir;
 
 #[test]
 fn init_creates_gitmind_directory_in_git_repo() {
     // Given: A git repository
     let temp_dir = TempDir::new().unwrap();
-    Command::new("git")
-        .current_dir(&temp_dir)
+    let repo_path = temp_dir.path();
+
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["init"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // When: Running gitmind init
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("init")
-        .assert()
-        .success()
-        .stdout(predicate::str::contains("Initialized gitmind"));
+    let app = App::new(repo_path);
+    let result = app.init();
 
-    // Then: .gitmind/links/ directory exists
+    // Then: Command succeeds and directory exists
+    assert_eq!(result.code, 0, "init should succeed");
+    assert!(result.value.is_some(), "init should return a value");
     assert!(temp_dir.path().join(".gitmind").exists());
     assert!(temp_dir.path().join(".gitmind/links").exists());
 }
@@ -35,42 +34,43 @@ fn init_creates_gitmind_directory_in_git_repo() {
 fn init_fails_outside_git_repository() {
     // Given: A directory that is not a git repository
     let temp_dir = TempDir::new().unwrap();
+    let repo_path = temp_dir.path();
 
     // When: Running gitmind init
-    // Then: It fails with appropriate error message
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("init")
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("not a git repository"));
+    let app = App::new(repo_path);
+    let result = app.init();
+
+    // Then: It fails with NotAGitRepository exit code
+    assert_eq!(
+        result.code, 2,
+        "init should fail with NotAGitRepository code"
+    );
+    assert_eq!(result.value, None, "failed operation should have no value");
 }
 
 #[test]
 fn init_fails_if_already_initialized() {
     // Given: A git repository with gitmind already initialized
     let temp_dir = TempDir::new().unwrap();
-    Command::new("git")
-        .current_dir(&temp_dir)
-        .args(&["init"])
-        .assert()
-        .success();
+    let repo_path = temp_dir.path();
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("init")
-        .assert()
-        .success();
+    StdCommand::new("git")
+        .current_dir(&repo_path)
+        .args(&["init"])
+        .output()
+        .unwrap();
+
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "first init should succeed");
 
     // When: Running gitmind init again
-    // Then: It fails with appropriate error message
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("init")
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("already initialized"));
+    let result = app.init();
+
+    // Then: It fails with AlreadyInitialized exit code
+    assert_eq!(
+        result.code, 4,
+        "second init should fail with AlreadyInitialized code"
+    );
+    assert_eq!(result.value, None, "failed operation should have no value");
 }

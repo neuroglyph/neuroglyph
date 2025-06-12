@@ -60,30 +60,43 @@ enum Commands {
     },
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let cli = Cli::parse();
-    let app = App::new(std::env::current_dir()?);
+    let working_dir = match std::env::current_dir() {
+        Ok(dir) => dir,
+        Err(e) => {
+            eprintln!("Error: Failed to get current directory: {}", e);
+            std::process::exit(1);
+        }
+    };
 
-    match cli.command {
+    let app = App::new(working_dir);
+
+    let exit_code = match cli.command {
         Commands::Init => {
-            app.init()?;
-            println!("Initialized gitmind in {}", app.working_dir.display());
+            let result = app.init();
+            if result.is_success() {
+                println!("Initialized gitmind in {}", app.working_dir.display());
+            }
+            result.code
         }
         Commands::Link {
             source,
             target,
             r#type,
-        } => match app.link(&source, &target, &r#type) {
-            Ok(sha) => {
+        } => {
+            let result = app.link(&source, &target, &r#type);
+            if let Some(sha) = result.value {
                 println!("Created link: {} -> {} ({})", source, target, sha);
+            } else if result.code == 7 {
+                // LinkAlreadyExists
+                println!("Link already exists");
             }
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                std::process::exit(1);
-            }
-        },
-        Commands::List { source, target } => match app.list(source.as_deref(), target.as_deref()) {
-            Ok(links) => {
+            result.code
+        }
+        Commands::List { source, target } => {
+            let result = app.list(source.as_deref(), target.as_deref());
+            if let Some(links) = result.value {
                 if links.is_empty() {
                     println!("No links found");
                 } else {
@@ -92,11 +105,8 @@ fn main() -> anyhow::Result<()> {
                     }
                 }
             }
-            Err(e) => {
-                eprintln!("Error: {}", e);
-                std::process::exit(1);
-            }
-        },
+            result.code
+        }
         Commands::Unlink {
             source,
             target,
@@ -115,25 +125,22 @@ fn main() -> anyhow::Result<()> {
                 app.unlink(&src, &tgt, link_type.as_deref())
             };
 
-            match result {
-                Ok(count) => {
-                    if count == 0 {
-                        println!("No matching links found");
-                    } else {
-                        println!(
-                            "Removed {} link{}",
-                            count,
-                            if count == 1 { "" } else { "s" }
-                        );
-                    }
-                }
-                Err(e) => {
-                    eprintln!("Error: {}", e);
-                    std::process::exit(1);
+            if let Some(count) = result.value {
+                if count == 0 {
+                    println!("No matching links found");
+                } else {
+                    println!(
+                        "Removed {} link{}",
+                        count,
+                        if count == 1 { "" } else { "s" }
+                    );
                 }
             }
+            result.code
         }
-    }
+    };
 
-    Ok(())
+    if exit_code != 0 {
+        std::process::exit(exit_code);
+    }
 }

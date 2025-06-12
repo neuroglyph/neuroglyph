@@ -55,8 +55,7 @@ impl<'a> LinkCommand<'a> {
             // Read existing content to check if it's the same link
             let existing = std::fs::read_to_string(&link_file)?;
             if existing.starts_with(&format!("{}: {} -> {}", link_type, source, target)) {
-                println!("Link already exists");
-                return Ok(link.short_sha());
+                return Err(Error::LinkAlreadyExists);
             }
         }
 

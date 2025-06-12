@@ -106,6 +106,15 @@ Always have these three levels of tests, all focused on behavior:
    - **Every user story in `design/features/` should have corresponding end-to-end tests**
    - **Every acceptance criteria should have its own specific test**
 
+##### Testing Principles - NEVER Test stdout/stderr
+- **NEVER test stdout/stderr output** - This is brittle and couples tests to implementation
+- Testing stdout is just spying by another name - it violates behavior testing
+- Instead, use proper return types:
+  - Commands return `CommandResult<T>` with exit code and optional value
+  - Tests check the exit code and returned values directly
+  - The CLI layer handles printing - tests verify behavior, not output
+- Example: Don't test "No links found" string, test that `list()` returns empty Vec
+
 ##### Definition of Done for Features
 A feature is only complete when:
 1. All acceptance criteria from `design/features/F*.md` have corresponding tests

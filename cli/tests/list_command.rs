@@ -3,42 +3,40 @@
 
 //! Tests for the list command behavior
 
-use assert_cmd::Command;
-use predicates::prelude::*;
+use gitmind::App;
 use std::fs;
+use std::process::Command as StdCommand;
 use tempfile::TempDir;
 
 /// Helper to set up a git repo with gitmind initialized
 fn setup_gitmind_repo() -> TempDir {
     let temp_dir = TempDir::new().unwrap();
+    let repo_path = temp_dir.path();
 
     // Initialize git
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["init"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Configure git user
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["config", "user.name", "Test User"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["config", "user.email", "test@example.com"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Initialize gitmind
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("init")
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.init();
+    assert_eq!(result.code, 0, "init should succeed");
 
     temp_dir
 }
@@ -47,230 +45,204 @@ fn setup_gitmind_repo() -> TempDir {
 fn list_shows_all_links_in_repository() {
     // Given: A gitmind repo with multiple links
     let temp_dir = setup_gitmind_repo();
+    let repo_path = temp_dir.path();
 
     // Create files
-    fs::write(temp_dir.path().join("file1.md"), "# File 1").unwrap();
-    fs::write(temp_dir.path().join("file2.md"), "# File 2").unwrap();
-    fs::write(temp_dir.path().join("file3.md"), "# File 3").unwrap();
+    fs::write(repo_path.join("file1.md"), "# File 1").unwrap();
+    fs::write(repo_path.join("file2.md"), "# File 2").unwrap();
+    fs::write(repo_path.join("file3.md"), "# File 3").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Create some links
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "file1.md", "file2.md"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("file1.md", "file2.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "file2.md", "file3.md", "--type", "DEPENDS_ON"])
-        .assert()
-        .success();
+    let result = app.link("file2.md", "file3.md", "DEPENDS_ON");
+    assert_eq!(result.code, 0, "second link should succeed");
 
     // When: Running gitmind list
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("list")
-        .assert()
-        .success();
+    let result = app.list(None, None);
 
-    // Then: All links are displayed
-    output
-        .stdout(predicate::str::contains("file1.md -> file2.md"))
-        .stdout(predicate::str::contains("CROSS_REF"))
-        .stdout(predicate::str::contains("file2.md -> file3.md"))
-        .stdout(predicate::str::contains("DEPENDS_ON"));
+    // Then: All links are returned
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 2, "should have two links");
+
+    // Verify first link
+    assert!(links.iter().any(|l| {
+        l.source == "file1.md" && l.target == "file2.md" && l.link_type == "CROSS_REF"
+    }));
+
+    // Verify second link
+    assert!(links.iter().any(|l| {
+        l.source == "file2.md" && l.target == "file3.md" && l.link_type == "DEPENDS_ON"
+    }));
 }
 
 #[test]
 fn list_shows_empty_when_no_links() {
     // Given: A gitmind repo with no links
     let temp_dir = setup_gitmind_repo();
+    let repo_path = temp_dir.path();
 
     // When: Running gitmind list
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("list")
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.list(None, None);
 
-    // Then: It shows no links message
-    output.stdout(predicate::str::contains("No links found"));
+    // Then: It returns empty list
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 0, "should have no links");
 }
 
 #[test]
 fn list_shows_link_timestamps() {
     // Given: A gitmind repo with a link
     let temp_dir = setup_gitmind_repo();
+    let repo_path = temp_dir.path();
 
-    fs::write(temp_dir.path().join("a.md"), "# A").unwrap();
-    fs::write(temp_dir.path().join("b.md"), "# B").unwrap();
+    fs::write(repo_path.join("a.md"), "# A").unwrap();
+    fs::write(repo_path.join("b.md"), "# B").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "a.md", "b.md"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("a.md", "b.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "link should succeed");
 
     // When: Running gitmind list
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("list")
-        .assert()
-        .success();
+    let result = app.list(None, None);
 
     // Then: Link includes timestamp
-    output.stdout(predicate::str::contains("ts:"));
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 1, "should have one link");
+    assert!(links[0].timestamp > 0, "link should have timestamp");
 }
 
 #[test]
 fn list_filters_by_source_file() {
     // Given: A gitmind repo with multiple links
     let temp_dir = setup_gitmind_repo();
+    let repo_path = temp_dir.path();
 
     // Create files
-    fs::write(temp_dir.path().join("a.md"), "# A").unwrap();
-    fs::write(temp_dir.path().join("b.md"), "# B").unwrap();
-    fs::write(temp_dir.path().join("c.md"), "# C").unwrap();
+    fs::write(repo_path.join("a.md"), "# A").unwrap();
+    fs::write(repo_path.join("b.md"), "# B").unwrap();
+    fs::write(repo_path.join("c.md"), "# C").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Create links from different sources
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "a.md", "b.md"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("a.md", "b.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "b.md", "c.md"])
-        .assert()
-        .success();
+    let result = app.link("b.md", "c.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "second link should succeed");
 
     // When: Filtering by source
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["list", "--source", "a.md"])
-        .assert()
-        .success();
+    let result = app.list(Some("a.md"), None);
 
     // Then: Only links from that source are shown
-    output
-        .stdout(predicate::str::contains("a.md -> b.md"))
-        .stdout(predicate::str::contains("b.md -> c.md").not());
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 1, "should have one link from source");
+    assert_eq!(links[0].source, "a.md");
+    assert_eq!(links[0].target, "b.md");
 }
 
 #[test]
 fn list_filters_by_target_file() {
     // Given: A gitmind repo with multiple links
     let temp_dir = setup_gitmind_repo();
+    let repo_path = temp_dir.path();
 
     // Create files
-    fs::write(temp_dir.path().join("a.md"), "# A").unwrap();
-    fs::write(temp_dir.path().join("b.md"), "# B").unwrap();
-    fs::write(temp_dir.path().join("c.md"), "# C").unwrap();
+    fs::write(repo_path.join("a.md"), "# A").unwrap();
+    fs::write(repo_path.join("b.md"), "# B").unwrap();
+    fs::write(repo_path.join("c.md"), "# C").unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["add", "."])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
-    Command::new("git")
-        .current_dir(&temp_dir)
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["commit", "-m", "Add files"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // Create links to different targets
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "a.md", "b.md"])
-        .assert()
-        .success();
+    let app = App::new(repo_path);
+    let result = app.link("a.md", "b.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "first link should succeed");
 
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["link", "a.md", "c.md"])
-        .assert()
-        .success();
+    let result = app.link("a.md", "c.md", "CROSS_REF");
+    assert_eq!(result.code, 0, "second link should succeed");
 
     // When: Filtering by target
-    let output = Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .args(&["list", "--target", "b.md"])
-        .assert()
-        .success();
+    let result = app.list(None, Some("b.md"));
 
     // Then: Only links to that target are shown
-    output
-        .stdout(predicate::str::contains("a.md -> b.md"))
-        .stdout(predicate::str::contains("a.md -> c.md").not());
+    assert_eq!(result.code, 0, "list should succeed");
+    let links = result.value.unwrap();
+    assert_eq!(links.len(), 1, "should have one link to target");
+    assert_eq!(links[0].source, "a.md");
+    assert_eq!(links[0].target, "b.md");
 }
 
 #[test]
 fn list_fails_if_gitmind_not_initialized() {
     // Given: A git repo without gitmind initialized
     let temp_dir = TempDir::new().unwrap();
-    Command::new("git")
-        .current_dir(&temp_dir)
+    let repo_path = temp_dir.path();
+
+    StdCommand::new("git")
+        .current_dir(&repo_path)
         .args(&["init"])
-        .assert()
-        .success();
+        .output()
+        .unwrap();
 
     // When: Running gitmind list
-    // Then: It fails with appropriate error
-    Command::cargo_bin("gitmind")
-        .unwrap()
-        .current_dir(&temp_dir)
-        .arg("list")
-        .assert()
-        .failure()
-        .stderr(predicate::str::contains("gitmind not initialized"));
+    let app = App::new(repo_path);
+    let result = app.list(None, None);
+
+    // Then: It fails with NotInitialized exit code
+    assert_eq!(result.code, 3, "list should fail with NotInitialized code");
+    assert_eq!(result.value, None, "failed operation should have no value");
 }
