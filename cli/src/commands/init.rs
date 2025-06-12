@@ -32,6 +32,24 @@ impl<'a> InitCommand<'a> {
         let links_dir = gitmind_dir.join("links");
         std::fs::create_dir_all(links_dir)?;
 
+        // Create .gitkeep file to prevent directory removal when empty
+        let gitkeep_path = gitmind_dir.join(".gitkeep");
+        std::fs::write(&gitkeep_path, "")?;
+
+        // Add .gitkeep to git to track it
+        let output = std::process::Command::new("git")
+            .current_dir(self.working_dir)
+            .args(["add", &gitkeep_path.to_string_lossy()])
+            .output()?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(crate::error::Error::Git(format!(
+                "Failed to add .gitkeep: {}",
+                stderr
+            )));
+        }
+
         Ok(())
     }
 }
