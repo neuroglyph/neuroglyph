@@ -70,4 +70,10 @@ impl App {
         let cmd = commands::UnlinkCommand::new(&self.working_dir);
         cmd.execute_to(target, link_type).into_command_result()
     }
+
+    /// Check for broken links and optionally fix them
+    pub fn check(&self, fix: bool, dry_run: bool) -> CommandResult<Vec<link::Link>> {
+        let cmd = commands::CheckCommand::new(&self.working_dir);
+        cmd.execute(fix, dry_run).into_command_result()
+    }
 }

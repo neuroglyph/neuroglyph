@@ -58,6 +58,17 @@ enum Commands {
         #[arg(short = 't', long = "type")]
         link_type: Option<String>,
     },
+
+    /// Check for and optionally fix broken links
+    Check {
+        /// Remove broken links
+        #[arg(long)]
+        fix: bool,
+
+        /// Show what would be fixed without making changes
+        #[arg(long, requires = "fix")]
+        dry_run: bool,
+    },
 }
 
 fn main() {
@@ -134,6 +145,39 @@ fn main() {
                         count,
                         if count == 1 { "" } else { "s" }
                     );
+                }
+            }
+            result.code
+        }
+        Commands::Check { fix, dry_run } => {
+            let result = app.check(fix, dry_run);
+            if let Some(broken_links) = result.value {
+                if broken_links.is_empty() {
+                    println!("No broken links found");
+                } else if dry_run {
+                    println!(
+                        "Would remove {} broken link{}:",
+                        broken_links.len(),
+                        if broken_links.len() == 1 { "" } else { "s" }
+                    );
+                    for link in &broken_links {
+                        println!("  {} -> {}", link.source, link.target);
+                    }
+                } else if fix {
+                    println!(
+                        "Removed {} broken link{}",
+                        broken_links.len(),
+                        if broken_links.len() == 1 { "" } else { "s" }
+                    );
+                } else {
+                    println!(
+                        "Found {} broken link{}:",
+                        broken_links.len(),
+                        if broken_links.len() == 1 { "" } else { "s" }
+                    );
+                    for link in &broken_links {
+                        println!("  {} -> {} ({})", link.source, link.target, link.link_type);
+                    }
                 }
             }
             result.code

@@ -159,10 +159,10 @@
   gitmind link A B  # Creates link file, stages, commits ✅
   gitmind list      # Shows all links in current repo ✅
   ```
-- [ ] Implement hygiene commands (F016):
+- [x] Implement hygiene commands (F016):
   ```bash
-  gitmind unlink A B  # Remove specific link
-  gitmind check       # Find and fix broken links
+  gitmind unlink A B  # Remove specific link ✅
+  gitmind check       # Find and fix broken links ✅
   ```
 - [x] Implementation details:
   - [x] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
@@ -178,16 +178,16 @@
     - [x] Support filtering by source file
     - [x] Support filtering by target file
     - [x] Show link types and timestamps
-  - [ ] `unlink`: Remove link between files
-    - [ ] Find SHA-based link file
-    - [ ] `git rm .gitmind/links/<sha>.link`
-    - [ ] `git commit -m "unlink(F016): A -/-> B"`
-    - [ ] Support --all and --to flags
-  - [ ] `check`: Validate link integrity
-    - [ ] Scan all links for missing targets
-    - [ ] Report broken links
-    - [ ] --fix flag to remove broken links
-    - [ ] --dry-run flag to preview changes
+  - [x] `unlink`: Remove link between files ✅
+    - [x] Find SHA-based link file
+    - [x] `git rm .gitmind/links/<sha>.link`
+    - [x] `git commit -m "unlink(F016): A -/-> B"`
+    - [x] Support --all and --to flags
+  - [x] `check`: Validate link integrity ✅
+    - [x] Scan all links for missing targets
+    - [x] Report broken links
+    - [x] --fix flag to remove broken links
+    - [x] --dry-run flag to preview changes
 - [ ] Create demo video showing these 3 commands
 - [ ] Ship binaries for Linux/macOS
 - [ ] Post "Show HN" with minimal demo
