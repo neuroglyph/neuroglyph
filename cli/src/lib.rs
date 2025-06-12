@@ -3,7 +3,9 @@
 
 //! Core library for gitmind CLI
 
+pub mod commands;
 pub mod error;
+pub mod link;
 
 use error::Result;
 use std::path::Path;
@@ -24,22 +26,13 @@ impl App {
 
     /// Initialize gitmind in the current repository
     pub fn init(&self) -> Result<()> {
-        // Check if we're in a git repository
-        let git_dir = self.working_dir.join(".git");
-        if !git_dir.exists() {
-            return Err(error::Error::NotAGitRepository);
-        }
+        let cmd = commands::InitCommand::new(&self.working_dir);
+        cmd.execute()
+    }
 
-        // Check if already initialized
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if gitmind_dir.exists() {
-            return Err(error::Error::AlreadyInitialized);
-        }
-
-        // Create .gitmind/links/ directory
-        let links_dir = gitmind_dir.join("links");
-        std::fs::create_dir_all(links_dir)?;
-
-        Ok(())
+    /// Create a semantic link between two files
+    pub fn link(&self, source: &str, target: &str, link_type: &str) -> Result<String> {
+        let cmd = commands::LinkCommand::new(&self.working_dir);
+        cmd.execute(source, target, link_type)
     }
 }
