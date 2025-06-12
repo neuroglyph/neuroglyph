@@ -12,7 +12,7 @@
 - [x] Basic CLI structure
 - [x] `gitmind init` command
 - [x] `gitmind link` command
-- [ ] `gitmind list` command
+- [x] `gitmind list` command
 - [ ] Advanced query operations
 
 ---

@@ -89,6 +89,31 @@ neuroglyph/
 - **Always test behavior, not implementation** - Tests verify what the system does, not how
 - **One test file per component** - Each test file focuses on testing one component's behavior
 
+##### Test Strategy - Three Levels
+Always have these three levels of tests, all focused on behavior:
+1. **Unit Tests** - Test individual components in isolation
+   - Located in `src/` files next to implementation (e.g., `#[cfg(test)] mod tests`)
+   - Test single structs/functions behavior
+   - Fast, focused on one thing
+2. **Integration Tests** - Test components working together
+   - Located in `tests/` directory
+   - Test command behavior, file I/O, Git operations
+   - Use real Git repos, real file systems
+3. **End-to-End Tests** - Test complete user workflows
+   - Also in `tests/` directory
+   - Test full CLI commands from user perspective
+   - Verify entire features work as users expect
+   - **Every user story in `design/features/` should have corresponding end-to-end tests**
+   - **Every acceptance criteria should have its own specific test**
+
+##### Definition of Done for Features
+A feature is only complete when:
+1. All acceptance criteria from `design/features/F*.md` have corresponding tests
+2. Tests pass at all three levels (unit, integration, end-to-end)
+3. User story is demonstrable through end-to-end tests
+4. Documentation is updated
+5. Code follows project conventions
+
 #### Git Hooks
 - Git LFS is configured for binary files
 - Custom hooks in `scripts/` directory
