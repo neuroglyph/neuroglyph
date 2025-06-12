@@ -122,7 +122,7 @@ impl UnlinkCommand {
                     (None, None) => true,
                 };
 
-                let type_matches = link_type.map_or(true, |t| link.link_type == t);
+                let type_matches = link_type.is_none_or(|t| link.link_type == t);
 
                 if matches && type_matches {
                     matching_links.push((link, path));

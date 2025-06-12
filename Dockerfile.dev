@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # Development and testing environment for Neuroglyph CLI (gitmind)
-FROM rust:1.78-slim
+FROM rust:latest
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \

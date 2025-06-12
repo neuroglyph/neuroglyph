@@ -54,8 +54,8 @@ impl<'a> ListCommand<'a> {
             match Link::from_canonical_string(content) {
                 Ok(link) => {
                     // Apply filters
-                    let matches_source = source_filter.map_or(true, |f| link.source == f);
-                    let matches_target = target_filter.map_or(true, |f| link.target == f);
+                    let matches_source = source_filter.is_none_or(|f| link.source == f);
+                    let matches_target = target_filter.is_none_or(|f| link.target == f);
 
                     if matches_source && matches_target {
                         links.push(link);
