@@ -54,6 +54,7 @@ jobs:
         components: rustfmt, clippy
     
     - name: Run tests natively
+      working-directory: ./cli
       run: |
         cargo fmt --check
         cargo clippy -- -D warnings
