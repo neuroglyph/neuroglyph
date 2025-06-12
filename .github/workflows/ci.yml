@@ -29,7 +29,7 @@ jobs:
     
     - name: Upload test results
       if: failure()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: |
@@ -54,6 +54,7 @@ jobs:
         components: rustfmt, clippy
     
     - name: Run tests natively
+      working-directory: ./cli
       run: |
         cargo fmt --check
         cargo clippy -- -D warnings
