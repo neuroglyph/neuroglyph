@@ -35,4 +35,28 @@ impl App {
         let cmd = commands::LinkCommand::new(&self.working_dir);
         cmd.execute(source, target, link_type)
     }
+
+    /// List all semantic links
+    pub fn list(&self, source: Option<&str>, target: Option<&str>) -> Result<Vec<link::Link>> {
+        let cmd = commands::ListCommand::new(&self.working_dir);
+        cmd.execute(source, target)
+    }
+
+    /// Remove a specific link between two files
+    pub fn unlink(&self, source: &str, target: &str, link_type: Option<&str>) -> Result<usize> {
+        let cmd = commands::UnlinkCommand::new(&self.working_dir);
+        cmd.execute(source, target, link_type)
+    }
+
+    /// Remove all links from a source file
+    pub fn unlink_all_from(&self, source: &str, link_type: Option<&str>) -> Result<usize> {
+        let cmd = commands::UnlinkCommand::new(&self.working_dir);
+        cmd.execute_all_from(source, link_type)
+    }
+
+    /// Remove all links to a target file
+    pub fn unlink_to(&self, target: &str, link_type: Option<&str>) -> Result<usize> {
+        let cmd = commands::UnlinkCommand::new(&self.working_dir);
+        cmd.execute_to(target, link_type)
+    }
 }

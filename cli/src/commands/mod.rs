@@ -5,6 +5,10 @@
 
 pub mod init;
 pub mod link;
+pub mod list;
+pub mod unlink;
 
 pub use init::InitCommand;
 pub use link::LinkCommand;
+pub use list::ListCommand;
+pub use unlink::UnlinkCommand;
