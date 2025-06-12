@@ -101,3 +101,84 @@ Just refactored the codebase to follow proper single responsibility and test org
 The refactoring makes the code much more navigable. When you're looking for link logic, you go to `link.rs`. When you want to understand how the link command works, you look at `commands/link.rs`. It's obvious where things belong.
 
 Next up: implementing the `list` command, which will read all links and display them. Should be straightforward now that we have the structure in place.
+
+## The Missing Piece: Link Hygiene
+
+### Critical Realization
+
+After implementing the basic three commands (init, link, list), we realized a fundamental gap: **there's no way to remove links or handle deleted files**. Without this, the knowledge graph becomes a "rotting swamp of dead edges" - semantic memory turns into semantic cruft.
+
+**Key Insight**: In any cognitive system, forgetting is as vital as remembering. Just like neural pruning in brains, the system must be able to remove dead links.
+
+### Design Decision
+
+We decided to add two essential commands to Phase 1a MVP:
+1. `gitmind unlink` - Manual link removal
+2. `gitmind check` - Broken link detection and cleanup
+
+This wasn't feature creep - it was recognizing that link hygiene is philosophically aligned with Neuroglyph's mission as a cognitive substrate. A knowledge graph that can only grow is fundamentally broken.
+
+### Implementation Strategy
+
+- `unlink`: Direct removal of specific links, with options for batch operations
+- `check`: Validates all links, reports broken ones, with --fix and --dry-run flags
+- Both commands maintain Git history properly
+- Hook integration deferred to Phase 2 (opt-in power user feature)
+
+The decision to include these in MVP rather than defer them shows good judgment about what constitutes a minimally *viable* product - not just minimal, but actually usable.
+
+## Session Summary: MVP Implementation Complete
+
+### What We Accomplished
+
+1. **Completed Phase 1a Core Commands**
+   - ✅ `gitmind init` - Creates .gitmind/links/ directory
+   - ✅ `gitmind link` - Creates semantic links with SHA-based storage
+   - ✅ `gitmind list` - Lists links with source/target filtering
+
+2. **Architectural Improvements**
+   - Refactored to single responsibility principle (one file = one thing)
+   - Created modular command structure
+   - Split tests by component (behavior-focused)
+   - Added comprehensive test strategy to CLAUDE.md
+   - Enabled Docker Bake for faster builds
+
+3. **Critical Design Decisions**
+   - Added F016 (Link Hygiene) to Phase 1a after realizing it's essential
+   - Recognized that forgetting is as important as remembering
+   - Deferred Git hooks to Phase 2 (opt-in power features)
+
+### Technical Highlights
+
+- Link storage format: `LINK_TYPE: source -> target  # ts:timestamp`
+- SHA-based filenames for natural deduplication
+- All operations properly tracked in Git
+- Test-driven development throughout
+- Real Git repos in all tests (no mocks)
+
+### Key Principles Established
+
+1. **Test Strategy**: Unit → Integration → End-to-End (all behavior-focused)
+2. **Definition of Done**: Every acceptance criteria needs a test
+3. **Architecture**: Clean separation of concerns, command pattern
+4. **Philosophy**: Cognitive substrate needs pruning/forgetting capabilities
+
+### Next Steps
+
+1. Implement `gitmind unlink` command (test-first)
+2. Implement `gitmind check` command (test-first)
+3. Update documentation
+4. Create demo video
+5. Ship binaries for Linux/macOS
+
+### Commit Sequence Needed
+
+Multiple commits pending for:
+- CLAUDE.md updates (testing principles, code organization)
+- Makefile (Docker Bake)
+- Link command implementation
+- Refactoring to single responsibility
+- List command implementation
+- F016 feature documentation
+
+The MVP is now functionally complete for the original three commands, with two more essential commands identified and designed. The foundation is solid and ready for link hygiene implementation.
