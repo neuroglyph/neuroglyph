@@ -61,6 +61,7 @@
 ## 📦 Phase 1: Project Setup & Core Implementation
 
 ### Critical Architecture Decision: F001 Link Storage ✅ DECIDED
+**Feature:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md)
 - [x] **DECISION: Option B - Tracked files in `.gitmind/links/`**
   - Clean, debuggable, grepable
   - Visible in all Git tools
@@ -149,6 +150,7 @@
 ---
 
 ## 🚀 Phase 1a: Minimal Viable Gitmind (Week 1)
+**Features:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md), [F013 - CLI Tools](/design/features/F013-cli-tools.md)
 
 ### Three Commands Only - Ship Fast, Learn Fast
 - [ ] Implement ONLY these commands:
@@ -161,11 +163,16 @@
   - [x] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
   - [ ] `link`: 
     1. Build canonical content: `CROSS_REF: A -> B  # ts:1736637876`
-    2. Hash content to get filename
+    2. Hash content to get filename (SHA-1)
     3. Write to `.gitmind/links/<sha>.link`
     4. `git add .gitmind/links/<sha>.link`
     5. `git commit -m "link(F001): A -> B"`
+    6. Support link types: CROSS_REF, DEPENDS_ON, IMPLEMENTS, INSPIRED_BY
+    7. Validate source and target paths exist
   - [ ] `list`: Read all `.gitmind/links/*.link`, parse and display
+    - [ ] Support filtering by source file
+    - [ ] Support filtering by target file
+    - [ ] Show link types and timestamps
 - [ ] Create demo video showing these 3 commands
 - [ ] Ship binaries for Linux/macOS
 - [ ] Post "Show HN" with minimal demo
@@ -176,6 +183,7 @@
 ## 🔨 Phase 2: Full CLI Implementation
 
 ### F001: Complete Git Storage (Week 2-3)
+**Feature:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md)
 
 #### Basic Git Operations
 - [ ] Implement `GitStore` struct with gitoxide
@@ -186,6 +194,7 @@
       source: PathBuf,
       target: PathBuf,
       timestamp: u64,
+      metadata: Option<HashMap<String, String>>,
   }
   
   impl Link {
@@ -204,14 +213,41 @@
   ```
 - [ ] Store link files in `.gitmind/links/<sha>.link`
 - [ ] Parse link files back into Link structs
+- [ ] Support metadata in links (author, context, confidence)
+- [ ] Implement bidirectional lookups (find all files linking to target)
+- [ ] Automatic deduplication via content hashing
+- [ ] Performance: Sub-second queries for <10,000 edges
+- [ ] Backward compatibility with plain text format
 - [ ] (Optional) Create lightweight refs in `refs/semlinks/<sha>` for future migration
 
 #### CLI Commands
 - [ ] `gitmind init` - Initialize semlink refs in current repo
-- [ ] `gitmind link <source> <target>` - Create relationship
+- [ ] `gitmind link <source> <target> [--type TYPE]` - Create relationship
 - [ ] `gitmind show <sha>` - Display relationship details
 - [ ] `gitmind list` - List all relationships
 - [ ] `gitmind graph --json` - Export graph as JSON
+- [ ] `gitmind import` - Import relationships:
+  - [ ] CSV format: `gitmind import links.csv`
+  - [ ] JSON format support
+  - [ ] Obsidian vault import
+- [ ] `gitmind export` - Export relationships:
+  - [ ] Cypher format: `--format cypher`
+  - [ ] GraphML format: `--format graphml`
+  - [ ] DOT format for Graphviz
+- [ ] `gitmind query` - Query relationships:
+  - [ ] Natural language queries: `"find all related to AI"`
+  - [ ] GraphQL-style: `--gql 'MATCH (n)-[:REFERENCES]->(m) RETURN n,m'`
+  - [ ] Filter by type, source, target
+- [ ] `gitmind at <commit>` - Time travel queries
+- [ ] `gitmind stats` - Show graph statistics
+- [ ] `gitmind optimize` - Optimize graph storage
+- [ ] `gitmind gc --aggressive` - Garbage collection
+- [ ] `gitmind config` - Configuration management:
+  - [ ] `gitmind config cache.size 1GB`
+  - [ ] `gitmind config gonzai.personality playful`
+- [ ] `gitmind viz`:
+  - [ ] `--ascii` - Terminal visualization
+  - [ ] `--browser` - Open web interface
 
 #### Testing Infrastructure
 - [ ] Create `/testdata/` directory with:
@@ -225,22 +261,38 @@
 - [ ] Benchmark performance with 1K, 10K, 100K links
 
 ### F002: Relationship Extraction (Week 2)
+**Feature:** [F002 - Relationship Extraction](/design/features/F002-relationship-extraction.md)
 
 #### Markdown Parser
 - [ ] Implement Markdown link extraction
 - [ ] Support multiple link formats:
-  - [ ] `[text](path.md)`
-  - [ ] `[[wiki-links]]`
-  - [ ] `../cross-repo/links.md`
+  - [ ] Standard Markdown: `[text](path.md)`
+  - [ ] Reference-style: `[text][ref]` with `[ref]: path.md`
+  - [ ] Wiki-style: `[[wiki-links]]`
+  - [ ] Image embeds: `![alt](image.png)`
+  - [ ] Anchor links: `[text](file.md#section)`
+  - [ ] Cross-repo: `../cross-repo/links.md`
 - [ ] Handle relative vs absolute paths
+- [ ] Resolve symlinks and junction points
+- [ ] Validate target existence
+- [ ] Capture link text for context
+- [ ] Extract surrounding paragraph for semantic analysis
+- [ ] Record line numbers for precise tracking
+- [ ] Identify link type (reference, embed, citation)
 
 #### Batch Operations
 - [ ] `gitmind scan` - Extract all links from current repo
 - [ ] `gitmind scan --watch` - Monitor for changes
 - [ ] Progress reporting for large repos
 - [ ] Incremental scanning (only changed files)
+- [ ] Performance requirements:
+  - [ ] Process 100 markdown files in <1 second
+  - [ ] Parallel processing for large repositories
+  - [ ] Memory usage <100MB for 10,000 files
+- [ ] Support configurable repository mappings
 
 #### Git Hooks
+**Feature:** [F003 - Git Hook Integration](/design/features/F003-git-hook-integration.md)
 - [ ] Generate post-commit hook script
 - [ ] `gitmind install-hooks` command
 - [ ] Hook configuration options
@@ -250,6 +302,7 @@
 ## 🌐 Phase 2: Optional Services
 
 ### Daemon Implementation (Week 4)
+**Features:** [F006 - Web Visualization](/design/features/F006-web-visualization.md), [F007 - Realtime Updates](/design/features/F007-realtime-updates.md)
 - [ ] Create `gitmind serve` subcommand
 - [ ] Implement minimal HTTP server (using `axum` or `warp`)
 - [ ] Add WebSocket support for real-time updates
@@ -260,6 +313,7 @@
   - [ ] `WS /api/stream` - Real-time updates
 
 ### Web UI Migration (Week 5)
+**Feature:** [F006 - Web Visualization](/design/features/F006-web-visualization.md)
 - [ ] Move existing D3.js code to `/examples/web-demo/webapp/`
 - [ ] Update to connect to Rust daemon instead of Node.js
 - [ ] Add configuration for daemon URL
@@ -293,8 +347,22 @@
 
 ### Additional Interfaces
 - [ ] TUI/ncurses interface for terminal usage
-- [ ] Integration with git aliases
-- [ ] Shell completions (bash, zsh, fish)
+- [ ] Integration with git aliases:
+  ```gitconfig
+  [alias]
+      mind = !gitmind
+      mindlog = !gitmind query "nodes modified in last commit"
+      mindshow = !gitmind viz --focus
+  ```
+- [ ] Shell completions (bash, zsh, fish):
+  - [ ] Autocomplete for files
+  - [ ] Autocomplete for subcommands
+  - [ ] Recent query history
+- [ ] REPL mode with interactive commands
+- [ ] Batch mode for processing multiple operations
+- [ ] Watch mode: auto-update on file changes
+- [ ] Pipeline integration (GitHub Actions, pre-commit hooks)
+- [ ] JSON output for all commands (--json flag)
 
 ### Distribution
 - [ ] Set up release process with `cargo-release`
@@ -308,6 +376,7 @@
 ## 🚀 Phase 4: Advanced Features
 
 ### Chaos Engine (Week 8)
+**Feature:** Chaos-driven discovery (Gonzai engine)
 - [ ] Port existing `chaos-worker.sh` to Rust
 - [ ] Design chaos algorithm with safety limits
 - [ ] Implement `gitmind chaos --rate 5/s` subcommand
@@ -321,6 +390,7 @@
 
 
 ### Performance Optimization
+**Feature:** [F012 - Performance Optimization](/design/features/F012-performance-optimization.md)
 - [ ] Implement caching layer:
   - [ ] BoltDB or SQLite as cache ONLY (not source of truth)
   - [ ] In-memory cache per invocation
