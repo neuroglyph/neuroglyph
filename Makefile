@@ -21,7 +21,7 @@ dev: docker-build
 
 # Run all tests exactly as CI would
 test: docker-build
-	docker compose run --rm test
+	docker compose run --rm -T test
 
 # Quick test run (no format/clippy)
 test-quick: docker-build

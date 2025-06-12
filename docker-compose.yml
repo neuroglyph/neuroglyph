@@ -33,6 +33,8 @@ services:
     environment:
       - CARGO_HOME=/home/developer/.cargo
       - CI=true
+    stdin_open: false
+    tty: false
     command: |
       bash -c "
         set -e
