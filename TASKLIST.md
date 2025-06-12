@@ -150,16 +150,21 @@
 ---
 
 ## 🚀 Phase 1a: Minimal Viable Gitmind (Week 1)
-**Features:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md), [F013 - CLI Tools](/design/features/F013-cli-tools.md)
+**Features:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md), [F013 - CLI Tools](/design/features/F013-cli-tools.md), [F016 - Link Hygiene](/design/features/F016-link-hygiene.md)
 
-### Three Commands Only - Ship Fast, Learn Fast
-- [ ] Implement ONLY these commands:
+### ~~Three~~ Five Commands - Ship Fast, Learn Fast (+ Essential Hygiene)
+- [x] Implement core commands:
   ```bash
   gitmind init      # Creates .gitmind/links/ directory ✅
-  gitmind link A B  # Creates link file, stages, commits
-  gitmind list      # Shows all links in current repo
+  gitmind link A B  # Creates link file, stages, commits ✅
+  gitmind list      # Shows all links in current repo ✅
   ```
-- [ ] Implementation details:
+- [ ] Implement hygiene commands (F016):
+  ```bash
+  gitmind unlink A B  # Remove specific link
+  gitmind check       # Find and fix broken links
+  ```
+- [x] Implementation details:
   - [x] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
   - [x] `link`: 
     1. Build canonical content: `CROSS_REF: A -> B  # ts:1736637876`
@@ -169,10 +174,20 @@
     5. `git commit -m "link(F001): A -> B"`
     6. Support link types: CROSS_REF, DEPENDS_ON, IMPLEMENTS, INSPIRED_BY
     7. Validate source and target paths exist
-  - [ ] `list`: Read all `.gitmind/links/*.link`, parse and display
-    - [ ] Support filtering by source file
-    - [ ] Support filtering by target file
-    - [ ] Show link types and timestamps
+  - [x] `list`: Read all `.gitmind/links/*.link`, parse and display
+    - [x] Support filtering by source file
+    - [x] Support filtering by target file
+    - [x] Show link types and timestamps
+  - [ ] `unlink`: Remove link between files
+    - [ ] Find SHA-based link file
+    - [ ] `git rm .gitmind/links/<sha>.link`
+    - [ ] `git commit -m "unlink(F016): A -/-> B"`
+    - [ ] Support --all and --to flags
+  - [ ] `check`: Validate link integrity
+    - [ ] Scan all links for missing targets
+    - [ ] Report broken links
+    - [ ] --fix flag to remove broken links
+    - [ ] --dry-run flag to preview changes
 - [ ] Create demo video showing these 3 commands
 - [ ] Ship binaries for Linux/macOS
 - [ ] Post "Show HN" with minimal demo
