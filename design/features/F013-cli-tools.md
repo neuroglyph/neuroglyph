@@ -11,7 +11,7 @@
 - [x] Project setup with Rust and clap
 - [x] Basic CLI structure
 - [x] `gitmind init` command
-- [ ] `gitmind link` command
+- [x] `gitmind link` command
 - [ ] `gitmind list` command
 - [ ] Advanced query operations
 

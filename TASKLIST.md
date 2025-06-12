@@ -161,7 +161,7 @@
   ```
 - [ ] Implementation details:
   - [x] `init`: Create `.gitmind/links/` (tracked, NOT in .gitignore)
-  - [ ] `link`: 
+  - [x] `link`: 
     1. Build canonical content: `CROSS_REF: A -> B  # ts:1736637876`
     2. Hash content to get filename (SHA-1)
     3. Write to `.gitmind/links/<sha>.link`
