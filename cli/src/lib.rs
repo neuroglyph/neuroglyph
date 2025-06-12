@@ -33,8 +33,10 @@ impl App {
 
     /// Create a semantic link between two files
     pub fn link(&self, source: &str, target: &str, link_type: &str) -> CommandResult<String> {
-        let cmd = commands::LinkCommand::new(&self.working_dir);
-        cmd.execute(source, target, link_type).into_command_result()
+        match commands::LinkCommand::new(&self.working_dir) {
+            Ok(cmd) => cmd.execute(source, target, link_type).into_command_result(),
+            Err(e) => Err(e).into_command_result(),
+        }
     }
 
     /// List all semantic links
@@ -43,8 +45,10 @@ impl App {
         source: Option<&str>,
         target: Option<&str>,
     ) -> CommandResult<Vec<link::Link>> {
-        let cmd = commands::ListCommand::new(&self.working_dir);
-        cmd.execute(source, target).into_command_result()
+        match commands::ListCommand::new(&self.working_dir) {
+            Ok(cmd) => cmd.execute(source, target).into_command_result(),
+            Err(e) => Err(e).into_command_result(),
+        }
     }
 
     /// Remove a specific link between two files
@@ -54,26 +58,35 @@ impl App {
         target: &str,
         link_type: Option<&str>,
     ) -> CommandResult<usize> {
-        let cmd = commands::UnlinkCommand::new(&self.working_dir);
-        cmd.execute(source, target, link_type).into_command_result()
+        match commands::UnlinkCommand::new(&self.working_dir) {
+            Ok(cmd) => cmd.execute(source, target, link_type).into_command_result(),
+            Err(e) => Err(e).into_command_result(),
+        }
     }
 
     /// Remove all links from a source file
     pub fn unlink_all_from(&self, source: &str, link_type: Option<&str>) -> CommandResult<usize> {
-        let cmd = commands::UnlinkCommand::new(&self.working_dir);
-        cmd.execute_all_from(source, link_type)
-            .into_command_result()
+        match commands::UnlinkCommand::new(&self.working_dir) {
+            Ok(cmd) => cmd
+                .execute_all_from(source, link_type)
+                .into_command_result(),
+            Err(e) => Err(e).into_command_result(),
+        }
     }
 
     /// Remove all links to a target file
     pub fn unlink_to(&self, target: &str, link_type: Option<&str>) -> CommandResult<usize> {
-        let cmd = commands::UnlinkCommand::new(&self.working_dir);
-        cmd.execute_to(target, link_type).into_command_result()
+        match commands::UnlinkCommand::new(&self.working_dir) {
+            Ok(cmd) => cmd.execute_to(target, link_type).into_command_result(),
+            Err(e) => Err(e).into_command_result(),
+        }
     }
 
     /// Check for broken links and optionally fix them
     pub fn check(&self, fix: bool, dry_run: bool) -> CommandResult<Vec<link::Link>> {
-        let cmd = commands::CheckCommand::new(&self.working_dir);
-        cmd.execute(fix, dry_run).into_command_result()
+        match commands::CheckCommand::new(&self.working_dir) {
+            Ok(cmd) => cmd.execute(fix, dry_run).into_command_result(),
+            Err(e) => Err(e).into_command_result(),
+        }
     }
 }

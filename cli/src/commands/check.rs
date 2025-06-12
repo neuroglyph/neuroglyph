@@ -3,29 +3,25 @@
 
 //! Check command implementation
 
+use crate::commands::GitMindContext;
 use crate::error::{Error, Result};
 use crate::link::Link;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-pub struct CheckCommand<'a> {
-    working_dir: &'a Path,
+pub struct CheckCommand {
+    context: GitMindContext,
 }
 
-impl<'a> CheckCommand<'a> {
-    pub fn new(working_dir: &'a Path) -> Self {
-        Self { working_dir }
+impl CheckCommand {
+    pub fn new(working_dir: &Path) -> Result<Self> {
+        let context = GitMindContext::new(working_dir)?;
+        Ok(Self { context })
     }
 
     pub fn execute(&self, fix: bool, dry_run: bool) -> Result<Vec<Link>> {
-        // Check if gitmind is initialized
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if !gitmind_dir.exists() {
-            return Err(Error::NotInitialized);
-        }
-
-        let links_dir = gitmind_dir.join("links");
+        let links_dir = self.context.links_dir();
         let mut broken_links = Vec::new();
 
         // Read all link files
@@ -37,8 +33,8 @@ impl<'a> CheckCommand<'a> {
                 let content = fs::read_to_string(&path)?;
                 if let Ok(link) = Link::from_canonical_string(&content) {
                     // Check if source or target exists
-                    let source_exists = self.working_dir.join(&link.source).exists();
-                    let target_exists = self.working_dir.join(&link.target).exists();
+                    let source_exists = self.context.working_dir.join(&link.source).exists();
+                    let target_exists = self.context.working_dir.join(&link.target).exists();
 
                     if !source_exists || !target_exists {
                         broken_links.push(link);
@@ -61,7 +57,7 @@ impl<'a> CheckCommand<'a> {
 
             // Git add the removed files
             let output = Command::new("git")
-                .current_dir(self.working_dir)
+                .current_dir(&self.context.working_dir)
                 .args(["add", "-u", ".gitmind/links/"])
                 .output()
                 .map_err(|e| Error::Git(format!("Failed to run git add: {}", e)))?;
@@ -81,7 +77,7 @@ impl<'a> CheckCommand<'a> {
             );
 
             let output = Command::new("git")
-                .current_dir(self.working_dir)
+                .current_dir(&self.context.working_dir)
                 .args(["commit", "-m", &commit_msg])
                 .output()
                 .map_err(|e| Error::Git(format!("Failed to run git commit: {}", e)))?;

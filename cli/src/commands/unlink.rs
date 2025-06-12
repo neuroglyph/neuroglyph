@@ -3,6 +3,7 @@
 
 //! Unlink command implementation
 
+use crate::commands::GitMindContext;
 use crate::error::{Error, Result};
 use crate::link::Link;
 use std::fs;
@@ -11,21 +12,18 @@ use std::process::Command;
 
 /// Command to remove links between files
 pub struct UnlinkCommand {
-    working_dir: PathBuf,
+    context: GitMindContext,
 }
 
 impl UnlinkCommand {
     /// Create a new UnlinkCommand
-    pub fn new(working_dir: &Path) -> Self {
-        Self {
-            working_dir: working_dir.to_path_buf(),
-        }
+    pub fn new(working_dir: &Path) -> Result<Self> {
+        let context = GitMindContext::new(working_dir)?;
+        Ok(Self { context })
     }
 
     /// Remove a specific link between two files
     pub fn execute(&self, source: &str, target: &str, link_type: Option<&str>) -> Result<usize> {
-        self.ensure_gitmind_initialized()?;
-
         let links = self.find_links(Some(source), Some(target), link_type)?;
         let count = links.len();
 
@@ -41,8 +39,6 @@ impl UnlinkCommand {
 
     /// Remove all links from a source file
     pub fn execute_all_from(&self, source: &str, link_type: Option<&str>) -> Result<usize> {
-        self.ensure_gitmind_initialized()?;
-
         let links = self.find_links(Some(source), None, link_type)?;
         let count = links.len();
 
@@ -58,8 +54,6 @@ impl UnlinkCommand {
 
     /// Remove all links to a target file
     pub fn execute_to(&self, target: &str, link_type: Option<&str>) -> Result<usize> {
-        self.ensure_gitmind_initialized()?;
-
         let links = self.find_links(None, Some(target), link_type)?;
         let count = links.len();
 
@@ -73,15 +67,6 @@ impl UnlinkCommand {
         Ok(count)
     }
 
-    /// Ensure gitmind is initialized
-    fn ensure_gitmind_initialized(&self) -> Result<()> {
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if !gitmind_dir.exists() {
-            return Err(Error::NotInitialized);
-        }
-        Ok(())
-    }
-
     /// Find links matching the given criteria
     fn find_links(
         &self,
@@ -89,7 +74,7 @@ impl UnlinkCommand {
         target: Option<&str>,
         link_type: Option<&str>,
     ) -> Result<Vec<(Link, PathBuf)>> {
-        let links_dir = self.working_dir.join(".gitmind/links");
+        let links_dir = self.context.links_dir();
         let mut matching_links = Vec::new();
 
         // If links directory doesn't exist, there are no links to remove
@@ -138,7 +123,7 @@ impl UnlinkCommand {
         for (_link, path) in links {
             // Stage the removal with git rm
             let output = Command::new("git")
-                .current_dir(&self.working_dir)
+                .current_dir(&self.context.working_dir)
                 .args(["rm", &path.to_string_lossy()])
                 .output()
                 .map_err(|e| Error::GitError(format!("Failed to run git rm: {}", e)))?;
@@ -188,7 +173,7 @@ impl UnlinkCommand {
     /// Create a git commit
     fn git_commit(&self, message: &str) -> Result<()> {
         let output = Command::new("git")
-            .current_dir(&self.working_dir)
+            .current_dir(&self.context.working_dir)
             .args(["commit", "-m", message])
             .output()
             .map_err(|e| Error::GitError(format!("Failed to run git commit: {}", e)))?;

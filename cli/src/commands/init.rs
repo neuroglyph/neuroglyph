@@ -3,6 +3,7 @@
 
 //! Initialize command implementation
 
+use crate::commands::GitMindContext;
 use crate::error::Result;
 use std::path::Path;
 
@@ -22,18 +23,19 @@ impl<'a> InitCommand<'a> {
             return Err(crate::error::Error::NotAGitRepository);
         }
 
+        // Create context (unchecked since we're initializing)
+        let context = GitMindContext::new_unchecked(self.working_dir);
+
         // Check if already initialized
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if gitmind_dir.exists() {
+        if context.gitmind_dir.exists() {
             return Err(crate::error::Error::AlreadyInitialized);
         }
 
         // Create .gitmind/links/ directory
-        let links_dir = gitmind_dir.join("links");
-        std::fs::create_dir_all(links_dir)?;
+        std::fs::create_dir_all(context.links_dir())?;
 
         // Create .gitkeep file to prevent directory removal when empty
-        let gitkeep_path = gitmind_dir.join(".gitkeep");
+        let gitkeep_path = context.gitmind_dir.join(".gitkeep");
         std::fs::write(&gitkeep_path, "")?;
 
         // Add .gitkeep to git to track it

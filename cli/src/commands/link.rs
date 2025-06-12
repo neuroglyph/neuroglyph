@@ -3,35 +3,31 @@
 
 //! Link command implementation
 
+use crate::commands::GitMindContext;
 use crate::error::{Error, Result};
 use crate::link::Link;
 use std::path::Path;
 use std::process::Command;
 
-pub struct LinkCommand<'a> {
-    working_dir: &'a Path,
+pub struct LinkCommand {
+    context: GitMindContext,
 }
 
-impl<'a> LinkCommand<'a> {
-    pub fn new(working_dir: &'a Path) -> Self {
-        Self { working_dir }
+impl LinkCommand {
+    pub fn new(working_dir: &Path) -> Result<Self> {
+        let context = GitMindContext::new(working_dir)?;
+        Ok(Self { context })
     }
 
     pub fn execute(&self, source: &str, target: &str, link_type: &str) -> Result<String> {
-        // Check if gitmind is initialized
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if !gitmind_dir.exists() {
-            return Err(Error::NotInitialized);
-        }
-
         // Check if source file exists
-        let source_path = self.working_dir.join(source);
+        let source_path = self.context.working_dir.join(source);
         if !source_path.exists() {
             return Err(Error::SourceNotFound(source.to_string()));
         }
 
         // Check if target file exists
-        let target_path = self.working_dir.join(target);
+        let target_path = self.context.working_dir.join(target);
         if !target_path.exists() {
             return Err(Error::TargetNotFound(target.to_string()));
         }
@@ -46,8 +42,9 @@ impl<'a> LinkCommand<'a> {
         );
 
         // Create link file path
-        let link_file = gitmind_dir
-            .join("links")
+        let link_file = self
+            .context
+            .links_dir()
             .join(format!("{}.link", link.short_sha()));
 
         // Check if link already exists
@@ -64,7 +61,7 @@ impl<'a> LinkCommand<'a> {
 
         // Git add the link file
         let output = Command::new("git")
-            .current_dir(self.working_dir)
+            .current_dir(&self.context.working_dir)
             .args(["add", link_file.to_str().unwrap()])
             .output()
             .map_err(|e| Error::Git(format!("Failed to run git add: {}", e)))?;
@@ -79,7 +76,7 @@ impl<'a> LinkCommand<'a> {
         // Git commit
         let commit_msg = format!("link(F001): {} -> {}", source, target);
         let output = Command::new("git")
-            .current_dir(self.working_dir)
+            .current_dir(&self.context.working_dir)
             .args(["commit", "-m", &commit_msg])
             .output()
             .map_err(|e| Error::Git(format!("Failed to run git commit: {}", e)))?;

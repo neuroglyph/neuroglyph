@@ -3,18 +3,20 @@
 
 //! List command implementation
 
-use crate::error::{Error, Result};
+use crate::commands::GitMindContext;
+use crate::error::Result;
 use crate::link::Link;
 use std::fs;
 use std::path::Path;
 
-pub struct ListCommand<'a> {
-    working_dir: &'a Path,
+pub struct ListCommand {
+    context: GitMindContext,
 }
 
-impl<'a> ListCommand<'a> {
-    pub fn new(working_dir: &'a Path) -> Self {
-        Self { working_dir }
+impl ListCommand {
+    pub fn new(working_dir: &Path) -> Result<Self> {
+        let context = GitMindContext::new(working_dir)?;
+        Ok(Self { context })
     }
 
     pub fn execute(
@@ -22,13 +24,7 @@ impl<'a> ListCommand<'a> {
         source_filter: Option<&str>,
         target_filter: Option<&str>,
     ) -> Result<Vec<Link>> {
-        // Check if gitmind is initialized
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if !gitmind_dir.exists() {
-            return Err(Error::NotInitialized);
-        }
-
-        let links_dir = gitmind_dir.join("links");
+        let links_dir = self.context.links_dir();
         if !links_dir.exists() {
             // Links directory was removed (e.g., by git rm when empty)
             // This is OK - just return empty list
