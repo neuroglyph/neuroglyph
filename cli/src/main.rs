@@ -23,6 +23,9 @@ enum Commands {
         source: String,
         /// Target file  
         target: String,
+        /// Type of link (default: CROSS_REF)
+        #[arg(short, long, default_value = "CROSS_REF")]
+        r#type: String,
     },
 
     /// List all semantic links
@@ -38,9 +41,19 @@ fn main() -> anyhow::Result<()> {
             app.init()?;
             println!("Initialized gitmind in {}", app.working_dir.display());
         }
-        Commands::Link { source, target } => {
-            todo!("Implement link command: {} -> {}", source, target);
-        }
+        Commands::Link {
+            source,
+            target,
+            r#type,
+        } => match app.link(&source, &target, &r#type) {
+            Ok(sha) => {
+                println!("Created link: {} -> {} ({})", source, target, sha);
+            }
+            Err(e) => {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        },
         Commands::List => {
             todo!("Implement list command");
         }
