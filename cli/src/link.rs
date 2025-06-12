@@ -46,26 +46,32 @@ impl Link {
     }
 
     /// Parse a link from its canonical string representation
-    pub fn from_canonical_string(s: &str) -> Result<Self, String> {
+    pub fn from_canonical_string(s: &str) -> crate::error::Result<Self> {
         // Expected format: "LINK_TYPE: source -> target  # ts:timestamp"
         let parts: Vec<&str> = s.split(" -> ").collect();
         if parts.len() != 2 {
-            return Err("Invalid link format".to_string());
+            return Err(crate::error::Error::ParseError(
+                "Invalid link format".to_string(),
+            ));
         }
 
         let type_and_source: Vec<&str> = parts[0].split(": ").collect();
         if type_and_source.len() != 2 {
-            return Err("Invalid link type/source format".to_string());
+            return Err(crate::error::Error::ParseError(
+                "Invalid link type/source format".to_string(),
+            ));
         }
 
         let target_and_ts: Vec<&str> = parts[1].split("  # ts:").collect();
         if target_and_ts.len() != 2 {
-            return Err("Invalid target/timestamp format".to_string());
+            return Err(crate::error::Error::ParseError(
+                "Invalid target/timestamp format".to_string(),
+            ));
         }
 
         let timestamp = target_and_ts[1]
             .parse::<i64>()
-            .map_err(|_| "Invalid timestamp".to_string())?;
+            .map_err(|_| crate::error::Error::ParseError("Invalid timestamp".to_string()))?;
 
         Ok(Link::new(
             type_and_source[0].to_string(),
