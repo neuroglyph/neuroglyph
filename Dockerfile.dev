@@ -18,7 +18,6 @@ RUN rustup component add clippy rustfmt
 
 # Create a non-root user for development
 RUN useradd -m -s /bin/bash developer
-USER developer
 
 # Set up cargo cache volume mount point
 RUN mkdir -p /home/developer/.cargo

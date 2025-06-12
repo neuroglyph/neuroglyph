@@ -10,7 +10,7 @@ services:
     volumes:
       - .:/workspace:rw
       - cargo-cache:/home/developer/.cargo
-      - target-cache:/workspace/target
+      - target-cache:/workspace/cli/target
     working_dir: /workspace/cli
     environment:
       - CARGO_HOME=/home/developer/.cargo
@@ -26,9 +26,9 @@ services:
       dockerfile: Dockerfile.dev
     container_name: neuroglyph-cli-test
     volumes:
-      - .:/workspace:ro
+      - .:/workspace:rw
       - cargo-cache:/home/developer/.cargo
-      - target-cache:/workspace/target
+      - target-cache:/workspace/cli/target
     working_dir: /workspace/cli
     environment:
       - CARGO_HOME=/home/developer/.cargo
@@ -36,6 +36,10 @@ services:
     command: |
       bash -c "
         set -e
+        if [ ! -f Cargo.toml ]; then
+          echo '=== Initializing Rust project ==='
+          cargo init --name gitmind .
+        fi
         echo '=== Running format check ==='
         cargo fmt --check
         echo '=== Running clippy ==='
