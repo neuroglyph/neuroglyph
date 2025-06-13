@@ -5,7 +5,8 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 # ↯ Neuroglyph
 
-> _"A glyph is a thought committed. A repo is a memory that persists."
+> _"A glyph is a thought committed. A repo is a memory that persists."_
+
 ## ⚡️ What is Neuroglyph?_
 
 Neuroglyph is an open protocol and cognitive infrastructure layer that turns Git into a substrate for distributed semantic memory — no database, no gods, no masters.
@@ -21,6 +22,7 @@ Semantic scaffolding for planetary-scale cooperative cognition. A map of thought
 | 🏗️ | **Architects** | *"Replace your knowledge stack with the file system. Relationships are files. Insights are commits. Understanding becomes infrastructure."* | "This removes entire categories of software!" |
 | 🧠 | **Researchers** | *"Version-controlled epistemology. Fork ideas. Diff beliefs. Merge insights. Understand how understanding itself evolves."* | "We can literally version knowledge itself." |
 | 🌍 | **Visionaries** | *"Distributed cognition substrate. Repos become neurons. Memory becomes shareable. Thought becomes forkable. Humanity begins to think as one."* | "This is how collective intelligence actually works." |
+
 It enables:
 - ✅ Time-aware semantic linking of thoughts, files, and ideas
 - 🧠 Git-powered knowledge graphs with zero external dependencies
@@ -28,7 +30,9 @@ It enables:
 - 🧪 Optional entropy injection via Chaos Mode for speculative discovery
 
 Built for devs, researchers, writers, and AI agents—anyone who treats thought as infrastructure.
+
 ### **Git as cognition layer** 
+
 Neuroglyph transforms Git from a version control system into a **thinking system**.
 
 You can:
@@ -43,6 +47,7 @@ It stores **relationships, confidence**, and **epistemic state**.
 > This is version control for understanding itself.
 
 ---
+
 ## ✨ Core Features
 - 🔗 gitmind link A B — establish semlinks between concepts
 - 📜 gitmind scan — extract links from markdown, wikis, and code
@@ -102,9 +107,11 @@ That's not a typo. We're **2,000x smaller** than Electron apps. By the time thei
 - Queried your entire graph  
 - Made coffee
 - Questioned why anyone uses Electron
+  
 ### The Secret
 
 Pure C. No runtime. No GC. No framework. Just focused, efficient code that respects your CPU cycles.
+
 ### 🌀 Speed as Philosophy
 
 GitMind doesn't just start fast — it thinks fast.  
@@ -114,8 +121,7 @@ Because **every delay is a tax on cognition.**
 - Your graph is ready before your thoughts finish forming.
 - It's not just fast. It's *telepathic*.
 
-While Electron apps are figuring out if you're online,  
-**GitMind already refactored your brain.**
+While Electron apps are figuring out if you're online, **GitMind already refactored your brain.**
 
 ### 🏁 Sonic Challenge
 
@@ -131,6 +137,7 @@ We ran the numbers. Sonic lost.
 > *"Too slow." — GitMind, probably*
 
 ---
+
 ## 🚀 Quick Start
 
 ### Prereqs
@@ -270,8 +277,7 @@ We believe:
 - Bloat is a betrayal of clarity.
 - Every idea deserves context.
 
-Neuroglyph isn't software.  
-It's **a substrate for shared memory** — human, machine, or both.
+Neuroglyph is **a substrate for shared memory** — human, machine, or both.
 
 ---
 
