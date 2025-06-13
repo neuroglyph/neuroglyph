@@ -166,18 +166,41 @@ make dev
 ### Basic Usage
 
 ```bash
-cd cli
-cargo build --release
+# Build the C binary (uses Docker for consistent build environment)
+make build
 
-# Initialize repo
-./target/release/gitmind init
+# The resulting binary runs natively - no Docker required!
+cd c
+./gitmind init
 
 # Link files semantically
-./target/release/gitmind link README.md docs/architecture.md
+./gitmind link README.md docs/architecture.md
 
 # List the current glyph graph
-./target/release/gitmind list
+./gitmind list
 ```
+
+## 🐳 Why Docker for Development?
+
+**All development and testing MUST run through Docker.** The compiled `gitmind` binary runs natively without Docker, but development is Docker-only. Here's why:
+
+### 1. Zero Setup Issues
+No more "works on my machine" problems. Whether you're on macOS, Linux, or that one person still using Windows, Docker ensures everyone has the exact same C compiler, same libraries, same everything. You clone, you `make test`, it works. Period.
+
+### 2. Tests Use REAL Git Operations
+Our test suite creates actual Git repositories, makes real commits, and performs genuine Git operations. Running these tests on your working repository would be catastrophic:
+- Tests could corrupt your actual work
+- Git operations might conflict with your current branch
+- You'd lose uncommitted changes
+- Your `.git` directory could get mangled
+
+Docker provides isolated, ephemeral Git environments where tests can safely:
+- Create and destroy repositories
+- Make commits without affecting your work
+- Test edge cases that would be dangerous locally
+- Run Git operations in parallel without conflicts
+
+**This is why the pre-push hook runs tests in Docker** — it's not just convenience, it's safety.
 
 ## 🧪 Dev Workflow
 
@@ -186,9 +209,8 @@ All dev runs in Docker for consistency:
 ```bash
 make dev          # Dev container shell
 make test         # Full suite
-make test-quick   # Unit tests only
-make fmt          # Format
-make clippy       # Lint
+make benchmark    # Performance tests
+make build        # Build binary in Docker
 ```
 
 Pre-push hooks enforce tests and style.
