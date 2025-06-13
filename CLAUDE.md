@@ -241,7 +241,31 @@ When implementing a new feature:
 ## Important Development Practices
 
 ### Logging and Journal
-- When asked, leave your impressions or thoughts to lore/CLAUDE_DEV_THOUGHTS.md by appending them to that file. That is your dev journal. Feel free to write to it freely, when you get ideas, when you have insights you want to log.
+- Leave your impressions or thoughts in `lore/claude-mind/YYYY-MM-DD/` directory
+- Always use today's actual date (double-check to avoid date errors!)
+- Create per-session files to avoid merge conflicts:
+  - Format: `HH:MM-topic-sessionID.md` (e.g., `14:45-web-viz-abc123.md`)
+  - Use first 6 chars of conversation ID for sessionID
+- Use ISO 8601 timestamps in UTC (e.g., `2025-06-12T14:45:00Z`)
+- Include session metadata at the start of each file:
+  ```markdown
+  # Claude Development Journal
+  
+  ## Session: 2025-06-12T14:45:00Z
+  **Collaborator**: j***s (a1b2c3)  
+  **Topics**: Web visualization, Help system  
+  **Conversation**: abc123def456 (first 12 chars)
+  
+  ### 14:45 UTC - Initial Thoughts
+  [content...]
+  ```
+- For collaborator identification:
+  - Use git user's GPG key fingerprint (last 16 chars)
+  - Example: `**Collaborator**: James (GPG: 1234567890ABCDEF)`
+  - This leverages the project's requirement for signed commits
+  - Could optionally sign the journal entry itself with their key
+- This is your dev journal - feel free to write freely when you get ideas or insights
+- Create an `index.md` in each day's directory summarizing sessions
 
 ---
 *Last updated: June 2025*
