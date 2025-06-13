@@ -5,18 +5,19 @@
 
 use crate::commands::GitMindContext;
 use crate::error::Result;
+use crate::filesystem::FileSystem;
 use crate::link::Link;
-use std::fs;
 use std::path::Path;
 
-pub struct ListCommand {
+pub struct ListCommand<F: FileSystem> {
     context: GitMindContext,
+    fs: F,
 }
 
-impl ListCommand {
-    pub fn new(working_dir: &Path) -> Result<Self> {
+impl<F: FileSystem> ListCommand<F> {
+    pub fn new(working_dir: &Path, fs: F) -> Result<Self> {
         let context = GitMindContext::new(working_dir)?;
-        Ok(Self { context })
+        Ok(Self { context, fs })
     }
 
     pub fn execute(
@@ -25,7 +26,7 @@ impl ListCommand {
         target_filter: Option<&str>,
     ) -> Result<Vec<Link>> {
         let links_dir = self.context.links_dir();
-        if !links_dir.exists() {
+        if !self.fs.exists(&links_dir) {
             // Links directory was removed (e.g., by git rm when empty)
             // This is OK - just return empty list
             return Ok(Vec::new());
@@ -34,17 +35,15 @@ impl ListCommand {
         let mut links = Vec::new();
 
         // Read all link files
-        for entry in fs::read_dir(&links_dir)? {
-            let entry = entry?;
-            let path = entry.path();
-
+        let entries = self.fs.read_dir(&links_dir)?;
+        for path in entries {
             // Skip if not a .link file
             if path.extension().and_then(|s| s.to_str()) != Some("link") {
                 continue;
             }
 
             // Read and parse link
-            let content = fs::read_to_string(&path)?;
+            let content = self.fs.read_to_string(&path)?;
             let content = content.trim();
 
             match Link::from_canonical_string(content) {
@@ -57,12 +56,9 @@ impl ListCommand {
                         links.push(link);
                     }
                 }
-                Err(e) => {
-                    eprintln!(
-                        "Warning: Failed to parse link file {}: {}",
-                        path.display(),
-                        e
-                    );
+                Err(_) => {
+                    // Skip malformed link files silently
+                    // They will be caught by the check command
                 }
             }
         }

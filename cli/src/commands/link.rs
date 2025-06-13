@@ -5,35 +5,45 @@
 
 use crate::commands::GitMindContext;
 use crate::error::{Error, Result};
+use crate::filesystem::FileSystem;
+use crate::git::GitOperations;
 use crate::link::Link;
+use crate::time::Clock;
 use std::path::Path;
-use std::process::Command;
 
-pub struct LinkCommand {
+pub struct LinkCommand<G: GitOperations, F: FileSystem, C: Clock> {
     context: GitMindContext,
+    git: G,
+    fs: F,
+    clock: C,
 }
 
-impl LinkCommand {
-    pub fn new(working_dir: &Path) -> Result<Self> {
+impl<G: GitOperations, F: FileSystem, C: Clock> LinkCommand<G, F, C> {
+    pub fn new(working_dir: &Path, git: G, fs: F, clock: C) -> Result<Self> {
         let context = GitMindContext::new(working_dir)?;
-        Ok(Self { context })
+        Ok(Self {
+            context,
+            git,
+            fs,
+            clock,
+        })
     }
 
     pub fn execute(&self, source: &str, target: &str, link_type: &str) -> Result<String> {
         // Check if source file exists
         let source_path = self.context.working_dir.join(source);
-        if !source_path.exists() {
+        if !self.fs.exists(&source_path) {
             return Err(Error::SourceNotFound(source.to_string()));
         }
 
         // Check if target file exists
         let target_path = self.context.working_dir.join(target);
-        if !target_path.exists() {
+        if !self.fs.exists(&target_path) {
             return Err(Error::TargetNotFound(target.to_string()));
         }
 
         // Create link
-        let timestamp = chrono::Utc::now().timestamp();
+        let timestamp = self.clock.now();
         let link = Link::new(
             link_type.to_string(),
             source.to_string(),
@@ -48,45 +58,30 @@ impl LinkCommand {
             .join(format!("{}.link", link.short_sha()));
 
         // Check if link already exists
-        if link_file.exists() {
+        if self.fs.exists(&link_file) {
             // Read existing content to check if it's the same link
-            let existing = std::fs::read_to_string(&link_file)?;
+            let existing = self.fs.read_to_string(&link_file)?;
             if existing.starts_with(&format!("{}: {} -> {}", link_type, source, target)) {
                 return Err(Error::LinkAlreadyExists);
             }
         }
 
         // Write link file
-        std::fs::write(&link_file, link.to_canonical_string())?;
+        self.fs.write(&link_file, &link.to_canonical_string())?;
 
         // Git add the link file
-        let output = Command::new("git")
-            .current_dir(&self.context.working_dir)
-            .args(["add", link_file.to_str().unwrap()])
-            .output()
-            .map_err(|e| Error::Git(format!("Failed to run git add: {}", e)))?;
+        let link_file_str = link_file.to_str().ok_or_else(|| {
+            Error::Io(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Invalid UTF-8 in path",
+            ))
+        })?;
 
-        if !output.status.success() {
-            return Err(Error::Git(format!(
-                "git add failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            )));
-        }
+        self.git.add(&self.context.working_dir, link_file_str)?;
 
         // Git commit
         let commit_msg = format!("link(F001): {} -> {}", source, target);
-        let output = Command::new("git")
-            .current_dir(&self.context.working_dir)
-            .args(["commit", "-m", &commit_msg])
-            .output()
-            .map_err(|e| Error::Git(format!("Failed to run git commit: {}", e)))?;
-
-        if !output.status.success() {
-            return Err(Error::Git(format!(
-                "git commit failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            )));
-        }
+        self.git.commit(&self.context.working_dir, &commit_msg)?;
 
         Ok(link.short_sha())
     }

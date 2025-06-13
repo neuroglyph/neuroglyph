@@ -4,22 +4,24 @@
 //! Unlink command implementation
 
 use crate::commands::GitMindContext;
-use crate::error::{Error, Result};
+use crate::error::Result;
+use crate::filesystem::FileSystem;
+use crate::git::GitOperations;
 use crate::link::Link;
-use std::fs;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 /// Command to remove links between files
-pub struct UnlinkCommand {
+pub struct UnlinkCommand<G: GitOperations, F: FileSystem> {
     context: GitMindContext,
+    git: G,
+    fs: F,
 }
 
-impl UnlinkCommand {
+impl<G: GitOperations, F: FileSystem> UnlinkCommand<G, F> {
     /// Create a new UnlinkCommand
-    pub fn new(working_dir: &Path) -> Result<Self> {
+    pub fn new(working_dir: &Path, git: G, fs: F) -> Result<Self> {
         let context = GitMindContext::new(working_dir)?;
-        Ok(Self { context })
+        Ok(Self { context, git, fs })
     }
 
     /// Remove a specific link between two files
@@ -78,26 +80,14 @@ impl UnlinkCommand {
         let mut matching_links = Vec::new();
 
         // If links directory doesn't exist, there are no links to remove
-        if !links_dir.exists() {
+        if !self.fs.exists(&links_dir) {
             return Ok(matching_links);
         }
 
-        for entry in fs::read_dir(links_dir)
-            .map_err(|e| Error::IoError(format!("Failed to read links directory: {}", e)))?
-        {
-            let entry = entry
-                .map_err(|e| Error::IoError(format!("Failed to read directory entry: {}", e)))?;
-            let path = entry.path();
-
+        let entries = self.fs.read_dir(&links_dir)?;
+        for path in entries {
             if path.extension().and_then(|ext| ext.to_str()) == Some("link") {
-                let content = fs::read_to_string(&path).map_err(|e| {
-                    Error::IoError(format!(
-                        "Failed to read link file {}: {}",
-                        path.display(),
-                        e
-                    ))
-                })?;
-
+                let content = self.fs.read_to_string(&path)?;
                 let link = Link::from_canonical_string(&content)?;
 
                 let matches = match (source, target) {
@@ -122,16 +112,8 @@ impl UnlinkCommand {
     fn remove_links(&self, links: &[(Link, PathBuf)]) -> Result<()> {
         for (_link, path) in links {
             // Stage the removal with git rm
-            let output = Command::new("git")
-                .current_dir(&self.context.working_dir)
-                .args(["rm", &path.to_string_lossy()])
-                .output()
-                .map_err(|e| Error::GitError(format!("Failed to run git rm: {}", e)))?;
-
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                return Err(Error::GitError(format!("git rm failed: {}", stderr)));
-            }
+            self.git
+                .remove(&self.context.working_dir, &path.to_string_lossy())?;
         }
         Ok(())
     }
@@ -172,17 +154,6 @@ impl UnlinkCommand {
 
     /// Create a git commit
     fn git_commit(&self, message: &str) -> Result<()> {
-        let output = Command::new("git")
-            .current_dir(&self.context.working_dir)
-            .args(["commit", "-m", message])
-            .output()
-            .map_err(|e| Error::GitError(format!("Failed to run git commit: {}", e)))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(Error::GitError(format!("git commit failed: {}", stderr)));
-        }
-
-        Ok(())
+        self.git.commit(&self.context.working_dir, message)
     }
 }
