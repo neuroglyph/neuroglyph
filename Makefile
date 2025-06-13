@@ -21,7 +21,7 @@ build:
 # Run tests in Docker
 test:
 	docker compose build test
-	docker compose run --rm test
+	docker compose run --rm -T test
 
 # Clean build artifacts
 clean:
