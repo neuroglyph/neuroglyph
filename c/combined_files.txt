@@ -1,0 +1,1211 @@
+# /Users/james/git/neuroglyph/c/CMakeLists.txt
+# SPDX-License-Identifier: Apache-2.0
+cmake_minimum_required(VERSION 3.10)
+project(gitmind VERSION 0.1.0 LANGUAGES C)
+
+# C99 standard
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Compiler flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -pedantic")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -g -O0")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3")
+
+# Sanitizers for debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT APPLE)
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -fsanitize=address,undefined")
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined")
+endif()
+
+# Find OpenSSL for SHA1
+find_package(OpenSSL REQUIRED)
+
+# Include directories
+include_directories(include)
+
+# Source files
+set(SOURCES
+    src/gitmind.c
+    src/link.c
+    src/sha1.c
+    src/main.c
+)
+
+# Executable
+add_executable(gitmind ${SOURCES})
+
+# Link libraries
+target_link_libraries(gitmind OpenSSL::Crypto)
+
+# Static linking (optional)
+if(BUILD_STATIC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+endif()
+
+# Installation
+install(TARGETS gitmind DESTINATION bin)
+install(FILES include/gitmind.h DESTINATION include)
+
+# Tests (optional)
+if(BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+# /Users/james/git/neuroglyph/c/Dockerfile.test
+# SPDX-License-Identifier: Apache-2.0
+FROM alpine:latest
+
+# Install build tools and git
+RUN apk add --no-cache \
+    build-base \
+    git \
+    bash
+
+# Create test user
+RUN adduser -D testuser
+
+# Copy source
+WORKDIR /build
+COPY . .
+
+# Build gitmind
+RUN make clean && make
+
+# Copy binary as root
+RUN cp /build/gitmind /usr/local/bin/
+
+# Set up test environment
+USER testuser
+WORKDIR /home/testuser
+
+ENTRYPOINT ["/bin/bash"]
+
+# /Users/james/git/neuroglyph/c/Makefile
+# SPDX-License-Identifier: Apache-2.0
+# Simple Makefile for quick builds
+
+CC = cc
+CFLAGS = -O3 -Wall -Wextra -std=c99 -Iinclude
+LDFLAGS =
+
+SRCS = src/main.c src/gitmind.c src/link.c src/sha1.c
+OBJS = $(SRCS:.c=.o)
+TARGET = gitmind
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+	strip $@
+
+debug: CFLAGS = -g -O0 -Wall -Wextra -std=c99 -Iinclude -fsanitize=address,undefined
+debug: LDFLAGS += -fsanitize=address,undefined
+debug: $(TARGET)
+
+clean:
+	rm -f $(TARGET) $(OBJS)
+
+test: $(TARGET)
+	./test.sh
+
+.PHONY: all clean test debug
+
+# /Users/james/git/neuroglyph/c/README.md
+# GitMind C Implementation
+
+Pure C. No BS. 65KB binary. Zero dependencies.
+
+## Build
+
+```bash
+make
+```
+
+That's it. You get a `gitmind` binary.
+
+## Test
+
+```bash
+./docker-test.sh  # Safe, isolated tests
+```
+
+## Philosophy
+
+- **Integration tests first** - Bash scripts test real behavior
+- **Unit tests later** - When we need to hammer edge cases
+- **Fuzz when stable** - AFL/libFuzzer for finding crashes
+- **Valgrind always** - Memory correctness matters
+
+## Future Testing Strategy
+
+### Phase 1: Integration (DONE ✓)
+- Bash tests covering all commands
+- Real git repos, real operations
+- Runs in Docker for safety
+
+### Phase 2: Edge Cases (TODO)
+```c
+// test_edge_cases.c
+void test_path_with_spaces() {
+    assert(gm_link_create("my file.md", "your file.md", "REFS") == GM_OK);
+}
+
+void test_unicode_paths() {
+    assert(gm_link_create("文档.md", "ドキュメント.md", "REFS") == GM_OK);
+}
+
+void test_massive_link_count() {
+    for (int i = 0; i < 100000; i++) {
+        // Hammer it
+    }
+}
+```
+
+### Phase 3: Fuzz Testing
+```bash
+# AFL fuzzing
+afl-fuzz -i seeds -o findings ./gitmind_fuzz @@
+
+# libFuzzer
+clang -fsanitize=fuzzer,address gitmind_fuzz.c -o fuzz
+./fuzz corpus/
+```
+
+### Phase 4: Stress Testing
+- 1 million links
+- Concurrent operations
+- Corrupted git repos
+- Full disk scenarios
+
+## Memory Testing
+
+```bash
+# Valgrind memcheck
+valgrind --leak-check=full ./gitmind list
+
+# AddressSanitizer (built-in)
+make debug
+./gitmind list  # ASAN will catch issues
+
+# Static analysis
+scan-build make
+```
+
+## Why This Approach
+
+1. **Start simple** - If bash can test it, bash tests it
+2. **Add complexity only when needed** - YAGNI
+3. **Real usage first** - Integration > Unit
+4. **Safety always** - Docker isolation, sanitizers
+
+The goal: Ship fast, stay correct, add sophistication only when earned.
+
+# /Users/james/git/neuroglyph/c/docker-test.sh
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Run tests in Docker container
+
+set -e
+
+echo "Building Docker test image..."
+docker build -f Dockerfile.test -t gitmind-test .
+
+echo "Running tests in container..."
+docker run --rm gitmind-test /build/test.sh
+
+# /Users/james/git/neuroglyph/c/gitmind
+[Binary file - content not displayed]
+
+# /Users/james/git/neuroglyph/c/include/gitmind.h
+// SPDX-License-Identifier: Apache-2.0
+// © 2025 J. Kirby Ross / Neuroglyph Collective
+
+#ifndef GITMIND_H
+#define GITMIND_H
+
+#include <stddef.h>
+#include <time.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Version
+#define GITMIND_VERSION_MAJOR 0
+#define GITMIND_VERSION_MINOR 1
+#define GITMIND_VERSION_PATCH 0
+
+// Error codes
+typedef enum {
+    GM_OK = 0,
+    GM_ERR_NOT_REPO = -1,
+    GM_ERR_NOT_FOUND = -2,
+    GM_ERR_IO = -3,
+    GM_ERR_GIT = -4,
+    GM_ERR_MEMORY = -5,
+    GM_ERR_INVALID_ARG = -6,
+    GM_ERR_PATH_TOO_LONG = -7,
+    GM_ERR_ALREADY_EXISTS = -8
+} gm_error_t;
+
+// Constants
+#define GM_MAX_PATH 4096
+#define GM_MAX_TYPE 64
+#define GM_SHA1_SIZE 20
+#define GM_SHA1_STRING_SIZE 41
+
+// Link structure
+typedef struct {
+    char type[GM_MAX_TYPE];
+    char source[GM_MAX_PATH];
+    char target[GM_MAX_PATH];
+    time_t timestamp;
+} gm_link_t;
+
+// Link collection
+typedef struct {
+    gm_link_t* links;
+    size_t count;
+    size_t capacity;
+} gm_link_set_t;
+
+// Repository handle
+typedef struct gm_repo gm_repo;
+
+// Core operations
+int gm_init(const char* repo_path);
+int gm_link_create(const char* source, const char* target, const char* type);
+int gm_link_list(gm_link_set_t** set, const char* filter_source, const char* filter_target);
+int gm_link_unlink(const char* source, const char* target);
+int gm_link_unlink_all(const char* source);
+int gm_link_check(int fix, int* broken_count);
+
+// Link set operations
+gm_link_set_t* gm_link_set_new(void);
+void gm_link_set_free(gm_link_set_t* set);
+int gm_link_set_add(gm_link_set_t* set, const gm_link_t* link);
+
+// Error handling
+const char* gm_last_error(void);
+const char* gm_error_string(int error_code);
+
+// Utilities
+int gm_sha1_string(const char* content, char* out_sha);
+int gm_normalize_path(const char* path, char* out_normalized);
+
+// Version info
+const char* gm_version_string(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // GITMIND_H
+
+# /Users/james/git/neuroglyph/c/src/gitmind.c
+// SPDX-License-Identifier: Apache-2.0
+// © 2025 J. Kirby Ross / Neuroglyph Collective
+
+#include "gitmind.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <unistd.h>
+#include <stdarg.h>
+
+// Thread-local error storage
+static __thread char gm_err_buf[256];
+
+// Set error message
+void gm_set_error(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(gm_err_buf, sizeof(gm_err_buf), fmt, args);
+    va_end(args);
+}
+
+// Get last error
+const char* gm_last_error(void) {
+    return gm_err_buf;
+}
+
+// Get error string for code
+const char* gm_error_string(int error_code) {
+    switch (error_code) {
+        case GM_OK: return "Success";
+        case GM_ERR_NOT_REPO: return "Not a git repository";
+        case GM_ERR_NOT_FOUND: return "Not found";
+        case GM_ERR_IO: return "I/O error";
+        case GM_ERR_GIT: return "Git operation failed";
+        case GM_ERR_MEMORY: return "Memory allocation failed";
+        case GM_ERR_INVALID_ARG: return "Invalid argument";
+        case GM_ERR_PATH_TOO_LONG: return "Path too long";
+        case GM_ERR_ALREADY_EXISTS: return "Already exists";
+        default: return "Unknown error";
+    }
+}
+
+// Version string
+const char* gm_version_string(void) {
+    static char version[32];
+    snprintf(version, sizeof(version), "%d.%d.%d",
+        GITMIND_VERSION_MAJOR,
+        GITMIND_VERSION_MINOR,
+        GITMIND_VERSION_PATCH);
+    return version;
+}
+
+// Check if directory exists
+static int dir_exists(const char* path) {
+    struct stat st;
+    return (stat(path, &st) == 0 && S_ISDIR(st.st_mode));
+}
+
+// Create directory if it doesn't exist
+static int ensure_dir(const char* path) {
+    if (dir_exists(path)) {
+        return 0;
+    }
+    
+    if (mkdir(path, 0755) != 0) {
+        gm_set_error("Failed to create directory %s: %s", path, strerror(errno));
+        return GM_ERR_IO;
+    }
+    
+    return 0;
+}
+
+// Initialize gitmind in repository
+int gm_init(const char* repo_path) {
+    if (!repo_path) {
+        gm_set_error("Repository path is NULL");
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    // Check if .git exists
+    char git_path[GM_MAX_PATH];
+    snprintf(git_path, sizeof(git_path), "%s/.git", repo_path);
+    
+    if (!dir_exists(git_path)) {
+        gm_set_error("Not a git repository: %s", repo_path);
+        return GM_ERR_NOT_REPO;
+    }
+    
+    // Create .gitmind directory
+    char gitmind_path[GM_MAX_PATH];
+    snprintf(gitmind_path, sizeof(gitmind_path), "%s/.gitmind", repo_path);
+    
+    int ret = ensure_dir(gitmind_path);
+    if (ret != 0) return ret;
+    
+    // Create .gitmind/links directory
+    char links_path[GM_MAX_PATH];
+    snprintf(links_path, sizeof(links_path), "%s/.gitmind/links", repo_path);
+    
+    ret = ensure_dir(links_path);
+    if (ret != 0) return ret;
+    
+    return GM_OK;
+}
+
+// Link set operations
+gm_link_set_t* gm_link_set_new(void) {
+    gm_link_set_t* set = calloc(1, sizeof(gm_link_set_t));
+    if (!set) {
+        gm_set_error("Memory allocation failed");
+        return NULL;
+    }
+    
+    set->capacity = 16;
+    set->links = calloc(set->capacity, sizeof(gm_link_t));
+    if (!set->links) {
+        free(set);
+        gm_set_error("Memory allocation failed");
+        return NULL;
+    }
+    
+    return set;
+}
+
+void gm_link_set_free(gm_link_set_t* set) {
+    if (set) {
+        free(set->links);
+        free(set);
+    }
+}
+
+int gm_link_set_add(gm_link_set_t* set, const gm_link_t* link) {
+    if (!set || !link) {
+        gm_set_error("Invalid argument");
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    // Grow if needed
+    if (set->count >= set->capacity) {
+        size_t new_capacity = set->capacity * 2;
+        gm_link_t* new_links = realloc(set->links, new_capacity * sizeof(gm_link_t));
+        if (!new_links) {
+            gm_set_error("Memory allocation failed");
+            return GM_ERR_MEMORY;
+        }
+        set->links = new_links;
+        set->capacity = new_capacity;
+    }
+    
+    // Copy link
+    memcpy(&set->links[set->count], link, sizeof(gm_link_t));
+    set->count++;
+    
+    return GM_OK;
+}
+
+# /Users/james/git/neuroglyph/c/src/gitmind.o
+[Binary file - content not displayed]
+
+# /Users/james/git/neuroglyph/c/src/link.c
+// SPDX-License-Identifier: Apache-2.0
+// © 2025 J. Kirby Ross / Neuroglyph Collective
+
+#include "gitmind.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
+#include <dirent.h>
+#include <sys/stat.h>
+
+// Forward declarations
+extern void gm_set_error(const char* fmt, ...);
+extern int gm_sha1_string(const char* content, char* out_sha);
+
+// Build link content string
+static int build_link_content(const gm_link_t* link, char* buffer, size_t size) {
+    int len = snprintf(buffer, size, "%s: %s -> %s  # ts:%ld\n",
+        link->type, link->source, link->target, link->timestamp);
+    
+    if (len < 0 || (size_t)len >= size) {
+        gm_set_error("Link content too long");
+        return GM_ERR_PATH_TOO_LONG;
+    }
+    
+    return GM_OK;
+}
+
+// Get current working directory
+static int get_cwd(char* buffer, size_t size) {
+    if (!getcwd(buffer, size)) {
+        gm_set_error("Failed to get current directory");
+        return GM_ERR_IO;
+    }
+    return GM_OK;
+}
+
+// Create a link
+int gm_link_create(const char* source, const char* target, const char* type) {
+    if (!source || !target || !type) {
+        gm_set_error("Invalid arguments");
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    // Build link structure
+    gm_link_t link;
+    strncpy(link.type, type, GM_MAX_TYPE - 1);
+    link.type[GM_MAX_TYPE - 1] = '\0';
+    strncpy(link.source, source, GM_MAX_PATH - 1);
+    link.source[GM_MAX_PATH - 1] = '\0';
+    strncpy(link.target, target, GM_MAX_PATH - 1);
+    link.target[GM_MAX_PATH - 1] = '\0';
+    link.timestamp = time(NULL);
+    
+    // Build content
+    char content[8192];
+    int ret = build_link_content(&link, content, sizeof(content));
+    if (ret != GM_OK) return ret;
+    
+    // Compute SHA1
+    char sha[GM_SHA1_STRING_SIZE];
+    ret = gm_sha1_string(content, sha);
+    if (ret != GM_OK) return ret;
+    
+    // Build filename
+    char cwd[GM_MAX_PATH];
+    ret = get_cwd(cwd, sizeof(cwd));
+    if (ret != GM_OK) return ret;
+    
+    char filename[GM_MAX_PATH];
+    snprintf(filename, sizeof(filename), "%s/.gitmind/links/%s.link", cwd, sha);
+    
+    // Check if link already exists
+    struct stat st;
+    if (stat(filename, &st) == 0) {
+        return GM_OK; // Link already exists, idempotent
+    }
+    
+    // Write file
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        gm_set_error("Failed to create link file: %s", filename);
+        return GM_ERR_IO;
+    }
+    
+    if (fputs(content, f) == EOF) {
+        fclose(f);
+        gm_set_error("Failed to write link file");
+        return GM_ERR_IO;
+    }
+    
+    fclose(f);
+    
+    // Git add the file
+    char cmd[GM_MAX_PATH * 2];
+    snprintf(cmd, sizeof(cmd), "git add %s 2>/dev/null", filename);
+    system(cmd);
+    
+    return GM_OK;
+}
+
+// Parse link file
+static int parse_link_file(const char* filename, gm_link_t* link) {
+    FILE* f = fopen(filename, "r");
+    if (!f) {
+        return GM_ERR_IO;
+    }
+    
+    char line[8192];
+    if (!fgets(line, sizeof(line), f)) {
+        fclose(f);
+        return GM_ERR_IO;
+    }
+    fclose(f);
+    
+    // Remove newline
+    char* nl = strchr(line, '\n');
+    if (nl) *nl = '\0';
+    
+    // Parse format: "TYPE: source -> target  # ts:12345"
+    char* colon = strchr(line, ':');
+    if (!colon) return GM_ERR_IO;
+    
+    // Extract type
+    *colon = '\0';
+    strncpy(link->type, line, GM_MAX_TYPE - 1);
+    link->type[GM_MAX_TYPE - 1] = '\0';
+    
+    // Find arrow
+    char* arrow = strstr(colon + 1, " -> ");
+    if (!arrow) return GM_ERR_IO;
+    
+    // Extract source (skip leading space)
+    *arrow = '\0';
+    char* source_start = colon + 1;
+    while (*source_start == ' ') source_start++;
+    strncpy(link->source, source_start, GM_MAX_PATH - 1);
+    link->source[GM_MAX_PATH - 1] = '\0';
+    
+    // Find timestamp marker
+    char* ts_marker = strstr(arrow + 4, "  # ts:");
+    if (!ts_marker) return GM_ERR_IO;
+    
+    // Extract target
+    *ts_marker = '\0';
+    strncpy(link->target, arrow + 4, GM_MAX_PATH - 1);
+    link->target[GM_MAX_PATH - 1] = '\0';
+    
+    // Extract timestamp
+    link->timestamp = atol(ts_marker + 7);
+    
+    return GM_OK;
+}
+
+// List links
+int gm_link_list(gm_link_set_t** set, const char* filter_source, const char* filter_target) {
+    if (!set) {
+        gm_set_error("Invalid argument");
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    *set = gm_link_set_new();
+    if (!*set) {
+        return GM_ERR_MEMORY;
+    }
+    
+    // Get links directory
+    char cwd[GM_MAX_PATH];
+    int ret = get_cwd(cwd, sizeof(cwd));
+    if (ret != GM_OK) {
+        gm_link_set_free(*set);
+        return ret;
+    }
+    
+    char links_dir[GM_MAX_PATH];
+    snprintf(links_dir, sizeof(links_dir), "%s/.gitmind/links", cwd);
+    
+    DIR* dir = opendir(links_dir);
+    if (!dir) {
+        // No links directory means no links
+        return GM_OK;
+    }
+    
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+        // Skip . and ..
+        if (entry->d_name[0] == '.') continue;
+        
+        // Check .link extension
+        char* ext = strrchr(entry->d_name, '.');
+        if (!ext || strcmp(ext, ".link") != 0) continue;
+        
+        // Build full path
+        char filepath[GM_MAX_PATH];
+        snprintf(filepath, sizeof(filepath), "%s/%s", links_dir, entry->d_name);
+        
+        // Parse link
+        gm_link_t link;
+        if (parse_link_file(filepath, &link) != GM_OK) continue;
+        
+        // Apply filters
+        if (filter_source && strcmp(link.source, filter_source) != 0) continue;
+        if (filter_target && strcmp(link.target, filter_target) != 0) continue;
+        
+        // Add to set
+        gm_link_set_add(*set, &link);
+    }
+    
+    closedir(dir);
+    return GM_OK;
+}
+
+// Remove link
+int gm_link_unlink(const char* source, const char* target) {
+    if (!source || !target) {
+        gm_set_error("Invalid arguments");
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    // List all links
+    gm_link_set_t* set;
+    int ret = gm_link_list(&set, source, target);
+    if (ret != GM_OK) return ret;
+    
+    if (set->count == 0) {
+        gm_link_set_free(set);
+        gm_set_error("Link not found");
+        return GM_ERR_NOT_FOUND;
+    }
+    
+    // Remove each matching link
+    char cwd[GM_MAX_PATH];
+    ret = get_cwd(cwd, sizeof(cwd));
+    if (ret != GM_OK) {
+        gm_link_set_free(set);
+        return ret;
+    }
+    
+    for (size_t i = 0; i < set->count; i++) {
+        gm_link_t* link = &set->links[i];
+        
+        // Build content to get SHA
+        char content[8192];
+        build_link_content(link, content, sizeof(content));
+        
+        char sha[GM_SHA1_STRING_SIZE];
+        gm_sha1_string(content, sha);
+        
+        // Remove file
+        char filename[GM_MAX_PATH];
+        snprintf(filename, sizeof(filename), "%s/.gitmind/links/%s.link", cwd, sha);
+        
+        // Remove file and stage deletion
+        unlink(filename);
+        char cmd[GM_MAX_PATH * 2];
+        snprintf(cmd, sizeof(cmd), "git add %s 2>/dev/null", filename);
+        system(cmd);
+    }
+    
+    gm_link_set_free(set);
+    return GM_OK;
+}
+
+# /Users/james/git/neuroglyph/c/src/link.o
+[Binary file - content not displayed]
+
+# /Users/james/git/neuroglyph/c/src/main.c
+// SPDX-License-Identifier: Apache-2.0
+// © 2025 J. Kirby Ross / Neuroglyph Collective
+
+#include "gitmind.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <getopt.h>
+
+static void print_usage(const char* prog) {
+    fprintf(stderr, "Usage: %s <command> [options]\n", prog);
+    fprintf(stderr, "\nCommands:\n");
+    fprintf(stderr, "  init                    Initialize gitmind in current repository\n");
+    fprintf(stderr, "  link <source> <target>  Create a link between files\n");
+    fprintf(stderr, "    --type TYPE           Link type (default: REFERENCES)\n");
+    fprintf(stderr, "  list                    List all links\n");
+    fprintf(stderr, "    --source FILE         Filter by source file\n");
+    fprintf(stderr, "    --target FILE         Filter by target file\n");
+    fprintf(stderr, "  unlink <source> <target> Remove link between files\n");
+    fprintf(stderr, "  check                   Check link integrity\n");
+    fprintf(stderr, "    --fix                 Remove broken links\n");
+    fprintf(stderr, "  version                 Show version\n");
+}
+
+static int cmd_init(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    int ret = gm_init(".");
+    if (ret != GM_OK) {
+        fprintf(stderr, "Error: %s\n", gm_last_error());
+        return 1;
+    }
+    
+    printf("Initialized gitmind in current repository\n");
+    return 0;
+}
+
+static int cmd_link(int argc, char** argv) {
+    const char* type = "REFERENCES";
+    
+    // Parse options starting from argv[2] (after "gitmind link")
+    int opt;
+    static struct option long_options[] = {
+        {"type", required_argument, 0, 't'},
+        {0, 0, 0, 0}
+    };
+    
+    optind = 2; // Start after "gitmind link"
+    while ((opt = getopt_long(argc, argv, "t:", long_options, NULL)) != -1) {
+        switch (opt) {
+            case 't':
+                type = optarg;
+                break;
+            default:
+                print_usage(argv[0]);
+                return 1;
+        }
+    }
+    
+    // Need exactly 2 arguments after options
+    if (optind + 2 != argc) {
+        fprintf(stderr, "Error: link requires source and target arguments\n");
+        print_usage(argv[0]);
+        return 1;
+    }
+    
+    const char* source = argv[optind];
+    const char* target = argv[optind + 1];
+    
+    int ret = gm_link_create(source, target, type);
+    if (ret != GM_OK) {
+        fprintf(stderr, "Error: %s\n", gm_last_error());
+        return 1;
+    }
+    
+    printf("Created link: %s -> %s (%s)\n", source, target, type);
+    return 0;
+}
+
+static int cmd_list(int argc, char** argv) {
+    const char* filter_source = NULL;
+    const char* filter_target = NULL;
+    
+    // Parse options
+    int opt;
+    static struct option long_options[] = {
+        {"source", required_argument, 0, 's'},
+        {"target", required_argument, 0, 't'},
+        {0, 0, 0, 0}
+    };
+    
+    optind = 2; // Start after "gitmind list"
+    while ((opt = getopt_long(argc, argv, "s:t:", long_options, NULL)) != -1) {
+        switch (opt) {
+            case 's':
+                filter_source = optarg;
+                break;
+            case 't':
+                filter_target = optarg;
+                break;
+            default:
+                print_usage(argv[0]);
+                return 1;
+        }
+    }
+    
+    gm_link_set_t* set;
+    int ret = gm_link_list(&set, filter_source, filter_target);
+    if (ret != GM_OK) {
+        fprintf(stderr, "Error: %s\n", gm_last_error());
+        return 1;
+    }
+    
+    if (set->count == 0) {
+        printf("No links found\n");
+    } else {
+        for (size_t i = 0; i < set->count; i++) {
+            gm_link_t* link = &set->links[i];
+            printf("%s: %s -> %s (ts:%ld)\n", 
+                link->type, link->source, link->target, link->timestamp);
+        }
+    }
+    
+    gm_link_set_free(set);
+    return 0;
+}
+
+static int cmd_unlink(int argc, char** argv) {
+    if (argc != 4) {
+        fprintf(stderr, "Error: unlink requires source and target arguments\n");
+        print_usage(argv[0]);
+        return 1;
+    }
+    
+    const char* source = argv[2];
+    const char* target = argv[3];
+    
+    int ret = gm_link_unlink(source, target);
+    if (ret != GM_OK) {
+        fprintf(stderr, "Error: %s\n", gm_last_error());
+        return 1;
+    }
+    
+    printf("Removed link: %s -> %s\n", source, target);
+    return 0;
+}
+
+static int cmd_version(int argc, char** argv) {
+    (void)argc;
+    (void)argv;
+    
+    printf("gitmind version %s\n", gm_version_string());
+    return 0;
+}
+
+int main(int argc, char** argv) {
+    if (argc < 2) {
+        print_usage(argv[0]);
+        return 1;
+    }
+    
+    const char* cmd = argv[1];
+    
+    if (strcmp(cmd, "init") == 0) {
+        return cmd_init(argc, argv);
+    } else if (strcmp(cmd, "link") == 0) {
+        return cmd_link(argc, argv);
+    } else if (strcmp(cmd, "list") == 0) {
+        return cmd_list(argc, argv);
+    } else if (strcmp(cmd, "unlink") == 0) {
+        return cmd_unlink(argc, argv);
+    } else if (strcmp(cmd, "version") == 0) {
+        return cmd_version(argc, argv);
+    } else {
+        fprintf(stderr, "Error: Unknown command '%s'\n", cmd);
+        print_usage(argv[0]);
+        return 1;
+    }
+}
+
+# /Users/james/git/neuroglyph/c/src/main.o
+[Binary file - content not displayed]
+
+# /Users/james/git/neuroglyph/c/src/sha1.c
+// SPDX-License-Identifier: Apache-2.0
+// © 2025 J. Kirby Ross / Neuroglyph Collective
+
+#include "gitmind.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+
+// Tiny SHA1 implementation
+// Based on RFC 3174
+
+#define SHA1_BLOCK_SIZE 64
+
+typedef struct {
+    uint32_t state[5];
+    uint32_t count[2];
+    uint8_t buffer[64];
+} SHA1_CTX;
+
+static void SHA1Transform(uint32_t state[5], const uint8_t buffer[64]);
+
+#define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
+
+// blk0() and blk() perform the initial expand.
+#ifdef WORDS_BIGENDIAN
+#define blk0(i) block->l[i]
+#else
+#define blk0(i) (block->l[i] = (rol(block->l[i],24)&0xFF00FF00) \
+    |(rol(block->l[i],8)&0x00FF00FF))
+#endif
+#define blk(i) (block->l[i&15] = rol(block->l[(i+13)&15]^block->l[(i+8)&15] \
+    ^block->l[(i+2)&15]^block->l[i&15],1))
+
+// (R0+R1), R2, R3, R4 are the different operations used in SHA1
+#define R0(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk0(i)+0x5A827999+rol(v,5);w=rol(w,30);
+#define R1(v,w,x,y,z,i) z+=((w&(x^y))^y)+blk(i)+0x5A827999+rol(v,5);w=rol(w,30);
+#define R2(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0x6ED9EBA1+rol(v,5);w=rol(w,30);
+#define R3(v,w,x,y,z,i) z+=(((w|x)&y)|(w&x))+blk(i)+0x8F1BBCDC+rol(v,5);w=rol(w,30);
+#define R4(v,w,x,y,z,i) z+=(w^x^y)+blk(i)+0xCA62C1D6+rol(v,5);w=rol(w,30);
+
+// Hash a single 512-bit block. This is the core of the algorithm.
+static void SHA1Transform(uint32_t state[5], const uint8_t buffer[64]) {
+    uint32_t a, b, c, d, e;
+    typedef union {
+        uint8_t c[64];
+        uint32_t l[16];
+    } CHAR64LONG16;
+    CHAR64LONG16 block[1];
+    memcpy(block, buffer, 64);
+    
+    // Copy context->state[] to working vars
+    a = state[0];
+    b = state[1];
+    c = state[2];
+    d = state[3];
+    e = state[4];
+    
+    // 4 rounds of 20 operations each. Loop unrolled.
+    R0(a,b,c,d,e, 0); R0(e,a,b,c,d, 1); R0(d,e,a,b,c, 2); R0(c,d,e,a,b, 3);
+    R0(b,c,d,e,a, 4); R0(a,b,c,d,e, 5); R0(e,a,b,c,d, 6); R0(d,e,a,b,c, 7);
+    R0(c,d,e,a,b, 8); R0(b,c,d,e,a, 9); R0(a,b,c,d,e,10); R0(e,a,b,c,d,11);
+    R0(d,e,a,b,c,12); R0(c,d,e,a,b,13); R0(b,c,d,e,a,14); R0(a,b,c,d,e,15);
+    R1(e,a,b,c,d,16); R1(d,e,a,b,c,17); R1(c,d,e,a,b,18); R1(b,c,d,e,a,19);
+    R2(a,b,c,d,e,20); R2(e,a,b,c,d,21); R2(d,e,a,b,c,22); R2(c,d,e,a,b,23);
+    R2(b,c,d,e,a,24); R2(a,b,c,d,e,25); R2(e,a,b,c,d,26); R2(d,e,a,b,c,27);
+    R2(c,d,e,a,b,28); R2(b,c,d,e,a,29); R2(a,b,c,d,e,30); R2(e,a,b,c,d,31);
+    R2(d,e,a,b,c,32); R2(c,d,e,a,b,33); R2(b,c,d,e,a,34); R2(a,b,c,d,e,35);
+    R2(e,a,b,c,d,36); R2(d,e,a,b,c,37); R2(c,d,e,a,b,38); R2(b,c,d,e,a,39);
+    R3(a,b,c,d,e,40); R3(e,a,b,c,d,41); R3(d,e,a,b,c,42); R3(c,d,e,a,b,43);
+    R3(b,c,d,e,a,44); R3(a,b,c,d,e,45); R3(e,a,b,c,d,46); R3(d,e,a,b,c,47);
+    R3(c,d,e,a,b,48); R3(b,c,d,e,a,49); R3(a,b,c,d,e,50); R3(e,a,b,c,d,51);
+    R3(d,e,a,b,c,52); R3(c,d,e,a,b,53); R3(b,c,d,e,a,54); R3(a,b,c,d,e,55);
+    R3(e,a,b,c,d,56); R3(d,e,a,b,c,57); R3(c,d,e,a,b,58); R3(b,c,d,e,a,59);
+    R4(a,b,c,d,e,60); R4(e,a,b,c,d,61); R4(d,e,a,b,c,62); R4(c,d,e,a,b,63);
+    R4(b,c,d,e,a,64); R4(a,b,c,d,e,65); R4(e,a,b,c,d,66); R4(d,e,a,b,c,67);
+    R4(c,d,e,a,b,68); R4(b,c,d,e,a,69); R4(a,b,c,d,e,70); R4(e,a,b,c,d,71);
+    R4(d,e,a,b,c,72); R4(c,d,e,a,b,73); R4(b,c,d,e,a,74); R4(a,b,c,d,e,75);
+    R4(e,a,b,c,d,76); R4(d,e,a,b,c,77); R4(c,d,e,a,b,78); R4(b,c,d,e,a,79);
+    
+    // Add the working vars back into context.state[]
+    state[0] += a;
+    state[1] += b;
+    state[2] += c;
+    state[3] += d;
+    state[4] += e;
+}
+
+// SHA1Init - Initialize new context
+static void SHA1Init(SHA1_CTX* context) {
+    // SHA1 initialization constants
+    context->state[0] = 0x67452301;
+    context->state[1] = 0xEFCDAB89;
+    context->state[2] = 0x98BADCFE;
+    context->state[3] = 0x10325476;
+    context->state[4] = 0xC3D2E1F0;
+    context->count[0] = context->count[1] = 0;
+}
+
+// Run your data through this
+static void SHA1Update(SHA1_CTX* context, const uint8_t* data, uint32_t len) {
+    uint32_t i, j;
+    
+    j = context->count[0];
+    if ((context->count[0] += len << 3) < j)
+        context->count[1]++;
+    context->count[1] += (len>>29);
+    j = (j >> 3) & 63;
+    if ((j + len) > 63) {
+        memcpy(&context->buffer[j], data, (i = 64-j));
+        SHA1Transform(context->state, context->buffer);
+        for ( ; i + 63 < len; i += 64) {
+            SHA1Transform(context->state, &data[i]);
+        }
+        j = 0;
+    }
+    else i = 0;
+    memcpy(&context->buffer[j], &data[i], len - i);
+}
+
+// Add padding and return the message digest
+static void SHA1Final(uint8_t digest[20], SHA1_CTX* context) {
+    uint32_t i;
+    uint8_t finalcount[8];
+    uint8_t c;
+    
+    for (i = 0; i < 8; i++) {
+        finalcount[i] = (uint8_t)((context->count[(i >= 4 ? 0 : 1)]
+         >> ((3-(i & 3)) * 8) ) & 255);
+    }
+    c = 0200;
+    SHA1Update(context, &c, 1);
+    while ((context->count[0] & 504) != 448) {
+        c = 0000;
+        SHA1Update(context, &c, 1);
+    }
+    SHA1Update(context, finalcount, 8);
+    for (i = 0; i < 20; i++) {
+        digest[i] = (uint8_t)
+         ((context->state[i>>2] >> ((3-(i & 3)) * 8) ) & 255);
+    }
+}
+
+// Compute SHA1 and return as hex string
+int gm_sha1_string(const char* content, char* out_sha) {
+    if (!content || !out_sha) {
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    SHA1_CTX ctx;
+    uint8_t hash[20];
+    
+    SHA1Init(&ctx);
+    SHA1Update(&ctx, (const uint8_t*)content, strlen(content));
+    SHA1Final(hash, &ctx);
+    
+    // Convert to hex string
+    for (int i = 0; i < 20; i++) {
+        sprintf(out_sha + (i * 2), "%02x", hash[i]);
+    }
+    out_sha[40] = '\0';
+    
+    return GM_OK;
+}
+
+# /Users/james/git/neuroglyph/c/src/sha1.o
+[Binary file - content not displayed]
+
+# /Users/james/git/neuroglyph/c/test.sh
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Test script for gitmind - runs in isolated Docker container
+
+set -e
+
+echo "=== GitMind C Test Suite ==="
+
+# Create temp directory
+TESTDIR=$(mktemp -d)
+cd "$TESTDIR"
+
+# Initialize git repo
+git init
+git config user.email "test@example.com"
+git config user.name "Test User"
+
+# Create some test files
+echo "# Test Project" > README.md
+mkdir -p docs
+echo "# Architecture" > docs/ARCHITECTURE.md
+echo "# API Docs" > docs/api.md
+git add .
+git commit -m "Initial commit"
+
+echo "✓ Test repo created"
+
+# Test 1: Init
+echo -n "Test 1: gitmind init... "
+gitmind init
+if [ -d .gitmind/links ]; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: .gitmind/links not created"
+    exit 1
+fi
+
+# Test 2: Create link
+echo -n "Test 2: gitmind link... "
+/usr/local/bin/gitmind link README.md docs/ARCHITECTURE.md --type IMPLEMENTS
+if [ -n "$(ls .gitmind/links/*.link 2>/dev/null)" ]; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: No link file created"
+    exit 1
+fi
+
+# Test 3: List links
+echo -n "Test 3: gitmind list... "
+OUTPUT=$(gitmind list)
+if echo "$OUTPUT" | grep -q "IMPLEMENTS: README.md -> docs/ARCHITECTURE.md"; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: Link not found in list"
+    echo "Output: $OUTPUT"
+    exit 1
+fi
+
+# Test 4: Create another link
+echo -n "Test 4: Multiple links... "
+gitmind link docs/ARCHITECTURE.md docs/api.md --type REFERENCES
+OUTPUT=$(gitmind list | wc -l)
+if [ "$OUTPUT" -eq "2" ]; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: Expected 2 links, got $OUTPUT"
+    exit 1
+fi
+
+# Test 5: Filter by source
+echo -n "Test 5: Filter by source... "
+OUTPUT=$(gitmind list --source README.md | wc -l)
+if [ "$OUTPUT" -eq "1" ]; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: Expected 1 link, got $OUTPUT"
+    exit 1
+fi
+
+# Test 6: Unlink
+echo -n "Test 6: gitmind unlink... "
+gitmind unlink README.md docs/ARCHITECTURE.md
+OUTPUT=$(gitmind list | wc -l)
+if [ "$OUTPUT" -eq "1" ]; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: Expected 1 link after unlink, got $OUTPUT"
+    exit 1
+fi
+
+# Test 7: SHA consistency
+echo -n "Test 7: SHA consistency... "
+# Create same link twice
+gitmind link README.md docs/api.md --type REFERENCES
+COUNT=$(ls .gitmind/links/*.link | wc -l)
+if [ "$COUNT" -eq "2" ]; then  # Should be 2: one from test 4, one from test 7
+    echo "✓ PASS (deduplication works)"
+else
+    echo "✗ FAIL: Expected 2 unique links, got $COUNT"
+    exit 1
+fi
+
+# Test 8: Git integration
+echo -n "Test 8: Git integration... "
+git add .gitmind
+git commit -m "Add gitmind links" >/dev/null 2>&1
+if git log --oneline | grep -q "Add gitmind links"; then
+    echo "✓ PASS"
+else
+    echo "✗ FAIL: Links not committed to git"
+    exit 1
+fi
+
+# Clean up
+cd /
+rm -rf "$TESTDIR"
+
+echo ""
+echo "=== All tests passed! ==="
+echo "Binary size: $(ls -lh $(which gitmind) | awk '{print $5}')"
+

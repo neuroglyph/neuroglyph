@@ -1,26 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
-# Development and testing environment for Neuroglyph CLI (gitmind)
-FROM rust:latest
+FROM alpine:latest
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install C development tools
+RUN apk add --no-cache \
+    build-base \
     git \
-    make \
-    pkg-config \
-    libssl-dev \
-    && rm -rf /var/lib/apt/lists/*
+    bash \
+    valgrind \
+    gdb \
+    clang \
+    clang-analyzer \
+    openssl-dev
 
-# Set up working directory
+# Set working directory
 WORKDIR /workspace
 
-# Install Rust tools
-RUN rustup component add clippy rustfmt
-
-# Create a non-root user for development
-RUN useradd -m -s /bin/bash developer
-
-# Set up cargo cache volume mount point
-RUN mkdir -p /home/developer/.cargo
-
-# Default command - run tests
-CMD ["cargo", "test"]
+# Default command
+CMD ["bash"]

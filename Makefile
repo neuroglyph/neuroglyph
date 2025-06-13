@@ -1,60 +1,42 @@
 # SPDX-License-Identifier: Apache-2.0
 # © 2025 J. Kirby Ross / Neuroglyph Collective
-# Neuroglyph CLI Development Makefile
-.PHONY: help dev test test-quick fmt clippy clean docker-build install-hooks
+# Neuroglyph C Implementation Makefile
+.PHONY: help build test clean install dev benchmark
 
 # Default target
 help:
-	@echo "Neuroglyph CLI (gitmind) Development Commands:"
-	@echo "  make dev          - Start development container"
-	@echo "  make test         - Run all tests in Docker (same as CI)"
-	@echo "  make test-quick   - Run tests without format/clippy checks"
-	@echo "  make fmt          - Run cargo fmt"
-	@echo "  make clippy       - Run cargo clippy"
+	@echo "GitMind C Development Commands:"
+	@echo "  make build        - Build the gitmind binary in Docker"
+	@echo "  make test         - Run all tests in Docker"
 	@echo "  make clean        - Clean build artifacts"
-	@echo "  make docker-build - Build Docker images"
-	@echo "  make install-hooks - Install git hooks"
+	@echo "  make install      - Install to /usr/local/bin (from Docker build)"
+	@echo "  make dev          - Open development shell in Docker"
+	@echo "  make benchmark    - Run benchmarks in Docker"
 
-# Start development environment
-dev: docker-build
-	docker compose run --rm dev
+# Build the binary in Docker
+build:
+	docker compose build dev
+	docker compose run --rm dev sh -c "cd c && make clean && make"
 
-# Run all tests exactly as CI would
-test: docker-build
+# Run tests in Docker
+test:
+	docker compose build test
 	docker compose run --rm -T test
-
-# Quick test run (no format/clippy)
-test-quick: docker-build
-	docker compose run --rm dev cargo test
-
-# Format code
-fmt: docker-build
-	docker compose run --rm dev cargo fmt
-
-# Run clippy
-clippy: docker-build
-	docker compose run --rm dev cargo clippy -- -D warnings
 
 # Clean build artifacts
 clean:
 	docker compose down
-	docker volume rm neuroglyph_target-cache || true
-	rm -rf cli/target/
+	rm -f c/gitmind c/src/*.o
 
-# Build Docker images
-docker-build:
-	COMPOSE_BAKE=true docker compose build
+# Development shell
+dev:
+	docker compose run --rm dev
 
-# Install git hooks (including Git LFS)
-install-hooks:
-	@echo "Installing git hooks..."
-	@mkdir -p .git/hooks
-	@cp scripts/pre-push-combined .git/hooks/pre-push
-	@cp scripts/post-checkout .git/hooks/post-checkout
-	@cp scripts/post-commit .git/hooks/post-commit
-	@cp scripts/post-merge .git/hooks/post-merge
-	@chmod +x .git/hooks/pre-push
-	@chmod +x .git/hooks/post-checkout
-	@chmod +x .git/hooks/post-commit
-	@chmod +x .git/hooks/post-merge
-	@echo "Git hooks installed (including Git LFS support)!"
+# Run benchmarks in Docker
+benchmark:
+	docker compose build benchmark
+	docker compose run --rm benchmark
+
+# Install locally (build first in Docker, then copy)
+install: build
+	sudo cp c/gitmind /usr/local/bin/

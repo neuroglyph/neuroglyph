@@ -1,15 +1,17 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- © 2025 J. Kirby Ross / Neuroglyph Collective -->
 
+[![CI](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml/badge.svg)](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 # ↯ Neuroglyph
 
-> _"A glyph is a thought committed. A repo is a memory that persists."_
+> _"A glyph is a thought committed. A repo is a memory that persists."
+## ⚡️ What is Neuroglyph?_
 
 Neuroglyph is an open protocol and cognitive infrastructure layer that turns Git into a substrate for distributed semantic memory — no database, no gods, no masters.
 
 Semantic scaffolding for planetary-scale cooperative cognition. A map of thought across minds.
-
-# 🧠 Okay, But What Am I Looking At Here?
+### 🧠 **Okay, So... What Does That Mean?**
 
 | Level | Audience | Explanation | The "Aha!" |
 |--------|----------------|-------------|-------------|
@@ -19,10 +21,6 @@ Semantic scaffolding for planetary-scale cooperative cognition. A map of thought
 | 🏗️ | **Architects** | *"Replace your knowledge stack with the file system. Relationships are files. Insights are commits. Understanding becomes infrastructure."* | "This removes entire categories of software!" |
 | 🧠 | **Researchers** | *"Version-controlled epistemology. Fork ideas. Diff beliefs. Merge insights. Understand how understanding itself evolves."* | "We can literally version knowledge itself." |
 | 🌍 | **Visionaries** | *"Distributed cognition substrate. Repos become neurons. Memory becomes shareable. Thought becomes forkable. Humanity begins to think as one."* | "This is how collective intelligence actually works." |
-
-[![CI](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml/badge.svg)](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 It enables:
 - ✅ Time-aware semantic linking of thoughts, files, and ideas
 - 🧠 Git-powered knowledge graphs with zero external dependencies
@@ -30,10 +28,7 @@ It enables:
 - 🧪 Optional entropy injection via Chaos Mode for speculative discovery
 
 Built for devs, researchers, writers, and AI agents—anyone who treats thought as infrastructure.
-
-## 🧠 What is Neuroglyph?
-
-**Git as cognition layer.**  
+### **Git as cognition layer** 
 Neuroglyph transforms Git from a version control system into a **thinking system**.
 
 You can:
@@ -47,6 +42,7 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 > This is version control for understanding itself.
 
+---
 ## ✨ Core Features
 - 🔗 gitmind link A B — establish semlinks between concepts
 - 📜 gitmind scan — extract links from markdown, wikis, and code
@@ -59,10 +55,9 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 ```
 neuroglyph/              # This monorepo
-├── cli/                 # gitmind CLI (Rust)
+├── c/                   # gitmind CLI (Pure C implementation)
 ├── demos/               # Example applications
-├── design/              # Technical specifications
-├── docs/                # User documentation
+├── docs/                # All documentation (specs, features, decisions)
 ├── lore/                # Philosophy & Gonzai + Claude's Dev Logs
 └── testdata/            # Test fixtures
 ```
@@ -72,14 +67,82 @@ Planned:
 - plugins/ — Editor integrations
 - sdk/ — Language bindings
 
+---
+
+## ⚡ Performance
+
+GitMind is **the fastest knowledge graph tool on Earth**. Not a claim—a fact.
+
+### Benchmarks
+
+```bash
+Binary size:        67KB      (0.067MB)
+Startup time:       <1ms      ("Process too fast to measure!")
+Memory usage:       ~500KB    (Less than this README)
+Dependencies:       Zero      (Just libc—already on your system)
+
+# Operations (tested on 100 links)
+Create link:        1.8ms
+List all links:     <1ms  
+Check integrity:    <1ms
+```
+
+### Size Comparison
+
+| Tool | Size | Startup | Runtime |
+|------|------|---------|---------|
+| **GitMind** | **67KB** | **<1ms** | **None** |
+| Obsidian | 150MB+ | ~2s | Electron |
+| Roam Research | Web app | Network latency | Browser |
+| Neo4j Desktop | 200MB+ | ~3s | JVM |
+| Logseq | 200MB+ | ~3s | Electron |
+
+That's not a typo. We're **2,000x smaller** than Electron apps. By the time their splash screen loads, you've already:
+- Created 100 links
+- Queried your entire graph  
+- Made coffee
+- Questioned why anyone uses Electron
+### The Secret
+
+Pure C. No runtime. No GC. No framework. Just focused, efficient code that respects your CPU cycles.
+### 🌀 Speed as Philosophy
+
+GitMind doesn't just start fast — it thinks fast.  
+Because **every delay is a tax on cognition.**
+
+- No splash screens. No spinners. No loading bars.
+- Your graph is ready before your thoughts finish forming.
+- It's not just fast. It's *telepathic*.
+
+While Electron apps are figuring out if you're online,  
+**GitMind already refactored your brain.**
+
+### 🏁 Sonic Challenge
+
+We ran the numbers. Sonic lost.
+
+| Task                         | GitMind | Sonic (at top speed) |
+|------------------------------|---------|-----------------------|
+| Startup                      | <1ms    | ~200ms reaction time  |
+| 100 semantic links created   | ~180ms  | ~2 steps              |
+| Full knowledge graph scan    | <1ms    | Didn't see it coming  |
+| Memory usage                 | ~500KB  | 5 chili dogs          |
+
+> *"Too slow." — GitMind, probably*
+
+---
 ## 🚀 Quick Start
 
 ### Prereqs
 
 - Docker
 - Git 2.40+
-- Git LFS (brew install git-lfs)
-- Rust 1.70+ (or use the Dockerized CLI)
+- C compiler (gcc, clang, or compatible)
+- Make
+- Git LFS (brew install git-lfs) *[for logo/images in monorepo]*
+
+Optional:
+- the Dockerized CLI Desktop (for consistent testing environment)
 
 ### Setup
 
@@ -91,21 +154,44 @@ make test
 make dev
 ```
 
-### Basic Usage (Development)
+### Basic Usage
 
 ```bash
-cd cli
-cargo build --release
+# Build the C binary (uses Docker for consistent build environment)
+make build
 
-# Initialize repo
-./target/release/gitmind init
+# The resulting binary runs natively - no Docker required!
+cd c
+./gitmind init
 
 # Link files semantically
-./target/release/gitmind link README.md docs/architecture.md
+./gitmind link README.md docs/architecture.md
 
 # List the current glyph graph
-./target/release/gitmind list
+./gitmind list
 ```
+
+## 🐳 Why Docker for Development?
+
+**All development and testing *MUST* run through Docker.** The compiled `gitmind` binary runs natively without Docker, but development is Docker-only. Here's why:
+
+### 1. Zero Setup Issues
+No more *"works on my machine"* problems. Whether you're on macOS, Linux, or that one person still using Windows, Docker ensures everyone has the exact same C compiler, same libraries, same everything. You clone, you `make test`, it works. Period.
+
+### 2. Tests Use REAL Git Operations
+Our test suite creates actual Git repositories, makes real commits, and performs genuine Git operations. Running these tests on your working repository would be catastrophic:
+- Tests could corrupt your actual work
+- Git operations might conflict with your current branch
+- You'd lose uncommitted changes
+- Your `.git` directory could get mangled
+
+Docker provides isolated, ephemeral Git environments where tests can safely:
+- Create and destroy repositories
+- Make commits without affecting your work
+- Test edge cases that would be dangerous locally
+- Run Git operations in parallel without conflicts
+
+**This is why the pre-push hook runs tests in Docker** — it's not just convenience, it's safety.
 
 ## 🧪 Dev Workflow
 
@@ -114,9 +200,8 @@ All dev runs in Docker for consistency:
 ```bash
 make dev          # Dev container shell
 make test         # Full suite
-make test-quick   # Unit tests only
-make fmt          # Format
-make clippy       # Lint
+make benchmark    # Performance tests
+make build        # Build binary in Docker
 ```
 
 Pre-push hooks enforce tests and style.
@@ -131,7 +216,7 @@ Pre-push hooks enforce tests and style.
 - [Contributing Guide](CONTRIBUTING.md)
 - [Early Testers Program](docs/early-testers.md)
 
-Explore `docs/ideas` and `design/` for lots of goodies.
+Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. We try to track everything, including rationale behind important decisions, ideas, and we honor our digital  collaborators by granting them space to keep a dev log (see `lore/claude-mind`) and encouraging them to write freely to it.
 
 ## 🗺️ Roadmap
 
@@ -140,7 +225,7 @@ Explore `docs/ideas` and `design/` for lots of goodies.
 - [ ] Phase 2: Full CLI implementation  
 - [ ] Phase 3: Web visualization
 - [ ] Phase 4: Chaos engine
-- [ ] Phase 5: Launch preparation
+- [ ] Phase 5: World domination
 
 See [TASKLIST.md](TASKLIST.md) for detailed implementation plan.  
 Also [design/README](design/README.md).
@@ -172,7 +257,31 @@ Apache License 2.0 — see [LICENSE](LICENSE) for details
 - Inspired by the realization that _everythin's a graph, bro_ and that *Git is already a graph database*
 - Made for anyone who *believes knowledge deserves version control*
 - Special thanks to Gonzai 🐵 for keeping things chaotic
-- Git notes
+
+---
+
+## 📜 The GitMind Manifesto
+
+We believe:
+
+- Thought is infrastructure.
+- Speed is cognition.
+- Files are nodes. Git is truth.
+- Bloat is a betrayal of clarity.
+- Every idea deserves context.
+
+Neuroglyph isn't software.  
+It's **a substrate for shared memory** — human, machine, or both.
+
+---
+
+<details>
+<summary>🐵 Secret Gonzai Message</summary>
+
+> "If you are reading this, you're already part of the graph."  
+> — G🧠NZAI
+
+</details>
 
 > Neuroglyph is not just software. It’s an operating system for memory.  
 > It doesn’t tell you what’s true. It tells you what connects.

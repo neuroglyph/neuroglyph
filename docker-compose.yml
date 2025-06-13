@@ -1,56 +1,34 @@
 # SPDX-License-Identifier: Apache-2.0
 
 services:
-  # Development environment for CLI
   dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: neuroglyph-cli-dev
     volumes:
-      - .:/workspace:rw
-      - cargo-cache:/home/developer/.cargo
-      - target-cache:/workspace/cli/target
-    working_dir: /workspace/cli
-    environment:
-      - CARGO_HOME=/home/developer/.cargo
-      - USER=developer
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: /workspace
+    command: bash
     stdin_open: true
     tty: true
-    command: /bin/bash
+    environment:
+      - TERM=xterm-256color
 
-  # Test runner - exactly what CI will run
   test:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: neuroglyph-cli-test
+      context: ./c
+      dockerfile: Dockerfile.test
     volumes:
-      - .:/workspace:rw
-      - cargo-cache:/home/developer/.cargo
-      - target-cache:/workspace/cli/target
-    working_dir: /workspace/cli
-    environment:
-      - CARGO_HOME=/home/developer/.cargo
-      - CI=true
-    stdin_open: false
-    tty: false
-    command: |
-      bash -c "
-        set -e
-        if [ ! -f Cargo.toml ]; then
-          echo '=== Initializing Rust project ==='
-          cargo init --name gitmind .
-        fi
-        echo '=== Running format check ==='
-        cargo fmt --check
-        echo '=== Running clippy ==='
-        cargo clippy -- -D warnings
-        echo '=== Running tests ==='
-        cargo test
-        echo '=== All checks passed! ==='
-      "
-
-volumes:
-  cargo-cache:
-  target-cache:
+      - ./c:/test
+    working_dir: /test
+    command: ./test.sh
+    
+  benchmark:
+    build:
+      context: ./c
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./c:/test
+    working_dir: /test
+    command: ./benchmark.sh

@@ -1,211 +1,151 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
-<!-- © 2025 J. Kirby Ross / Neuroglyph Collective -->
-# Neuroglyph: Technical Roadmap & Architecture
+# Design Documentation
 
-**Version:** 2.0 (Post-Demo Refactor)  
-**Status:** Transitioning from proof-of-concept to production architecture  
-**Core Principle:** Git IS the database - no external storage required
+This directory contains all technical design documentation for the Neuroglyph project.
 
----
+## 🏗️ START HERE
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture, roadmap, everything technical
+- **[ADR-009-c.md](decisions/ADR-009-c.md)** - Pure C implementation decision (June 13, 2025) ✨
+- **[TASKLIST.md](../TASKLIST.md)** - Current work items
 
-## 🎯 Project Vision
+## Map of Contents
 
-Neuroglyph transforms Git from a version control system into a **substrate for distributed semantic memory**. By storing relationships as content-addressable Git objects, we enable:
+### 📋 Features
+Core functionality specifications with user stories and acceptance criteria.
 
-- **Temporal knowledge graphs** with built-in time travel
-- **Distributed cognition** across teams and time
-- **Chaos-driven discovery** through the Gonzai engine
-- **Zero-dependency operation** using only Git
+#### Phase 1a - MVP (Complete)
+- [F001: Git Object Storage](features/F001-git-object-storage.md) - Core link storage in `.gitmind/links/`
+- [F013: CLI Tools](features/F013-cli-tools.md) - Command-line interface
+- [F016: Link Hygiene](features/F016-link-hygiene.md) - Unlink and check commands
+- [F017: Error Handling Improvements](features/F017-error-handling-improvements.md) - User-friendly error messages
+- [F025: CLI Help System](features/F025-cli-help-system.md) - Markdown-driven help ✨ NEW
 
-## 🏗️ Architecture Overview
+#### Phase 1b - Web Visualization
+- [F018: Web Demo Mode](features/F018-web-demo-mode.md) - Static marketing demo
+- [F019: Local Web Server](features/F019-local-web-server.md) - `gitmind serve` command
+- [F020: Graph Visualization Engine](features/F020-graph-visualization-engine.md) - D3.js visualization
+- [F021: Interactive Graph Editing](features/F021-interactive-graph-editing.md) - Drag-and-drop links
+- [F022: Time Travel Interface](features/F022-time-travel-interface.md) - History navigation
+- [F023: Search and Filter UI](features/F023-search-and-filter-ui.md) - Finding nodes
+- [F024: Export and Sharing](features/F024-export-and-sharing.md) - PNG/SVG/data export
 
-### Core Stack (Single-User)
+#### Phase 2 - Full Implementation
+- [F002: Relationship Extraction](features/F002-relationship-extraction.md) - Auto-detect links
+- [F003: Git Hook Integration](features/F003-git-hook-integration.md) - Automatic updates
+- [F006: Web Visualization](features/F006-web-visualization.md) - Original web UI spec
+- [F007: Realtime Updates](features/F007-realtime-updates.md) - WebSocket support
+- [F012: Performance Optimization](features/F012-performance-optimization.md) - Caching layer
+
+### 📐 Architecture
+Technical specifications and design documents.
+
+- [architecture.md](architecture.md) - System architecture with diagrams ✨ NEW
+- [gitmind_architecture.md](gitmind_architecture.md) - Original architecture notes
+- [storage-format-spec.md](storage-format-spec.md) - Link file format specification
+- [MILESTONES.md](MILESTONES.md) - Development progression roadmap ✨ NEW
+
+### 🎯 Decisions
+Architecture Decision Records (ADRs) documenting key choices.
+
+- [ADR-001: Link Storage](decisions/ADR-001-link-storage.md) - Why we chose tracked files
+- [ADR-002: Gitoxide Migration](decisions/ADR-002-gitoxide-migration.md) - Moving from shell commands
+- [ADR-003: Web Visualization Strategy](decisions/ADR-003-web-visualization-strategy.md) - Local-first web UI
+- [ADR-004: Error Handling Improvements](decisions/ADR-004-error-handling-improvements.md) - User-centric errors
+- [ADR-005: Transport Strategy](decisions/ADR-005-transport-strategy.md) - Git-native transport
+- [ADR-006: Markdown-Driven Help](decisions/ADR-006-markdown-driven-help.md) - Help system design ✨ NEW
+- [LICENSE_DECISION.md](decisions/LICENSE_DECISION.md) - Apache 2.0 rationale
+
+### 💡 Proposals
+Detailed proposals for major features.
+
+- [error-handling-improvement.md](proposals/error-handling-improvement.md) - ✅ IMPLEMENTED
+- [local-web-companion.md](proposals/local-web-companion.md) - ✅ ACCEPTED
+- [web-visualization-revival.md](proposals/web-visualization-revival.md) - ✅ ACCEPTED
+
+### 🔍 Audits
+Systematic reviews of codebase and design.
+
+- [test-double-audit.md](audits/test-double-audit.md) - Test double friendliness review
+- [git-edge-cases-audit.md](audits/git-edge-cases-audit.md) - 25+ edge cases to handle
+- [gitoxide-test-double-analysis.md](audits/gitoxide-test-double-analysis.md) - Gitoxide testing approach
+
+## Feature Dependencies
 
 ```mermaid
-flowchart TD
-    subgraph User_Space
-        CLI["gitmind CLI<br/>(Rust binary)"] --> GitOps
-        CLI -->|optional| Daemon["gitmind serve<br/>(HTTP/WebSocket)"]
-        Daemon --> WebUI["D3 Browser UI<br/>(localhost:7420)"]
-        Plugins["VS Code / Obsidian<br/>Plugins"] <-->|exec| CLI
-    end
-
-    subgraph Storage["Git Object Store"]
-        Objects[".git/objects<br/>(relationships as blobs)"]
-        Refs[".git/refs<br/>(semantic branches)"]
-    end
-
-    GitOps["gitoxide"] --> Storage
-    Daemon --> Storage
-```
-
-### Semantic Link Flow (F001)
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant CLI as gitmind CLI
-    participant Git as Git Store
+graph TD
+    %% Core Features
+    F001[F001: Git Storage] --> F013[F013: CLI Tools]
+    F001 --> F016[F016: Link Hygiene]
+    F013 --> F016
     
-    User->>CLI: gitmind link note.md spec.md
-    CLI->>Git: hash-object (create link blob)
-    Note over Git: CROSS_REF: note.md -> spec.md<br/>timestamp: 1736637876<br/>type: semantic
-    CLI->>Git: update-ref refs/semlinks/latest
-    CLI->>Git: commit link to history
-    CLI-->>User: Link created: sha1-abc123
+    %% Error Handling
+    F013 --> F017[F017: Error Handling]
+    F016 --> F017
+    
+    %% Web Infrastructure
+    F001 --> F019[F019: Web Server]
+    F019 --> F020[F020: Graph Viz]
+    F020 --> F021[F021: Interactive Edit]
+    F020 --> F022[F022: Time Travel]
+    F020 --> F023[F023: Search/Filter]
+    F020 --> F024[F024: Export]
+    
+    %% Demo Mode
+    F020 --> F018[F018: Demo Mode]
+    
+    %% Phase 2
+    F001 --> F002[F002: Extraction]
+    F002 --> F003[F003: Git Hooks]
+    F019 --> F006[F006: Web UI]
+    F019 --> F007[F007: Realtime]
+    F001 --> F012[F012: Performance]
+    
+    %% Styling
+    classDef complete fill:#90EE90
+    classDef accepted fill:#87CEEB
+    classDef planned fill:#FFE4B5
+    
+    class F001,F013,F016 complete
+    class F017,F018,F019,F020,F021,F022,F023,F024 accepted
+    class F002,F003,F006,F007,F012 planned
 ```
 
-## 📋 Implementation Roadmap
+## Implementation Timeline
 
-### Phase 1: Core CLI (Weeks 1-3)
-
-**Goal:** Replace Node.js demo with production-ready Rust CLI
-
-1. **Project Setup**
-   - Initialize Rust project in `cli/` directory
-   - Configure workspace with `gitoxide`
-   - Set up CI/CD pipeline
-   - Create development Docker environment
-
-2. **F001: Git Object Storage**
-   ```rust
-   // Core operations to implement
-   gitmind init              // Initialize semlink refs
-   gitmind link A B          // Create relationship
-   gitmind show <sha>        // Display relationship
-   gitmind graph --json      // Export full graph
-   ```
-
-3. **F002: Relationship Extraction**
-   - Parse Markdown for existing links
-   - Batch import into Git objects
-   - Incremental scanning
-
-### Phase 2: Optional Services (Weeks 4-5)
-
-**Goal:** Restore visualization capabilities without compromising core architecture
-
-1. **Lightweight Daemon**
-   ```bash
-   gitmind serve             # Start on :7420
-   gitmind serve --port 8080 # Custom port
-   ```
-
-2. **Web UI Migration**
-   - Move existing D3.js interface to connect to new daemon
-   - Add WebSocket for real-time updates
-   - Package as standalone module
-
-### Phase 3: Developer Experience (Weeks 6-7)
-
-**Goal:** Make Gitmind accessible to non-CLI users
-
-1. **Editor Plugins**
-   - VS Code extension (TypeScript wrapper)
-   - Obsidian plugin
-   - Vim/Emacs integrations
-
-2. **Documentation**
-   - API reference
-   - Integration guides
-   - Example repositories
-
-### Phase 4: Advanced Features (Weeks 8+)
-
-**Goal:** Differentiate from simple link managers
-
-1. **Chaos Engine (Gonzai)**
-   ```bash
-   gitmind chaos --rate 5/s   # Entropy injection
-   gitmind discover           # Pattern detection
-   ```
-
-2. **Distributed Mesh** (Future)
-   - P2P sync via gRPC/QUIC
-   - Conflict-free replicated graphs
-   - Federation protocols
-
-## 🔧 Technical Decisions
-
-### Why Rust?
-- **Single static binary** - easy distribution
-- **gitoxide** - pure Rust Git implementation
-- **Performance** - critical for large graphs
-- **Memory safety** - important for long-running daemons
-
-### Why No Database?
-- **Git IS the database** - immutable, distributed, versioned
-- **Zero dependencies** - works anywhere Git works
-- **Natural replication** - via push/pull
-- **Built-in backup** - every clone is a full backup
-
-### Link Type Registry
-
-| Type | Format | Example |
-|------|--------|---------|
-| CROSS_REF | `CROSS_REF: source -> target` | Links between documents |
-| DEPENDS_ON | `DEPENDS_ON: A -> B` | Dependency relationships |
-| IMPLEMENTS | `IMPLEMENTS: doc -> spec` | Implementation links |
-| INSPIRED_BY | `INSPIRED_BY: idea -> source` | Creative attribution |
-
-## 🚦 Success Criteria
-
-### MVP (Phase 1)
-- [ ] CLI creates/queries Git-stored relationships
-- [ ] Works with any Git repository
-- [ ] No external dependencies beyond Git
-
-### Production (Phase 3)
-- [ ] 10K+ nodes render smoothly
-- [ ] Sub-50ms query performance
-- [ ] Plugin ecosystem active
-
-### Vision (Phase 4+)
-- [ ] Chaos mode reveals non-obvious patterns
-- [ ] Distributed teams share knowledge graphs
-- [ ] Becomes standard tool for knowledge workers
-
-## 🛠️ Development Setup
-
-```bash
-# Clone and enter repository
-git clone https://github.com/neuroglyph/neuroglyph.git
-cd neuroglyph
-
-# Set up Rust toolchain
-rustup default stable
-rustup component add clippy rustfmt
-
-# Build CLI
-cd cli
-cargo build --release
-
-# Run tests
-cargo test
-
-# Try it out
-./target/release/gitmind init
-./target/release/gitmind link README.md TODO.md
+```mermaid
+gantt
+    title GitMind Implementation Timeline
+    dateFormat  YYYY-MM-DD
+    section Phase 1a (MVP)
+    F001 Git Storage           :done,    f001, 2025-06-10, 2d
+    F013 CLI Tools            :done,    f013, after f001, 2d
+    F016 Link Hygiene         :done,    f016, after f013, 1d
+    F017 Error Handling       :active,  f017, after f016, 2d
+    
+    section Phase 1b (Web)
+    F018 Demo Mode            :         f018, after f017, 3d
+    F019 Web Server           :         f019, after f017, 2d
+    F020 Graph Viz            :         f020, after f019, 3d
+    F021 Interactive          :         f021, after f020, 2d
+    F023 Search/Filter        :         f023, after f020, 1d
+    
+    section Phase 2
+    F022 Time Travel          :         f022, after f023, 2d
+    F024 Export               :         f024, after f023, 1d
+    F002 Extraction           :         f002, after f024, 2d
+    F003 Git Hooks            :         f003, after f002, 1d
 ```
 
-## 📚 Key Documents
+## Design Principles
 
-- **Architecture Diagrams**: See diagrams above
-- **Chat Plan**: High-level structure and gaps analysis
-- **Next Steps**: Detailed technical direction
-- **Archive**: `/docs/archive/` contains all historical documentation
+1. **Git-Native**: Git is the database, not an afterthought
+2. **Local-First**: Your data, your machine, your control
+3. **Progressive Enhancement**: CLI first, web as enhancement
+4. **User-Centric**: Errors are teaching moments, not failures
+5. **Test-Driven**: Behavior matters, not implementation
 
-## 🎮 Demo vs Production
+## Quick Links
 
-The original Node.js demo (`/demos/archive/poc-2025-06-10/`) proved the concept. Now we're building the real thing:
-
-| Demo | Production |
-|------|------------|
-| Node.js server | Rust CLI |
-| Express + Socket.io | Optional lightweight daemon |
-| In-memory storage | Git object storage |
-| Proof of concept | Distributed knowledge graph |
-
----
-
-**Remember:** We're not building another app. We're revealing what Git always was - a distributed graph database waiting to be discovered. 🐵✨
+- [Project Root README](../README.md)
+- [Implementation TASKLIST](../TASKLIST.md)
+- [Development Instructions](../CLAUDE.md)
+- [Philosophy & Lore](../lore/)

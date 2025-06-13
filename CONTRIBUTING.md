@@ -7,9 +7,11 @@ Thank you for your interest in contributing to Neuroglyph! We're building a prot
 
 ### Prerequisites
 
-- Rust 1.70+ (install via [rustup](https://rustup.rs/))
 - Git 2.40+
+- C compiler (gcc, clang, or compatible)
+- Make
 - Basic understanding of Git internals is helpful but not required
+- Docker Desktop (optional, for consistent testing environment)
 
 ### Development Setup
 
@@ -28,9 +30,15 @@ Thank you for your interest in contributing to Neuroglyph! We're building a prot
    make install-hooks
    ```
 
-4. Start development environment:
+4. Build the project:
    ```bash
-   make dev
+   cd c
+   make
+   ```
+
+   Or use Docker:
+   ```bash
+   make docker-test
    ```
 
 ### Running Tests
@@ -38,28 +46,32 @@ Thank you for your interest in contributing to Neuroglyph! We're building a prot
 All tests MUST be run in Docker to ensure consistency with CI:
 
 ```bash
-# Run full test suite (same as CI and pre-push hook)
-make test
+# Run full test suite
+cd c && make test
 
-# Run only unit tests (faster)
-make test-quick
+# Run tests in Docker (same as CI)
+make docker-test
 
-# Run specific commands
-make fmt      # Format code
-make clippy   # Run linter
+# For C development
+cd c
+make          # Build binary
+make test     # Run tests
+make clean    # Clean build artifacts
 ```
 
 **Important:** The pre-push hook will automatically run `make test` before allowing pushes.
 
 ## 📝 Code Style Guidelines
 
-### Rust Code
+### C Code
 
-- Follow standard Rust naming conventions
-- Use `cargo fmt` before committing
-- Run `cargo clippy` and address warnings
+- Follow K&R or Linux kernel style
+- Use meaningful variable and function names
+- Always use `snprintf` instead of `sprintf`
+- Check return values from system calls
+- Free allocated memory appropriately
 - Write tests for new functionality
-- Document public APIs with doc comments
+- Document functions with clear comments
 
 ### Commit Messages
 
@@ -115,24 +127,59 @@ Your PR description should include:
 
 ## 🧪 Testing Requirements
 
+### 🐳 Why All Tests Run in Docker
+
+**Every test MUST run in Docker.** This is not optional. Here's why:
+
+1. **Consistency Across Environments**
+   - No "works on my machine" issues
+   - Same compiler, same libraries, same behavior
+   - CI uses Docker, so local tests match exactly
+
+2. **Real Git Operations = Real Danger**
+   - Our tests create actual Git repositories
+   - They make real commits, branches, and merges
+   - Running these on your working directory would be catastrophic:
+     - Could corrupt your uncommitted work
+     - Might destroy your .git directory
+     - Could conflict with your current branch
+     - Would definitely ruin your day
+
+Docker provides isolated, disposable environments where tests can:
+- Create and destroy Git repos safely
+- Run dangerous edge cases without risk
+- Execute Git operations in parallel
+- Fail spectacularly without consequences
+
+**Never run tests outside Docker. Your repository will thank you.**
+
 ### Unit Tests
-- Test individual functions and methods
-- Mock external dependencies
-- Aim for 80%+ code coverage
+- Test individual functions in isolation
+- Use temporary directories for file operations
+- Never touch the actual working repository
 
 ### Integration Tests
 - Test CLI commands end-to-end
-- Use temporary Git repositories
+- Create temporary Git repositories in Docker
 - Test error cases and edge conditions
+- Verify Git operations work correctly
 
-### Example Test
-```rust
-#[test]
-fn test_link_creation() {
-    let temp_repo = TempRepo::new();
-    let result = create_link("doc1.md", "doc2.md");
-    assert!(result.is_ok());
-    assert!(link_exists("doc1.md", "doc2.md"));
+### Example Test (C)
+```c
+void test_link_creation() {
+    // Create isolated temp directory
+    char tmpdir[] = "/tmp/gitmind_test_XXXXXX";
+    mkdtemp(tmpdir);
+    
+    // Initialize git repo IN THE TEMP DIR
+    system_fmt("cd %s && git init", tmpdir);
+    gm_init(tmpdir);
+    
+    // Test link creation
+    assert(gm_link_create("doc1.md", "doc2.md", "REFS") == 0);
+    
+    // Cleanup
+    system_fmt("rm -rf %s", tmpdir);
 }
 ```
 

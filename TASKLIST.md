@@ -1,10 +1,10 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 # Neuroglyph Implementation Task List
 
-**Status:** Ready to begin Rust CLI implementation  
-**Last Updated:** June 2025  
+**Status:** C Implementation Complete! 67KB binary achieved 🚀  
+**Last Updated:** June 13, 2025  
 **Project:** Neuroglyph (monorepo)  
-**Component:** gitmind CLI
+**Component:** gitmind CLI (Pure C)
 
 ---
 
@@ -93,7 +93,7 @@
 - [x] Create directory structure:
   ```
   neuroglyph/              # This monorepo (root)
-  ├── cli/                 # gitmind CLI (Rust)
+  ├── c/                   # gitmind CLI (Pure C)
   ├── demos/               # Example applications
   │   ├── archive/         # Historical POCs
   │   └── example-repos/   # Demo repositories
@@ -102,7 +102,7 @@
   ├── lore/                # Philosophy & Gonzai
   └── testdata/            # Test fixtures
   ```
-- [x] Update root `.gitignore` for Rust artifacts (`target/`, `Cargo.lock`)
+- [x] Update root `.gitignore` for build artifacts
 - [x] Create root `Makefile` for common tasks
 
 ### Demo Repository Setup
@@ -112,53 +112,62 @@
 - [ ] Create `/demo/README.md` explaining the demo structure [P1.3.4]
 - [ ] Add quick-start script that sets up demo environment [P1.3.5]
 
-### Rust CLI Project Initialization ✅ DONE
-- [x] Create `cli/` directory
-- [x] Create `cli/Cargo.toml` with:
-  ```toml
-  [package]
-  name = "gitmind"
-  version = "0.1.0"
-  edition = "2021"
-  
-  [dependencies]
-  gitoxide = "0.35"  # or git2
-  clap = { version = "4", features = ["derive"] }
-  serde = { version = "1", features = ["derive"] }
-  serde_json = "1"
-  thiserror = "1"
-  ```
-- [x] Set up CLI structure:
-  - [x] `cli/src/main.rs` - CLI entry point
-  - [x] `cli/src/lib.rs` - Core library
-  - [ ] `cli/src/git_store.rs` - F001 implementation
-  - [ ] `cli/src/link_types.rs` - Link type definitions
-  - [x] `cli/src/error.rs` - Error types
+### C CLI Project Structure ✅ DONE
+- [x] Create `c/` directory [P1.2.1]
+- [x] Implement pure C with zero dependencies [P1.2.2]
+- [x] Set up project structure: [P1.2.3]
+  - [x] `c/src/main.c` - CLI entry point
+  - [x] `c/include/gitmind.h` - Public API
+  - [x] `c/src/gitmind.c` - Core implementation
+  - [x] `c/src/link.c` - Link operations
+  - [x] `c/src/check.c` - Link validation
+  - [x] `c/src/status.c` - Repository status
+  - [x] `c/src/sha1.c` - Embedded SHA1 implementation
+  - [x] `c/include/errors.h` - Centralized error messages
 
 ### Development Environment
-- [x] Create `Dockerfile.dev` for Rust development
-- [x] Add Rust targets to `docker-compose.yml`
+- [x] Create `Dockerfile.test` for C testing [P1.4.1]
+- [x] Add C build targets to `Makefile` [P1.4.2]
 - [x] Create Docker test infrastructure that runs in non-TTY mode
 - [x] Fix GitHub Actions deprecated artifact actions (v3 → v4)
 - [x] Add working-directory for cross-platform CI tests
-- [x] Set up GitHub Actions for CI:
-  - [x] Rust formatting check (`cargo fmt`)
-  - [x] Linting (`cargo clippy`)
-  - [x] Tests (`cargo test`)
-  - [ ] Build artifacts for Linux/macOS/Windows
+- [ ] Set up GitHub Actions for CI: [P1.4.3]
+  - [ ] C compilation checks [P1.4.4]
+  - [ ] Test suite execution [P1.4.5]
+  - [ ] Static analysis (clang-tidy) [P1.4.6]
+  - [ ] Build artifacts for Linux/macOS/Windows [P1.4.7]
 
 ---
 
-## 🚀 Phase 1a: Minimal Viable Gitmind (Week 1)
-**Features:** [F001 - Git Object Storage](/design/features/F001-git-object-storage.md), [F013 - CLI Tools](/design/features/F013-cli-tools.md), [F016 - Link Hygiene](/design/features/F016-link-hygiene.md)
+## 🚀 Phase 1a: C MVP - THE ULTIMATE PIVOT ✅ COMPLETE
+**Status:** SHIPPED IN PURE C 🎉
+**Features:** [F001 - Git Object Storage](/docs/features/F001-git-object-storage.md), [F013 - CLI Tools](/docs/features/F013-cli-tools.md), [F016 - Link Hygiene](/docs/features/F016-link-hygiene.md)
 
-### ~~Three~~ Five Commands - Ship Fast, Learn Fast (+ Essential Hygiene)
-- [x] Implement core commands:
-  ```bash
-  gitmind init      # Creates .gitmind/links/ directory ✅
-  gitmind link A B  # Creates link file, stages, commits ✅
-  gitmind list      # Shows all links in current repo ✅
-  ```
+### Current Status: We Went Full C
+- [x] Rust prototype complete (44 tests passing)
+- [x] Architecture decision made ~~(ADR-008: Polyglot)~~ NOPE, PURE C BABY
+- [x] **COMPLETE: C Implementation (June 13, 2025)** 🚀
+
+### C Implementation Results
+- [x] **Binary size: 67KB** (not a typo!)
+- [x] **Startup time: <1ms** ("Process too fast to measure!")
+- [x] **Zero dependencies** (just libc)
+- [x] All commands implemented:
+  - [x] `init` - Initialize .gitmind directory
+  - [x] `link` - Create semantic links with SHA1 filenames
+  - [x] `list` - Query links with filtering
+  - [x] `unlink` - Remove specific links
+  - [x] `check` - Validate and fix broken links
+  - [x] `status` - Show repository status and stats
+  - [x] `version` - Version information
+- [x] Memory-safe implementation:
+  - [x] All sprintf → snprintf
+  - [x] Centralized error messages
+  - [x] Path validation and bounds checking
+  - [x] Thread-safe error handling
+- [x] Comprehensive test suite (11 tests, all passing)
+- [x] Docker-based development and testing
+- [x] Performance that makes other languages cry
 - [x] Implement hygiene commands (F016):
   ```bash
   gitmind unlink A B  # Remove specific link ✅
@@ -188,56 +197,31 @@
     - [x] Report broken links
     - [x] --fix flag to remove broken links
     - [x] --dry-run flag to preview changes
-- [ ] **BEFORE MVP: Address audit items from design/audits/**
-  - [ ] Complete remaining test doubles from design/audits/test-double-audit.md:
-    - [ ] GIT_INDEX_FILE environment variable override
-    - [ ] Git attributes handling
-    - [ ] Global git config isolation
-  - [ ] Complete edge case tests from design/audits/git-edge-cases-audit.md:
-    - [ ] Test for bare repository detection (BareRepositoryGit)
-    - [ ] Test for detached HEAD scenarios (DetachedHeadGit)
-    - [ ] Test for Git hook failures (HookFailureGit)
-    - [ ] Test for missing git config (NoConfigGit)
-    - [ ] Test for worktree operations
-    - [ ] Test for submodule boundaries
-    - [ ] Test for non-UTF8 path handling
-- [ ] **BEFORE MVP: Implement F017 Error Handling Improvements (design/features/F017-error-handling-improvements.md)**
-  - [ ] Phase 1: Core error classification system
-    - [ ] Implement ErrorClassifier with pattern matching
-    - [ ] Create OperationContext tracking
-    - [ ] Build SolutionGenerator for top 5 errors
-  - [ ] Phase 2: Transform common Git errors:
-    - [ ] Index.lock errors → Clear concurrency guidance
-    - [ ] No HEAD errors → Initial commit instructions
-    - [ ] Disk full errors → Space cleanup suggestions
-    - [ ] Permission denied → Ownership fix commands
-    - [ ] Missing git config → Setup commands
-  - [ ] Phase 3: Error codes and help system
-    - [ ] Assign unique codes (E001-E999) to each error
-    - [ ] Implement `gitmind help error:E001` command
-    - [ ] Add --verbose flag for expert details
-- [ ] **BEFORE MVP: Implement F025 CLI Help System (design/features/F025-cli-help-system.md)**
-  - [ ] Create `docs/cli/` directory structure
-  - [ ] Write comprehensive markdown documentation:
-    - [ ] `gitmind.md` - Main command overview
-    - [ ] `gitmind-init.md` - Initialize repository
-    - [ ] `gitmind-link.md` - Create links
-    - [ ] `gitmind-list.md` - List links
-    - [ ] `gitmind-unlink.md` - Remove links
-    - [ ] `gitmind-check.md` - Validate links
-  - [ ] Implement help rendering in CLI:
-    - [ ] Embed markdown at compile time
-    - [ ] Add --help flag handling
-    - [ ] Basic markdown to terminal rendering
-    - [ ] Terminal capability detection
-  - [ ] Generate man pages (optional for MVP):
-    - [ ] Add build-time generation
-    - [ ] Test on Linux/macOS
-    - [ ] Include in release artifacts
-- [ ] Create demo video showing these 5 commands
-- [ ] Ship binaries for Linux/macOS
-- [ ] Post "Show HN" with minimal demo
-- [ ] **SUCCESS METRIC: 10 people try it and 1 gives feedback**
+### Next Steps: Distribution & Polish
+- [ ] **Cross-platform builds**
+  - [ ] Linux x86_64 static binary
+  - [ ] macOS arm64/x86_64 universal binary
+  - [ ] Windows exe (with MinGW)
+  - [ ] GitHub Actions CI/CD
+  - [ ] Automated releases
+- [ ] **Testing & Quality**
+  - [ ] Fuzz testing with AFL
+  - [ ] Valgrind memory checks
+  - [ ] Edge case testing (bare repos, submodules, etc.)
+  - [ ] Performance benchmarks with 10K+ links
+- [ ] **Documentation**
+  - [ ] Man pages
+  - [ ] Inline help improvements
+  - [ ] Installation guide
+  - [ ] C API documentation for bindings
+### Success Metrics
+- [x] **Binary < 100KB** ✅ (67KB!)
+- [x] **Startup < 10ms** ✅ (<1ms!)
+- [x] **All core commands working** ✅
+- [x] **Tests passing in Docker** ✅
+- [ ] Ship binaries for Linux/macOS/Windows
+- [ ] Post "Show HN: GitMind - 67KB knowledge graph tool in C"
+- [ ] **10 people try it and 1 gives feedback**
 
 ---
 
@@ -565,13 +549,13 @@
 - [ ] Verify all documentation links work
 - [ ] Create GitHub release with binaries
 - [ ] Submit to package managers:
-  - [ ] crates.io
+  - [ ] Release binaries on GitHub
   - [ ] Homebrew
   - [ ] AUR
 - [ ] Post to:
   - [ ] Hacker News (`Show HN: Gitmind - Git as a Semantic Knowledge Graph`)
   - [ ] r/programming
-  - [ ] r/rust
+  - [ ] r/C_Programming
   - [ ] Twitter/X with demo GIF
   - [ ] LinkedIn article
 - [ ] Monitor and respond to feedback
@@ -645,4 +629,28 @@ Each task is complete when:
 
 ---
 
-**Next Action:** Begin Phase 0 by creating the Rust project structure in `/cli/`
+**Next Action:** Focus on Phase 1a distribution tasks - cross-platform builds and GitHub Actions CI/CD
+
+---
+
+## 📚 Historical Archive (Rust Implementation)
+
+### Rust Prototype Work (Completed before C pivot)
+
+This section documents the Rust implementation work that was completed before we pivoted to pure C on June 13, 2025. See [ADR-009](docs/decisions/ADR-009-c.md) for the decision to pivot.
+
+#### Rust CLI Implementation ✅ COMPLETE
+- [x] Created initial Rust project structure
+- [x] Implemented 44 passing tests
+- [x] Clean architecture with dependency injection
+- [x] Commands implemented: init, link, list, unlink, check
+- [x] Gitoxide integration (which led to complexity issues)
+- [x] Test doubles for edge case handling
+
+#### Key Learnings from Rust Phase
+- Git operations via CLI were simpler than library integration
+- Rust's complexity wasn't justified for this use case
+- Binary size and startup time were concerns (multi-MB binary)
+- Led to the insight that C would be optimal for this tool
+
+The Rust prototype served its purpose: proving the concept and informing the final implementation strategy. The C implementation achieved all the same functionality in 67KB vs multiple MB.

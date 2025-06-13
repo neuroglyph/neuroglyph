@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: Apache-2.0
+FROM alpine:latest
+
+# Install build tools and git
+RUN apk add --no-cache \
+    build-base \
+    git \
+    bash
+
+# Create test user
+RUN adduser -D testuser
+
+# Copy source
+WORKDIR /build
+COPY . .
+
+# Build gitmind
+RUN make clean && make
+
+# Copy binary as root
+RUN cp /build/gitmind /usr/local/bin/
+
+# Set up test environment
+USER testuser
+WORKDIR /home/testuser
+
+ENTRYPOINT ["/bin/bash"]
