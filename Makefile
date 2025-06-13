@@ -1,55 +1,42 @@
 # SPDX-License-Identifier: Apache-2.0
 # © 2025 J. Kirby Ross / Neuroglyph Collective
-# Neuroglyph Go Implementation Makefile
-.PHONY: help build test clean install dev fmt lint deps update-deps
+# Neuroglyph C Implementation Makefile
+.PHONY: help build test clean install dev benchmark
 
 # Default target
 help:
-	@echo "GitMind Go Development Commands:"
-	@echo "  make build        - Build the gitmind binary"
-	@echo "  make test         - Run all tests"
+	@echo "GitMind C Development Commands:"
+	@echo "  make build        - Build the gitmind binary in Docker"
+	@echo "  make test         - Run all tests in Docker"
 	@echo "  make clean        - Clean build artifacts"
-	@echo "  make install      - Install to GOPATH/bin"
-	@echo "  make dev          - Build and run"
-	@echo "  make fmt          - Format code"
-	@echo "  make lint         - Run linter (requires golangci-lint)"
-	@echo "  make deps         - Download dependencies"
-	@echo "  make update-deps  - Update dependencies"
+	@echo "  make install      - Install to /usr/local/bin (from Docker build)"
+	@echo "  make dev          - Open development shell in Docker"
+	@echo "  make benchmark    - Run benchmarks in Docker"
 
-# Build the binary (for Linux in Docker)
+# Build the binary in Docker
 build:
-	docker compose run --rm dev sh -c "cd go && GOOS=linux GOARCH=amd64 go build -o ../gitmind ./cmd/gitmind"
+	docker compose build dev
+	docker compose run --rm dev sh -c "cd c && make clean && make"
 
-# Build for host platform (macOS)
-build-host:
-	docker compose run --rm dev sh -c "cd go && GOOS=darwin GOARCH=arm64 go build -o ../gitmind ./cmd/gitmind"
-
-# Run tests
+# Run tests in Docker
 test:
-	docker compose run --rm -T test
+	docker compose build test
+	docker compose run --rm test
 
 # Clean build artifacts
 clean:
-	rm -f gitmind
 	docker compose down
-	docker volume rm neuroglyph_go-cache neuroglyph_go-build-cache || true
+	rm -f c/gitmind c/src/*.o
 
 # Development shell
 dev:
 	docker compose run --rm dev
 
-# Format code
-fmt:
-	docker compose run --rm dev sh -c "cd go && go fmt ./..."
+# Run benchmarks in Docker
+benchmark:
+	docker compose build benchmark
+	docker compose run --rm benchmark
 
-# Run linter (will install golangci-lint in container)
-lint:
-	docker compose run --rm dev sh -c "cd go && golangci-lint run || echo 'Install golangci-lint first'"
-
-# Download dependencies
-deps:
-	docker compose run --rm dev sh -c "cd go && go mod download"
-
-# Update dependencies
-update-deps:
-	docker compose run --rm dev sh -c "cd go && go get -u ./... && go mod tidy"
+# Install locally (build first in Docker, then copy)
+install: build
+	sudo cp c/gitmind /usr/local/bin/
