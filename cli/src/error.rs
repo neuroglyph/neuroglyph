@@ -33,12 +33,6 @@ pub enum Error {
 
     #[error("Parse error: {0}")]
     ParseError(String),
-
-    #[error("IO error: {0}")]
-    IoError(String),
-
-    #[error("Git error: {0}")]
-    GitError(String),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

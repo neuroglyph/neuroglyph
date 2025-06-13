@@ -3,18 +3,21 @@
 
 //! List command implementation
 
-use crate::error::{Error, Result};
+use crate::commands::GitMindContext;
+use crate::error::Result;
+use crate::filesystem::FileSystem;
 use crate::link::Link;
-use std::fs;
 use std::path::Path;
 
-pub struct ListCommand<'a> {
-    working_dir: &'a Path,
+pub struct ListCommand<F: FileSystem> {
+    context: GitMindContext,
+    fs: F,
 }
 
-impl<'a> ListCommand<'a> {
-    pub fn new(working_dir: &'a Path) -> Self {
-        Self { working_dir }
+impl<F: FileSystem> ListCommand<F> {
+    pub fn new(working_dir: &Path, fs: F) -> Result<Self> {
+        let context = GitMindContext::new(working_dir)?;
+        Ok(Self { context, fs })
     }
 
     pub fn execute(
@@ -22,14 +25,8 @@ impl<'a> ListCommand<'a> {
         source_filter: Option<&str>,
         target_filter: Option<&str>,
     ) -> Result<Vec<Link>> {
-        // Check if gitmind is initialized
-        let gitmind_dir = self.working_dir.join(".gitmind");
-        if !gitmind_dir.exists() {
-            return Err(Error::NotInitialized);
-        }
-
-        let links_dir = gitmind_dir.join("links");
-        if !links_dir.exists() {
+        let links_dir = self.context.links_dir();
+        if !self.fs.exists(&links_dir) {
             // Links directory was removed (e.g., by git rm when empty)
             // This is OK - just return empty list
             return Ok(Vec::new());
@@ -38,17 +35,15 @@ impl<'a> ListCommand<'a> {
         let mut links = Vec::new();
 
         // Read all link files
-        for entry in fs::read_dir(&links_dir)? {
-            let entry = entry?;
-            let path = entry.path();
-
+        let entries = self.fs.read_dir(&links_dir)?;
+        for path in entries {
             // Skip if not a .link file
             if path.extension().and_then(|s| s.to_str()) != Some("link") {
                 continue;
             }
 
             // Read and parse link
-            let content = fs::read_to_string(&path)?;
+            let content = self.fs.read_to_string(&path)?;
             let content = content.trim();
 
             match Link::from_canonical_string(content) {
@@ -61,12 +56,9 @@ impl<'a> ListCommand<'a> {
                         links.push(link);
                     }
                 }
-                Err(e) => {
-                    eprintln!(
-                        "Warning: Failed to parse link file {}: {}",
-                        path.display(),
-                        e
-                    );
+                Err(_) => {
+                    // Skip malformed link files silently
+                    // They will be caught by the check command
                 }
             }
         }
