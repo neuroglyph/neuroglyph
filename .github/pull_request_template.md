@@ -17,7 +17,7 @@ Fixes #(issue number)
 
 ## Checklist
 - [ ] My code follows the style guidelines of this project
-- [ ] I have run `cargo fmt` and `cargo clippy`
+- [ ] I have run `make test` in Docker
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
 - [ ] I have added tests that prove my fix is effective or that my feature works
