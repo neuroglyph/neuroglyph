@@ -23,11 +23,11 @@ The original proof-of-concept created on June 10, 2025 that validated the core i
 - Chaos testing scripts
 - Docker test environment
 
-This POC proved that Git could function as a distributed knowledge graph and led to the current Rust implementation.
+This POC proved that Git could function as a distributed knowledge graph and led to the current C implementation.
 
 ## Future Demos
 
-Once the Rust CLI is complete, this directory will contain:
+Once the C implementation is fully distributed, this directory will contain:
 - **quickstart/**: A 5-minute demo showing basic functionality
 - **use-cases/**: Full demonstrations of each of the 10 use cases from the whitepaper
 - **integrations/**: Examples of Gitmind integrated with popular tools

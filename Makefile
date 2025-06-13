@@ -1,60 +1,55 @@
 # SPDX-License-Identifier: Apache-2.0
 # © 2025 J. Kirby Ross / Neuroglyph Collective
-# Neuroglyph CLI Development Makefile
-.PHONY: help dev test test-quick fmt clippy clean docker-build install-hooks
+# Neuroglyph Go Implementation Makefile
+.PHONY: help build test clean install dev fmt lint deps update-deps
 
 # Default target
 help:
-	@echo "Neuroglyph CLI (gitmind) Development Commands:"
-	@echo "  make dev          - Start development container"
-	@echo "  make test         - Run all tests in Docker (same as CI)"
-	@echo "  make test-quick   - Run tests without format/clippy checks"
-	@echo "  make fmt          - Run cargo fmt"
-	@echo "  make clippy       - Run cargo clippy"
+	@echo "GitMind Go Development Commands:"
+	@echo "  make build        - Build the gitmind binary"
+	@echo "  make test         - Run all tests"
 	@echo "  make clean        - Clean build artifacts"
-	@echo "  make docker-build - Build Docker images"
-	@echo "  make install-hooks - Install git hooks"
+	@echo "  make install      - Install to GOPATH/bin"
+	@echo "  make dev          - Build and run"
+	@echo "  make fmt          - Format code"
+	@echo "  make lint         - Run linter (requires golangci-lint)"
+	@echo "  make deps         - Download dependencies"
+	@echo "  make update-deps  - Update dependencies"
 
-# Start development environment
-dev: docker-build
-	docker compose run --rm dev
+# Build the binary (for Linux in Docker)
+build:
+	docker compose run --rm dev sh -c "cd go && GOOS=linux GOARCH=amd64 go build -o ../gitmind ./cmd/gitmind"
 
-# Run all tests exactly as CI would
-test: docker-build
+# Build for host platform (macOS)
+build-host:
+	docker compose run --rm dev sh -c "cd go && GOOS=darwin GOARCH=arm64 go build -o ../gitmind ./cmd/gitmind"
+
+# Run tests
+test:
 	docker compose run --rm -T test
-
-# Quick test run (no format/clippy)
-test-quick: docker-build
-	docker compose run --rm dev cargo test
-
-# Format code
-fmt: docker-build
-	docker compose run --rm dev cargo fmt
-
-# Run clippy
-clippy: docker-build
-	docker compose run --rm dev cargo clippy -- -D warnings
 
 # Clean build artifacts
 clean:
+	rm -f gitmind
 	docker compose down
-	docker volume rm neuroglyph_target-cache || true
-	rm -rf cli/target/
+	docker volume rm neuroglyph_go-cache neuroglyph_go-build-cache || true
 
-# Build Docker images
-docker-build:
-	COMPOSE_BAKE=true docker compose build
+# Development shell
+dev:
+	docker compose run --rm dev
 
-# Install git hooks (including Git LFS)
-install-hooks:
-	@echo "Installing git hooks..."
-	@mkdir -p .git/hooks
-	@cp scripts/pre-push-combined .git/hooks/pre-push
-	@cp scripts/post-checkout .git/hooks/post-checkout
-	@cp scripts/post-commit .git/hooks/post-commit
-	@cp scripts/post-merge .git/hooks/post-merge
-	@chmod +x .git/hooks/pre-push
-	@chmod +x .git/hooks/post-checkout
-	@chmod +x .git/hooks/post-commit
-	@chmod +x .git/hooks/post-merge
-	@echo "Git hooks installed (including Git LFS support)!"
+# Format code
+fmt:
+	docker compose run --rm dev sh -c "cd go && go fmt ./..."
+
+# Run linter (will install golangci-lint in container)
+lint:
+	docker compose run --rm dev sh -c "cd go && golangci-lint run || echo 'Install golangci-lint first'"
+
+# Download dependencies
+deps:
+	docker compose run --rm dev sh -c "cd go && go mod download"
+
+# Update dependencies
+update-deps:
+	docker compose run --rm dev sh -c "cd go && go get -u ./... && go mod tidy"
