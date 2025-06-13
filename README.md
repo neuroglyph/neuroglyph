@@ -35,12 +35,12 @@ It stores **relationships, confidence**, and **epistemic state**.
 > This is version control for understanding itself.
 
 ## ✨ Core Features
-	•	🔗 gitmind link A B — establish semlinks between concepts
-	•	📜 gitmind scan — extract links from markdown, wikis, and code
-	•	🧱 Git-native object storage — decentralized, content-addressable
-	•	🧠 Visualize the graph of meaning
-	•	🧬 Plugin-ready (VSCode, Obsidian, anything Git-aware)
-	•	🧨 Chaos Mode — Gonzai adds speculative links and uncanny insight
+- 🔗 gitmind link A B — establish semlinks between concepts
+- 📜 gitmind scan — extract links from markdown, wikis, and code
+- 🧱 Git-native object storage — decentralized, content-addressable
+- 🧠 Visualize the graph of meaning
+- 🧬 Plugin-ready (VSCode, Obsidian, anything Git-aware)
+- 🧨 Chaos Mode — Gonzai adds speculative links and uncanny insight
 
 🧠 Monorepo Layout
 
