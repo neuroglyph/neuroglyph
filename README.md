@@ -7,7 +7,7 @@
 
 > _"A glyph is a thought committed. A repo is a memory that persists."_
 
-## ⚡️ What is Neuroglyph?_
+## ⚡️ _What is Neuroglyph?_
 
 Neuroglyph is an open protocol and cognitive infrastructure layer that turns Git into a substrate for distributed semantic memory — no database, no gods, no masters.
 
@@ -46,8 +46,6 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 > This is version control for understanding itself.
 
----
-
 ## ✨ Core Features
 - 🔗 gitmind link A B — establish semlinks between concepts
 - 📜 gitmind scan — extract links from markdown, wikis, and code
@@ -56,7 +54,9 @@ It stores **relationships, confidence**, and **epistemic state**.
 - 🧬 Plugin-ready (VSCode, Obsidian, anything Git-aware)
 - 🧨 Chaos Mode — Gonzai adds speculative links and uncanny insight
 
-🧠 Monorepo Layout
+---
+
+## 🧠 Monorepo Layout
 
 ```
 neuroglyph/              # This monorepo
