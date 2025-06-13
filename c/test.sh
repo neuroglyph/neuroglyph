@@ -37,7 +37,7 @@ fi
 
 # Test 2: Create link
 echo -n "Test 2: gitmind link... "
-/usr/local/bin/gitmind link README.md docs/ARCHITECTURE.md --type IMPLEMENTS
+gitmind link README.md docs/ARCHITECTURE.md --type IMPLEMENTS
 if [ -n "$(ls .gitmind/links/*.link 2>/dev/null)" ]; then
     echo "✓ PASS"
 else
