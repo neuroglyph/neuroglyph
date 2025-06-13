@@ -8,25 +8,28 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - .:/workspace
-      - go-cache:/go/pkg/mod
-      - go-build-cache:/root/.cache/go-build
+      - /var/run/docker.sock:/var/run/docker.sock
     working_dir: /workspace
-    environment:
-      - CGO_ENABLED=0
+    command: bash
     stdin_open: true
     tty: true
+    environment:
+      - TERM=xterm-256color
 
   test:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
+      context: ./c
+      dockerfile: Dockerfile.test
     volumes:
-      - .:/workspace:ro
-    working_dir: /workspace
-    environment:
-      - CGO_ENABLED=0
-    command: ["sh", "-c", "cd go && go test -v ./..."]
-
-volumes:
-  go-cache:
-  go-build-cache:
+      - ./c:/test
+    working_dir: /test
+    command: ./test.sh
+    
+  benchmark:
+    build:
+      context: ./c
+      dockerfile: Dockerfile.test
+    volumes:
+      - ./c:/test
+    working_dir: /test
+    command: ./benchmark.sh

@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: Apache-2.0
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+      
+    - name: Set up build environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential git
+        
+    - name: Build
+      working-directory: ./c
+      run: |
+        make clean
+        make
+        
+    - name: Run tests
+      working-directory: ./c
+      run: |
+        ./test.sh
+        
+    - name: Run benchmarks
+      working-directory: ./c
+      run: |
+        ./benchmark.sh
+        
+    - name: Upload binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: gitmind-linux
+        path: c/gitmind
+
+  docker-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Build Docker test image
+      working-directory: ./c
+      run: docker build -f Dockerfile.test -t gitmind-test .
+      
+    - name: Run Docker tests
+      working-directory: ./c
+      run: ./docker-test.sh
+
+  cross-platform:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install openssl
+        
+    - name: Build
+      working-directory: ./c
+      run: |
+        make clean
+        make
+        
+    - name: Test
+      working-directory: ./c
+      run: |
+        ./test.sh

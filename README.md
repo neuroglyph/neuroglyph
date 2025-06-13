@@ -1,24 +1,13 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- © 2025 J. Kirby Ross / Neuroglyph Collective -->
 
-# Neuroglyph
+# ↯ Neuroglyph
 
 > _"A glyph is a thought committed. A repo is a memory that persists."_
 
-**Neuroglyph** is a protocol and open-source system for transforming Git into a substrate for distributed semantic memory.
+Neuroglyph is an open protocol and cognitive infrastructure layer that turns Git into a substrate for distributed semantic memory — no database, no gods, no masters.
 
-[![CI](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml/badge.svg)](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
-It enables:
-- ✅ Time-aware **semantic linking** of files and ideas
-- 🧠 Git-based **knowledge graphs** with zero external databases
-- 🔗 Cross-repository, cross-temporal relationship mapping
-- 🧪 Optional chaos-mode entropy for exploratory discovery
-
-Built for devs, researchers, writers, AI agents, and anyone who treats thought as versioned infrastructure.
-
----
+Semantic scaffolding for planetary-scale cooperative cognition. A map of thought across minds.
 
 # 🧠 Okay, But What Am I Looking At Here?
 
@@ -31,42 +20,56 @@ Built for devs, researchers, writers, AI agents, and anyone who treats thought a
 | 🧠 | **Researchers** | *"Version-controlled epistemology. Fork ideas. Diff beliefs. Merge insights. Understand how understanding itself evolves."* | "We can literally version knowledge itself." |
 | 🌍 | **Visionaries** | *"Distributed cognition substrate. Repos become neurons. Memory becomes shareable. Thought becomes forkable. Humanity begins to think as one."* | "This is how collective intelligence actually works." |
 
-Neuroglyph is **Git as cognition layer.**
+[![CI](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml/badge.svg)](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-It lets you:
-- Create links like `note.md ➝ spec.md` with semantic meaning
-- Store these links as versioned Git objects ("glyphs")
-- Query, visualize, and sync knowledge across time and devices
-- Extend Git from version control to **mind control** 🧙
+It enables:
+- ✅ Time-aware semantic linking of thoughts, files, and ideas
+- 🧠 Git-powered knowledge graphs with zero external dependencies
+- 🔗 Cross-repo, cross-temporal relationship mapping
+- 🧪 Optional entropy injection via Chaos Mode for speculative discovery
 
----
+Built for devs, researchers, writers, and AI agents—anyone who treats thought as infrastructure.
 
-## ✨ Key Features
+## 🧠 What is Neuroglyph?
 
-- 🔗 `gitmind link A B` — link two nodes with semantic intent
-- 📜 `gitmind scan` — parse links from Markdown, wiki-style, more
-- 🧱 Git-native storage — content-addressable, decentralized
-- 🧠 Visualize your repo as a living semantic graph
-- 🧬 Plugin-ready architecture (VSCode, Obsidian, etc.)
-- 🧨 Chaos mode — inject entropy to discover novel connections
+**Git as cognition layer.**  
+Neuroglyph transforms Git from a version control system into a **thinking system**.
 
----
+You can:
+- Link paper.md ➝ implementation.rs semantically (IMPLEMENTS)
+- Store links as immutable Git objects (“glyphs”)
+- Annotate with evolving metadata via Git Notes
+- Visualize your repo as a **living semantic graph**
 
-## 📦 Monorepo Structure
+Neuroglyph doesn’t store _documents_.  
+It stores **relationships, confidence**, and **epistemic state**.
+
+> This is version control for understanding itself.
+
+## ✨ Core Features
+- 🔗 gitmind link A B — establish semlinks between concepts
+- 📜 gitmind scan — extract links from markdown, wikis, and code
+- 🧱 Git-native object storage — decentralized, content-addressable
+- 🧠 Visualize the graph of meaning
+- 🧬 Plugin-ready (VSCode, Obsidian, anything Git-aware)
+- 🧨 Chaos Mode — Gonzai adds speculative links and uncanny insight
+
+🧠 Monorepo Layout
 
 ```
 neuroglyph/              # This monorepo
 ├── c/                   # gitmind CLI (Pure C implementation)
 ├── demos/               # Example applications
 ├── docs/                # All documentation (specs, features, decisions)
-├── lore/                # Philosophy & Gonzai
+├── lore/                # Philosophy & Gonzai + Claude's Dev Logs
 └── testdata/            # Test fixtures
 ```
 
-Future additions:
-- `glyphd/` - Optional daemon for Web UI
-- `plugins/` - Editor integrations
-- `sdk/` - Language bindings
+Planned:
+- glyphd/ — Optional daemon for Web UI
+- plugins/ — Editor integrations
+- sdk/ — Language bindings
 
 ---
 
@@ -137,84 +140,58 @@ We ran the numbers. Sonic lost.
 
 > *"Too slow." — GitMind, probably*
 
----
-
 ## 🚀 Quick Start
 
-### Prerequisites
+### Prereqs
 
+- Docker
 - Git 2.40+
 - C compiler (gcc, clang, or compatible)
 - Make
-- Git LFS installed (`brew install git-lfs` on macOS) *[for logo/images in monorepo]*
+- Git LFS (brew install git-lfs) *[for logo/images in monorepo]*
 
 Optional:
-- Docker Desktop (for consistent testing environment)
+- the Dockerized CLI Desktop (for consistent testing environment)
 
-### Development Setup
+### Setup
 
 ```bash
-# Clone the repository
 git clone https://github.com/neuroglyph/neuroglyph.git
 cd neuroglyph
-
-# Set up development environment
 ./scripts/setup-dev.sh
-
-# Run tests (in Docker, same as CI)
 make test
-
-# Start development container
 make dev
 ```
 
 ### Basic Usage
 
 ```bash
-# Build the CLI (C implementation)
-cd c
-make
+cd cli
+cargo build --release
 
-# Install (optional)
-sudo make install  # Installs to /usr/local/bin
+# Initialize repo
+./target/release/gitmind init
 
-# Use gitmind
-gitmind init
-gitmind link README.md docs/architecture.md --type IMPLEMENTS
-gitmind list
-gitmind status
-gitmind check --fix  # Remove broken links
+# Link files semantically
+./target/release/gitmind link README.md docs/architecture.md
+
+# List the current glyph graph
+./target/release/gitmind list
 ```
 
-Or use the pre-built binary (when available):
-```bash
-# macOS/Linux
-curl -L https://github.com/neuroglyph/neuroglyph/releases/latest/download/gitmind-$(uname -s)-$(uname -m) -o gitmind
-chmod +x gitmind
-./gitmind init
-```
+## 🧪 Dev Workflow
 
----
-
-## 🧪 Development
-
-Development can be done locally or in Docker:
+All dev runs in Docker for consistency:
 
 ```bash
-# Local development
-cd c
-make          # Build binary
-make test     # Run test suite
-make clean    # Clean build artifacts
-
-# Docker development (for consistency)
-make docker-test    # Run tests in Docker
-make docker-shell   # Development shell in Docker
+make dev          # Dev container shell
+make test         # Full suite
+make test-quick   # Unit tests only
+make fmt          # Format
+make clippy       # Lint
 ```
 
-A pre-push hook automatically runs tests before pushing.
-
----
+Pre-push hooks enforce tests and style.
 
 ## 📚 Learn More
 
@@ -226,28 +203,24 @@ A pre-push hook automatically runs tests before pushing.
 - [Contributing Guide](CONTRIBUTING.md)
 - [Early Testers Program](docs/early-testers.md)
 
----
+Explore `docs/ideas` and `design/` for lots of goodies.
 
 ## 🗺️ Roadmap
 
 - [x] Phase 0: Repository setup and documentation
-- [x] Phase 1: MVP CLI (init, link, list, unlink, check, status) ✨
-- [ ] Phase 2: Cross-platform distribution
+- [x] Phase 1: MVP CLI (init, link, list)
+- [ ] Phase 2: Full CLI implementation  
 - [ ] Phase 3: Web visualization
 - [ ] Phase 4: Chaos engine
 - [ ] Phase 5: World domination
 
-See [TASKLIST.md](TASKLIST.md) for detailed implementation plan.
-
----
+See [TASKLIST.md](TASKLIST.md) for detailed implementation plan.  
+Also [design/README](design/README.md).
 
 ## 🌐 Project Ecosystem
 
-- [neuroglyph.dev](https://neuroglyph.dev) *(coming soon)*
 - [@neuroglyph on GitHub](https://github.com/neuroglyph)
 - [Gonzai, the Semantic Ape](lore/GONZAI_PERSONALITY.md) 🐵💥
-
----
 
 ## 🧑‍💻 Contributing
 
@@ -260,19 +233,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get involved.
 - All tests run in Docker
 - Pre-push hooks ensure code quality
 - Follow conventional commits
-
----
+- GPG keys strictly required
 
 ## ⚖️ License
 
 Apache License 2.0 — see [LICENSE](LICENSE) for details
 
----
-
 ## 🙏 Acknowledgments
 
-- Inspired by the realization that Git is already a graph database
-- Built with love for knowledge workers everywhere
+- Inspired by the realization that _everythin's a graph, bro_ and that *Git is already a graph database*
+- Made for anyone who *believes knowledge deserves version control*
 - Special thanks to Gonzai 🐵 for keeping things chaotic
 
 ---
@@ -299,7 +269,7 @@ It's **a substrate for shared memory** — human, machine, or both.
 > — G🧠NZAI
 
 </details>
+- Git notes
 
----
-
-> _"Neuroglyph is not just software. It's the infrastructure for memory itself."_
+> Neuroglyph is not just software. It’s an operating system for memory.  
+> It doesn’t tell you what’s true. It tells you what connects.
