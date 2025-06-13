@@ -70,9 +70,7 @@ impl<T> IntoCommandResult<T> for Result<T, Error> {
                     Error::TargetNotFound(_) => 6,
                     Error::LinkAlreadyExists => 7,
                     Error::Git(_) => 8,
-                    Error::GitError(_) => 8,
                     Error::Io(_) => 9,
-                    Error::IoError(_) => 9,
                     Error::ParseError(_) => 10,
                 };
                 CommandResult::error(code)
