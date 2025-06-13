@@ -28,11 +28,14 @@ jobs:
     - name: Run tests
       working-directory: ./c
       run: |
+        # Add gitmind to PATH for tests
+        export PATH="$PWD:$PATH"
         ./test.sh
         
     - name: Run benchmarks
       working-directory: ./c
       run: |
+        export PATH="$PWD:$PATH"
         ./benchmark.sh
         
     - name: Upload binary
@@ -79,4 +82,5 @@ jobs:
     - name: Test
       working-directory: ./c
       run: |
+        export PATH="$PWD:$PATH"
         ./test.sh
