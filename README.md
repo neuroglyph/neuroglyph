@@ -1,15 +1,17 @@
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 <!-- © 2025 J. Kirby Ross / Neuroglyph Collective -->
 
+[![CI](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml/badge.svg)](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 # ↯ Neuroglyph
 
-> _"A glyph is a thought committed. A repo is a memory that persists."_
+> _"A glyph is a thought committed. A repo is a memory that persists."
+## ⚡️ What is Neuroglyph?_
 
 Neuroglyph is an open protocol and cognitive infrastructure layer that turns Git into a substrate for distributed semantic memory — no database, no gods, no masters.
 
 Semantic scaffolding for planetary-scale cooperative cognition. A map of thought across minds.
-
-# 🧠 Okay, But What Am I Looking At Here?
+### 🧠 **Okay, So... What Does That Mean?**
 
 | Level | Audience | Explanation | The "Aha!" |
 |--------|----------------|-------------|-------------|
@@ -19,10 +21,6 @@ Semantic scaffolding for planetary-scale cooperative cognition. A map of thought
 | 🏗️ | **Architects** | *"Replace your knowledge stack with the file system. Relationships are files. Insights are commits. Understanding becomes infrastructure."* | "This removes entire categories of software!" |
 | 🧠 | **Researchers** | *"Version-controlled epistemology. Fork ideas. Diff beliefs. Merge insights. Understand how understanding itself evolves."* | "We can literally version knowledge itself." |
 | 🌍 | **Visionaries** | *"Distributed cognition substrate. Repos become neurons. Memory becomes shareable. Thought becomes forkable. Humanity begins to think as one."* | "This is how collective intelligence actually works." |
-
-[![CI](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml/badge.svg)](https://github.com/neuroglyph/neuroglyph/actions/workflows/ci.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-
 It enables:
 - ✅ Time-aware semantic linking of thoughts, files, and ideas
 - 🧠 Git-powered knowledge graphs with zero external dependencies
@@ -30,10 +28,7 @@ It enables:
 - 🧪 Optional entropy injection via Chaos Mode for speculative discovery
 
 Built for devs, researchers, writers, and AI agents—anyone who treats thought as infrastructure.
-
-## 🧠 What is Neuroglyph?
-
-**Git as cognition layer.**  
+### **Git as cognition layer** 
 Neuroglyph transforms Git from a version control system into a **thinking system**.
 
 You can:
@@ -47,6 +42,7 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 > This is version control for understanding itself.
 
+---
 ## ✨ Core Features
 - 🔗 gitmind link A B — establish semlinks between concepts
 - 📜 gitmind scan — extract links from markdown, wikis, and code
@@ -106,14 +102,10 @@ That's not a typo. We're **2,000x smaller** than Electron apps. By the time thei
 - Queried your entire graph  
 - Made coffee
 - Questioned why anyone uses Electron
-
 ### The Secret
 
 Pure C. No runtime. No GC. No framework. Just focused, efficient code that respects your CPU cycles.
-
----
-
-## 🌀 Speed as Philosophy
+### 🌀 Speed as Philosophy
 
 GitMind doesn't just start fast — it thinks fast.  
 Because **every delay is a tax on cognition.**
@@ -125,9 +117,7 @@ Because **every delay is a tax on cognition.**
 While Electron apps are figuring out if you're online,  
 **GitMind already refactored your brain.**
 
----
-
-## 🏁 Sonic Challenge
+### 🏁 Sonic Challenge
 
 We ran the numbers. Sonic lost.
 
@@ -140,6 +130,7 @@ We ran the numbers. Sonic lost.
 
 > *"Too slow." — GitMind, probably*
 
+---
 ## 🚀 Quick Start
 
 ### Prereqs
@@ -182,10 +173,10 @@ cd c
 
 ## 🐳 Why Docker for Development?
 
-**All development and testing MUST run through Docker.** The compiled `gitmind` binary runs natively without Docker, but development is Docker-only. Here's why:
+**All development and testing *MUST* run through Docker.** The compiled `gitmind` binary runs natively without Docker, but development is Docker-only. Here's why:
 
 ### 1. Zero Setup Issues
-No more "works on my machine" problems. Whether you're on macOS, Linux, or that one person still using Windows, Docker ensures everyone has the exact same C compiler, same libraries, same everything. You clone, you `make test`, it works. Period.
+No more *"works on my machine"* problems. Whether you're on macOS, Linux, or that one person still using Windows, Docker ensures everyone has the exact same C compiler, same libraries, same everything. You clone, you `make test`, it works. Period.
 
 ### 2. Tests Use REAL Git Operations
 Our test suite creates actual Git repositories, makes real commits, and performs genuine Git operations. Running these tests on your working repository would be catastrophic:
@@ -225,7 +216,7 @@ Pre-push hooks enforce tests and style.
 - [Contributing Guide](CONTRIBUTING.md)
 - [Early Testers Program](docs/early-testers.md)
 
-Explore `docs/ideas` and `design/` for lots of goodies.
+Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. We try to track everything, including rationale behind important decisions, ideas, and we honor our digital  collaborators by granting them space to keep a dev log (see `lore/claude-mind`) and encouraging them to write freely to it.
 
 ## 🗺️ Roadmap
 
@@ -291,7 +282,6 @@ It's **a substrate for shared memory** — human, machine, or both.
 > — G🧠NZAI
 
 </details>
-- Git notes
 
 > Neuroglyph is not just software. It’s an operating system for memory.  
 > It doesn’t tell you what’s true. It tells you what connects.
