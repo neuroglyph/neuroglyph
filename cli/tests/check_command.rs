@@ -159,6 +159,19 @@ fn check_with_fix_removes_broken_links() {
     app.link("exists.md", "deleted.md", "CROSS_REF");
     app.link("deleted.md", "also_deleted.md", "DEPENDS_ON");
 
+    // Commit the links first so they're tracked
+    StdCommand::new("git")
+        .current_dir(&repo_path)
+        .args(&["add", ".gitmind/links/"])
+        .output()
+        .unwrap();
+
+    StdCommand::new("git")
+        .current_dir(&repo_path)
+        .args(&["commit", "-m", "Add links"])
+        .output()
+        .unwrap();
+
     // Delete files
     fs::remove_file(repo_path.join("deleted.md")).unwrap();
     fs::remove_file(repo_path.join("also_deleted.md")).unwrap();
