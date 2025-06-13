@@ -106,11 +106,11 @@
 - [x] Create root `Makefile` for common tasks
 
 ### Demo Repository Setup
-- [ ] Create `/demo/vault/` with 5-10 example documents [P1.3.1]
-- [ ] Add F001 links between documents [P1.3.2]
-- [ ] Include varied link types (references, dependencies, inspirations) [P1.3.3]
-- [ ] Create `/demo/README.md` explaining the demo structure [P1.3.4]
-- [ ] Add quick-start script that sets up demo environment [P1.3.5]
+- [ ] Create `/demo/vault/` with 5-10 example documents
+- [ ] Add F001 links between documents
+- [ ] Include varied link types (references, dependencies, inspirations)
+- [ ] Create `/demo/README.md` explaining the demo structure
+- [ ] Add quick-start script that sets up demo environment
 
 ### Rust CLI Project Initialization ✅ DONE
 - [x] Create `cli/` directory
