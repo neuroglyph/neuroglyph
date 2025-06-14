@@ -35,7 +35,11 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
+ifeq ($(UNAME_S),Darwin)
+	strip $@
+else
 	strip --strip-all $@
+endif
 
 debug: CFLAGS = -g -O0 -Wall -Wextra -std=c99 -Iinclude -fsanitize=address,undefined
 debug: LDFLAGS += -fsanitize=address,undefined
