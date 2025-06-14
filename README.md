@@ -140,42 +140,50 @@ We ran the numbers. Sonic lost.
 
 ## 🚀 Quick Start
 
-### Prereqs
+### Install Binary (Recommended)
 
-- Docker
+```bash
+# Quick install script
+curl -fsSL https://raw.githubusercontent.com/neuroglyph/neuroglyph/main/install.sh | bash
+
+# Or download directly from releases:
+# https://github.com/neuroglyph/neuroglyph/releases/latest
+```
+
+### Build from Source
+
+Prerequisites:
+- Docker (for development)
 - Git 2.40+
 - C compiler (gcc, clang, or compatible)
 - Make
-- Git LFS (brew install git-lfs) *[for logo/images in monorepo]*
-
-Optional:
-- the Dockerized CLI Desktop (for consistent testing environment)
-
-### Setup
 
 ```bash
 git clone https://github.com/neuroglyph/neuroglyph.git
 cd neuroglyph
-./scripts/setup-dev.sh
-make test
-make dev
+make build  # Builds in Docker
+# Binary is now at c/gitmind
 ```
 
 ### Basic Usage
 
 ```bash
-# Build the C binary (uses Docker for consistent build environment)
-make build
+# Initialize in any git repo
+gitmind init
 
-# The resulting binary runs natively - no Docker required!
-cd c
-./gitmind init
+# Create semantic links
+gitmind link README.md docs/api.md --type IMPLEMENTS
+gitmind link design.md implementation.c --type REFERENCES
 
-# Link files semantically
-./gitmind link README.md docs/architecture.md
+# View your knowledge graph
+gitmind list
+gitmind list --source README.md  # What does README link to?
+gitmind list --target api.md     # What links to the API?
 
-# List the current glyph graph
-./gitmind list
+# Keep links healthy
+gitmind check        # Find broken links
+gitmind check --fix  # Remove broken links
+gitmind status       # Repository overview
 ```
 
 ## 🐳 Why Docker for Development?

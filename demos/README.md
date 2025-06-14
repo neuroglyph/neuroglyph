@@ -1,18 +1,31 @@
-# Gitmind Demos
+# GitMind Demos
 
-This directory contains demonstration applications and examples for Gitmind.
+This directory contains demonstration applications and examples for GitMind.
 
 ## Directory Structure
 
 ```
 demos/
-├── README.md           # This file
-├── archive/              # Historical POCs and experiments
-│   └── poc-2025-06-10/   # Initial proof-of-concept (Node.js/D3.js)
+├── README.md          # This file
+├── vault/             # Demo content (realistic project)
+├── mvp/               # Docker-based demo environment
+├── archive/           # Historical POCs and experiments
+│   └── poc-2025-06-10/  # Initial proof-of-concept (Node.js/D3.js)
 ├── quickstart/        # (future) Quick demo for new users
 ├── use-cases/         # (future) Demos of the 10 canonical use cases
 └── integrations/      # (future) Integration examples (VS Code, Obsidian, etc.)
 ```
+
+## 🚀 Quick Demo
+
+Want to see GitMind in action? Run the demo:
+
+```bash
+cd mvp
+./test-demo.sh
+```
+
+This creates a complete demo repository with semantic links in an isolated Docker environment.
 
 ## Archive
 
