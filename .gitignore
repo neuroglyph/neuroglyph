@@ -179,4 +179,5 @@ vgcore.*
 *.gcno
 
 # GitMind specific
-.gitmind/
+.gitmind
+.plans

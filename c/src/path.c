@@ -18,22 +18,80 @@ int gm_path_join(char* dest, size_t dest_size, const char* dir, const char* file
     return GM_OK;
 }
 
+// Manual path normalization when realpath fails
+static int gm_normalize_path_manual(const char* path, char* out_normalized) {
+    if (!path || !out_normalized) {
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    // Working buffer for building normalized path
+    char buffer[GM_MAX_PATH];
+    char* components[GM_MAX_PATH/2];  // Max possible components
+    int comp_count = 0;
+    
+    // Copy path for tokenization
+    char path_copy[GM_MAX_PATH];
+    snprintf(path_copy, sizeof(path_copy), "%s", path);
+    
+    // Track if path is absolute
+    int is_absolute = (path[0] == '/');
+    
+    // Tokenize path by '/'
+    char* token = strtok(path_copy, "/");
+    while (token != NULL) {
+        if (strcmp(token, ".") == 0) {
+            // Skip current directory references
+        } else if (strcmp(token, "..") == 0) {
+            // Go up one level if possible
+            if (comp_count > 0) {
+                comp_count--;
+            } else if (!is_absolute) {
+                // For relative paths, we can't go above current directory
+                // This is a security risk - return error
+                gm_set_error("Path traversal not allowed: %s", path);
+                return GM_ERR_INVALID_ARG;
+            }
+        } else if (strlen(token) > 0) {
+            // Normal component
+            if (comp_count < (int)(sizeof(components)/sizeof(components[0]))) {
+                components[comp_count++] = token;
+            }
+        }
+        token = strtok(NULL, "/");
+    }
+    
+    // Rebuild path
+    buffer[0] = '\0';
+    if (is_absolute) {
+        strcpy(buffer, "/");
+    }
+    
+    for (int i = 0; i < comp_count; i++) {
+        if (i > 0 || is_absolute) {
+            strcat(buffer, "/");
+        }
+        strcat(buffer, components[i]);
+    }
+    
+    // Handle empty result
+    if (buffer[0] == '\0') {
+        strcpy(buffer, ".");
+    }
+    
+    // Copy result
+    snprintf(out_normalized, GM_MAX_PATH, "%s", buffer);
+    
+    return GM_OK;
+}
+
 // Normalize path (remove ./, ../, trailing slashes)
 int gm_normalize_path(const char* path, char* out_normalized) {
     if (!path || !out_normalized) {
         return GM_ERR_INVALID_ARG;
     }
     
-    // For now, just copy - TODO: implement proper normalization
-    snprintf(out_normalized, GM_MAX_PATH, "%s", path);
-    
-    // Remove trailing slash if present
-    size_t len = strlen(out_normalized);
-    if (len > 1 && out_normalized[len - 1] == '/') {
-        out_normalized[len - 1] = '\0';
-    }
-    
-    return GM_OK;
+    // Always use manual normalization for portability
+    return gm_normalize_path_manual(path, out_normalized);
 }
 
 // Check if a path component is exactly ".."
@@ -56,7 +114,8 @@ int gm_validate_link_path(const char* path) {
     }
     
     // Windows-style absolute paths (C:\, D:\, etc.)
-    if (strlen(path) >= 3 && path[1] == ':' && (path[2] == '\\' || path[2] == '/')) {
+    if (strlen(path) >= 3 && path[1] == ':' && 
+        (path[2] == '\\' || path[2] == '/')) {
         gm_set_error("Absolute paths not allowed in links: %s", path);
         return GM_ERR_INVALID_ARG;
     }
@@ -67,7 +126,11 @@ int gm_validate_link_path(const char* path) {
         return GM_ERR_PATH_TOO_LONG;
     }
     
-    // Parse path components to detect ".."
+    // Note: We don't decode URL encoding - %2F is treated as literal "%2F"
+    // This is consistent with filesystem behavior
+    
+    // Check for ".." anywhere in the path BEFORE normalization
+    // This is the safest approach - just reject any path with ".."
     const char* p = path;
     const char* component_start = p;
     
@@ -89,6 +152,12 @@ int gm_validate_link_path(const char* path) {
     // Check the last component
     if (is_parent_ref(component_start, p)) {
         gm_set_error("Path traversal not allowed: %s", path);
+        return GM_ERR_INVALID_ARG;
+    }
+    
+    // Now normalize the path for consistency
+    char normalized[GM_MAX_PATH];
+    if (gm_normalize_path(path, normalized) != GM_OK) {
         return GM_ERR_INVALID_ARG;
     }
     

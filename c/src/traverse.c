@@ -179,10 +179,24 @@ void gm_traverse_result_free(gm_traverse_result_t* result) {
     free(result);
 }
 
+// Maximum nodes to prevent unbounded growth
+#define GM_MAX_TRAVERSE_NODES 10000
+
 // Add node to traverse result
 int gm_traverse_result_add(gm_traverse_result_t* result, const gm_traverse_node_t* node) {
+    // Prevent unbounded growth
+    if (result->count >= GM_MAX_TRAVERSE_NODES) {
+        gm_set_error("Traverse result exceeds maximum nodes (%d)", GM_MAX_TRAVERSE_NODES);
+        return GM_ERR_MEMORY;
+    }
+    
     if (result->count >= result->capacity) {
         size_t new_capacity = result->capacity * 2;
+        // Cap capacity at maximum
+        if (new_capacity > GM_MAX_TRAVERSE_NODES) {
+            new_capacity = GM_MAX_TRAVERSE_NODES;
+        }
+        
         gm_traverse_node_t* new_nodes = realloc(result->nodes, 
                                                  new_capacity * sizeof(gm_traverse_node_t));
         if (!new_nodes) {

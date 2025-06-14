@@ -34,11 +34,6 @@ test_compiler() {
     
     echo -e "\n${YELLOW}Testing with $name...${NC}"
     
-    if ! command -v "$compiler" >/dev/null 2>&1; then
-        echo -e "${YELLOW}⚠️  $name not installed, skipping${NC}"
-        return 0
-    fi
-    
     echo "Compiler version:"
     $compiler --version 2>&1 | head -1 || true
     
@@ -57,33 +52,50 @@ test_compiler() {
 
 # Run tests
 FAILED=0
+TESTED=0
 
 # GCC with maximum warnings
-if ! test_compiler "gcc" "GCC" "-Wformat-truncation=2 -Wformat-overflow=2 -Wstringop-truncation"; then
-    ((FAILED++))
+if command -v gcc >/dev/null 2>&1; then
+    ((TESTED++))
+    if ! test_compiler "gcc" "GCC" "-Wformat-truncation=2 -Wformat-overflow=2 -Wstringop-truncation"; then
+        ((FAILED++))
+    fi
 fi
 
 # Clang with static analyzer (but not EVERYTHING - that's too pedantic)
-if ! test_compiler "clang" "Clang" "-Wno-declaration-after-statement"; then
-    ((FAILED++))
+if command -v clang >/dev/null 2>&1; then
+    ((TESTED++))
+    if ! test_compiler "clang" "Clang" "-Wno-declaration-after-statement"; then
+        ((FAILED++))
+    fi
 fi
 
 # TinyCC for strict C99 compliance  
-if ! test_compiler "tcc" "TinyCC" ""; then
-    ((FAILED++))
+if command -v tcc >/dev/null 2>&1; then
+    ((TESTED++))
+    if ! test_compiler "tcc" "TinyCC" ""; then
+        ((FAILED++))
+    fi
 fi
 
 # Intel compiler if available (very strict)
-if ! test_compiler "icc" "Intel C Compiler" "-w3 -Wremarks"; then
-    ((FAILED++))
+if command -v icc >/dev/null 2>&1; then
+    ((TESTED++))
+    if ! test_compiler "icc" "Intel C Compiler" "-w3 -Wremarks"; then
+        ((FAILED++))
+    fi
 fi
 
 # Summary
 echo -e "\n${YELLOW}=== Summary ===${NC}"
-if [ $FAILED -eq 0 ]; then
-    echo -e "${GREEN}✅ All compiler tests passed!${NC}"
+if [ $TESTED -eq 0 ]; then
+    echo -e "${YELLOW}⚠️  No compilers found to test${NC}"
+    echo "Install gcc, clang, tcc, or icc to run multi-compiler tests"
+    exit 0
+elif [ $FAILED -eq 0 ]; then
+    echo -e "${GREEN}✅ All $TESTED compiler tests passed!${NC}"
     exit 0
 else
-    echo -e "${RED}❌ $FAILED compiler(s) failed${NC}"
+    echo -e "${RED}❌ $FAILED out of $TESTED compiler(s) failed${NC}"
     exit 1
 fi
