@@ -17,25 +17,23 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT APPLE)
     set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} -fsanitize=address,undefined")
 endif()
 
-# Find OpenSSL for SHA1
-find_package(OpenSSL REQUIRED)
-
 # Include directories
 include_directories(include)
 
-# Source files
+# Main executable source files (no test code!)
 set(SOURCES
     src/gitmind.c
     src/link.c
     src/sha1.c
+    src/path.c
+    src/check.c
+    src/status.c
+    src/traverse.c
     src/main.c
 )
 
-# Executable
+# Main executable - pure C, no external dependencies
 add_executable(gitmind ${SOURCES})
-
-# Link libraries
-target_link_libraries(gitmind OpenSSL::Crypto)
 
 # Static linking (optional)
 if(BUILD_STATIC)
@@ -46,8 +44,15 @@ endif()
 install(TARGETS gitmind DESTINATION bin)
 install(FILES include/gitmind.h DESTINATION include)
 
-# Tests (optional)
+# Tests (optional) - completely separate from main binary
+option(BUILD_TESTS "Build test suite" OFF)
 if(BUILD_TESTS)
     enable_testing()
+    
+    # Find CMocka only when building tests
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(CMOCKA REQUIRED cmocka)
+    
+    # Test executables are built separately
     add_subdirectory(tests)
 endif()
