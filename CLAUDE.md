@@ -56,14 +56,15 @@ All new files MUST include SPDX headers:
 This is a monorepo with the following structure:
 ```
 neuroglyph/
-├── cli/           # gitmind CLI (Rust) - main component
+├── c/             # gitmind CLI (Pure C) - current implementation
 ├── demos/         # Example applications
 ├── design/        # Technical specifications
 ├── docs/          # User documentation  
 ├── lore/          # Philosophy, Gonzai mascot, creative content
-├── scripts/       # Development scripts
-└── testdata/      # Test fixtures
+└── scripts/       # Development scripts
 ```
+
+**Important:** There is NO root Makefile. Each component (like c/) has its own build system. Always cd into the component directory before running make commands.
 
 ### 5. Development Practices
 
@@ -76,7 +77,7 @@ neuroglyph/
 
 #### Testing
 - All tests run in Docker for consistency
-- Use `make test` to run the full test suite
+- Use `cd c && make test` to run the full test suite
 - Pre-push hooks enforce test passing
 - Write tests BEFORE implementation (TDD)
 - Each function should have corresponding tests

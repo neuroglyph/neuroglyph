@@ -6,6 +6,10 @@
 
 set -euo pipefail
 
+# Source Docker guard - will exit if not in Docker
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../docker-guard.sh"
+
 cd "$(dirname "$0")"
 
 echo "=== GitMind Regression Test Suite ==="

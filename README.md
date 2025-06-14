@@ -171,14 +171,12 @@ curl -fsSL https://raw.githubusercontent.com/neuroglyph/neuroglyph/main/install.
 Prerequisites:
 - Docker (for development)
 - Git 2.40+
-- C compiler (gcc, clang, or compatible)
-- Make
 
 ```bash
 git clone https://github.com/neuroglyph/neuroglyph.git
-cd neuroglyph
-make build  # Builds in Docker
-# Binary is now at c/gitmind
+cd neuroglyph/c  # Enter the C implementation directory
+make build       # Builds in Docker
+# Binary is now at ./gitmind
 ```
 
 ### Basic Usage
@@ -226,16 +224,18 @@ Docker provides isolated, ephemeral Git environments where tests can safely:
 
 ## 🧪 Dev Workflow
 
-All dev runs in Docker for consistency:
+Development happens in component directories:
 
 ```bash
+cd c/             # Enter C implementation
 make dev          # Dev container shell
-make test         # Full suite
+make test         # Full test suite
 make benchmark    # Performance tests
 make build        # Build binary in Docker
 ```
 
 Pre-push hooks enforce tests and style.
+See [MONOREPO.md](MONOREPO.md) for repository structure.
 
 ## 📚 Learn More
 

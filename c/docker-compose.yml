@@ -14,6 +14,7 @@ services:
     tty: true
     environment:
       - TERM=xterm-256color
+      - DOCKER_BUILD=1
 
   test:
     build:
@@ -22,7 +23,7 @@ services:
     volumes:
       - .:/test
     working_dir: /test
-    command: ./tests/integration/test.sh
+    command: ./tests/integration/run-all-tests.sh
     
   benchmark:
     build:

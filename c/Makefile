@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
-# Simple Makefile for quick builds
+# GitMind C Implementation Makefile
 
-CC ?= cc
+# Two modes: Direct compilation (inside Docker) or Docker orchestration
+ifeq ($(DOCKER_BUILD),1)
+    # Inside Docker - compilation mode
+    include docker-guard.mk
+    
+    CC ?= cc
 CFLAGS ?= -O3 -Wall -Wextra -std=c99 -Iinclude
 LDFLAGS ?=
 
@@ -39,7 +44,8 @@ debug: $(TARGET)
 clean:
 	rm -f $(TARGET) $(OBJS)
 
-test: $(TARGET)
-	./tests/integration/test.sh
-
-.PHONY: all clean test debug
+.PHONY: all clean debug
+else
+    # Outside Docker - orchestration mode
+    include Makefile.docker
+endif

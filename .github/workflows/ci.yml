@@ -21,24 +21,23 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential git
         
-    - name: Build
+    - name: Build and Test
       working-directory: ./c
       run: |
-        make clean
-        make
-        
-    - name: Run tests
-      working-directory: ./c
-      run: |
-        # Add gitmind to PATH for tests
-        export PATH="$PWD:$PATH"
-        ./tests/integration/test.sh
+        # Use Docker for all builds and tests
+        docker compose build
+        docker compose run --rm -T test
         
     - name: Run benchmarks
       working-directory: ./c
       run: |
-        export PATH="$PWD:$PATH"
-        ./benchmark.sh
+        docker compose run --rm benchmark
+        
+    - name: Extract binary from Docker
+      working-directory: ./c
+      run: |
+        # Build and extract the binary
+        docker compose run --rm dev sh -c "DOCKER_BUILD=1 make clean all"
         
     - name: Upload binary
       uses: actions/upload-artifact@v4
