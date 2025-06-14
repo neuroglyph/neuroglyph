@@ -11,8 +11,17 @@
 #include <unistd.h>
 #include <stdarg.h>
 
-// Thread-local error storage
-static __thread char gm_err_buf[GM_ERROR_BUFFER_SIZE];
+// Thread-local error storage with portability
+#if __STDC_VERSION__ >= 201112L
+    #define THREAD_LOCAL _Thread_local
+#elif defined(__GNUC__) || defined(__clang__)
+    #define THREAD_LOCAL __thread
+#else
+    #define THREAD_LOCAL  // fallback: no TLS
+    #warning "Thread-local storage not available, using global error buffer"
+#endif
+
+static THREAD_LOCAL char gm_err_buf[GM_ERROR_BUFFER_SIZE];
 
 // Set error message
 void gm_set_error(const char* fmt, ...) {
@@ -62,7 +71,7 @@ static int dir_exists(const char* path) {
 // Create directory if it doesn't exist
 static int ensure_dir(const char* path) {
     if (dir_exists(path)) {
-        return 0;
+        return GM_OK;
     }
     
     if (mkdir(path, 0755) != 0) {
@@ -70,7 +79,7 @@ static int ensure_dir(const char* path) {
         return GM_ERR_IO;
     }
     
-    return 0;
+    return GM_OK;
 }
 
 // Initialize gitmind in repository
