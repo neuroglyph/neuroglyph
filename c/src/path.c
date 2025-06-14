@@ -39,7 +39,7 @@ int gm_normalize_path(const char* path, char* out_normalized) {
 
 // Check if a path component is exactly ".."
 static int is_parent_ref(const char* start, const char* end) {
-    size_t len = end - start;
+    size_t len = (size_t)(end - start);
     return len == 2 && start[0] == '.' && start[1] == '.';
 }
 

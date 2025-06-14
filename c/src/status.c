@@ -17,7 +17,7 @@ static unsigned int type_hash(const char* str) {
     unsigned int h = 5381;
     int c;
     while ((c = *str++))
-        h = ((h << 5) + h) + c;
+        h = ((h << 5) + h) + (unsigned int)c;
     return h % TYPE_HASH_SIZE;
 }
 

@@ -68,5 +68,9 @@ fuzz:
 valgrind:
 	./tests/integration/valgrind-test.sh
 
+# Multi-compiler strict testing
+strict-test:
+	docker compose run --rm dev ./test-multi-compiler.sh
+
 # Convenience target to build and test
 all: build test

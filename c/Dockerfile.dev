@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 FROM alpine:latest
 
-# Install C development tools
+# Install C development tools and multiple compilers
 RUN apk add --no-cache \
     build-base \
     git \
@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     gdb \
     clang \
     clang-analyzer \
-    openssl-dev
+    openssl-dev \
+    tcc
 
 # Set working directory
 WORKDIR /workspace
