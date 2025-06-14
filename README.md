@@ -51,17 +51,17 @@ It stores **relationships, confidence**, and **epistemic state**.
 **Current Status:** Core CLI complete in pure C (67KB binary!)
 
 ### Available Commands
-- `gitmind init` — Initialize semantic links in your repo
-- `gitmind link A B --type TYPE` — Create semantic relationships
-- `gitmind list [--source FILE]` — Query your knowledge graph  
-- `gitmind unlink A B` — Remove specific links
-- `gitmind check [--fix]` — Find and fix broken links
-- `gitmind status` — See graph statistics
-- `gitmind version` — Version info
+- `git mind init` — Initialize semantic links in your repo
+- `git mind link A B --type TYPE` — Create semantic relationships
+- `git mind list [--source FILE]` — Query your knowledge graph  
+- `git mind unlink A B` — Remove specific links
+- `git mind check [--fix]` — Find and fix broken links
+- `git mind status` — See graph statistics
+- `git mind traverse FILE [--depth N] [--format tree|list]` — Explore connections
+- `git mind version` — Version info
 
 ### Coming Soon (MVP Sprint - June 2025)
-- 🚧 `gitmind traverse FILE --depth N` — Explore connections (in development)
-- 🚧 `gitmind serve` — Local web visualization (in development)
+- 🚧 `git mind serve` — Local web visualization (in development)
 - 🚧 Interactive D3.js graph view (in development)
 
 ### Future Vision
@@ -92,8 +92,7 @@ neuroglyph/              # This monorepo
 ```
 
 Coming Soon:
-- `gitmind traverse` — Graph exploration command
-- `gitmind serve` — Web visualization server
+- `git mind serve` — Web visualization server
 - Query languages — SQL/Cypher/Natural language support
 
 ---
@@ -186,33 +185,33 @@ Prerequisites:
 git clone https://github.com/neuroglyph/neuroglyph.git
 cd neuroglyph/c  # Enter the C implementation directory
 make build       # Builds in Docker
-# Binary is now at ./gitmind
+# Binary is now at ./git-mind
 ```
 
 ### Basic Usage
 
 ```bash
 # Initialize in any git repo
-gitmind init
+git mind init
 
 # Create semantic links
-gitmind link README.md docs/api.md --type IMPLEMENTS
-gitmind link design.md implementation.c --type REFERENCES
+git mind link README.md docs/api.md --type IMPLEMENTS
+git mind link design.md implementation.c --type REFERENCES
 
 # View your knowledge graph
-gitmind list                     # Show all links
-gitmind list --source README.md  # What does README link to?
+git mind list                     # Show all links
+git mind list --source README.md  # What does README link to?
 # Note: --target filter coming soon
 
 # Keep links healthy
-gitmind check        # Find broken links
-gitmind check --fix  # Remove broken links
-gitmind status       # Repository overview
+git mind check        # Find broken links
+git mind check --fix  # Remove broken links
+git mind status       # Repository overview
 ```
 
 ## 🐳 Why Docker for Development?
 
-**All development and testing *MUST* run through Docker.** The compiled `gitmind` binary runs natively without Docker, but development is Docker-only. Here's why:
+**All development and testing *MUST* run through Docker.** The compiled `git-mind` binary runs natively without Docker, but development is Docker-only. Here's why:
 
 ### 1. Zero Setup Issues
 No more *"works on my machine"* problems. Whether you're on macOS, Linux, or that one person still using Windows, Docker ensures everyone has the exact same C compiler, same libraries, same everything. You clone, you `make test`, it works. Period.
