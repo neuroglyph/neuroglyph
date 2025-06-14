@@ -250,14 +250,33 @@ void gm_traverse_print_list(const gm_traverse_result_t* result, const char* star
     }
 }
 
+// Cleanup helper - frees all allocated resources
+static void cleanup_traverse(gm_path_set_t* visited, gm_queue_t* queue, 
+                           gm_traverse_result_t** result) {
+    path_set_free(visited);
+    queue_free(queue);
+    if (result && *result) {
+        gm_traverse_result_free(*result);
+        *result = NULL;
+    }
+}
+
 // Main traverse function
 int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traverse_result_t** result) {
     (void)format; // Currently unused, format handled by caller
+    
+    // Initialize these to NULL for cleanup
+    gm_path_set_t* visited = NULL;
+    gm_queue_t* queue = NULL;
+    int ret = GM_OK;
+    
     // Validate arguments
     if (!start_node || !result) {
         gm_set_error("Invalid arguments");
         return GM_ERR_INVALID_ARG;
     }
+    
+    *result = NULL;  // Initialize output
     
     // Check depth limits
     if (depth <= 0) {
@@ -283,25 +302,24 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
     }
     fclose(f);
     
-    // Initialize data structures
+    // Initialize result
     *result = gm_traverse_result_new();
     if (!*result) {
         return GM_ERR_MEMORY;
     }
     
-    gm_path_set_t* visited = path_set_new();
+    // Initialize visited set
+    visited = path_set_new();
     if (!visited) {
-        gm_traverse_result_free(*result);
-        *result = NULL;
-        return GM_ERR_MEMORY;
+        ret = GM_ERR_MEMORY;
+        goto cleanup;
     }
     
-    gm_queue_t* queue = queue_new();
+    // Initialize queue
+    queue = queue_new();
     if (!queue) {
-        path_set_free(visited);
-        gm_traverse_result_free(*result);
-        *result = NULL;
-        return GM_ERR_MEMORY;
+        ret = GM_ERR_MEMORY;
+        goto cleanup;
     }
     
     // Start BFS traversal
@@ -312,11 +330,8 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
     
     if (path_set_add(visited, normalized_start) != GM_OK ||
         queue_push(queue, &start) != GM_OK) {
-        path_set_free(visited);
-        queue_free(queue);
-        gm_traverse_result_free(*result);
-        *result = NULL;
-        return GM_ERR_MEMORY;
+        ret = GM_ERR_MEMORY;
+        goto cleanup;
     }
     
     // BFS loop
@@ -329,11 +344,8 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
         // Skip root node in results
         if (current.depth > 0) {
             if (gm_traverse_result_add(*result, &current) != GM_OK) {
-                path_set_free(visited);
-                queue_free(queue);
-                gm_traverse_result_free(*result);
-                *result = NULL;
-                return GM_ERR_MEMORY;
+                ret = GM_ERR_MEMORY;
+                goto cleanup;
             }
         }
         
@@ -344,8 +356,8 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
         
         // Get all links from current node
         gm_link_set_t* links = NULL;
-        if (gm_link_list(&links, current.path, NULL) != GM_OK) {
-            continue;
+        if (gm_link_list(&links, current.path, NULL) != GM_OK || !links) {
+            continue;  // No links from this node
         }
         
         // Process each neighbor
@@ -360,11 +372,8 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
             // Add to visited set
             if (path_set_add(visited, neighbor) != GM_OK) {
                 gm_link_set_free(links);
-                path_set_free(visited);
-                queue_free(queue);
-                gm_traverse_result_free(*result);
-                *result = NULL;
-                return GM_ERR_MEMORY;
+                ret = GM_ERR_MEMORY;
+                goto cleanup;
             }
             
             // Create neighbor node
@@ -378,21 +387,21 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
             // Add to queue
             if (queue_push(queue, &neighbor_node) != GM_OK) {
                 gm_link_set_free(links);
-                path_set_free(visited);
-                queue_free(queue);
-                gm_traverse_result_free(*result);
-                *result = NULL;
-                return GM_ERR_MEMORY;
+                ret = GM_ERR_MEMORY;
+                goto cleanup;
             }
         }
         
         gm_link_set_free(links);
     }
     
-    // Clean up
+    // Success path
     path_set_free(visited);
     queue_free(queue);
-    
-    // Don't print here - let the caller handle it
     return GM_OK;
+
+cleanup:
+    // Error path - clean up everything
+    cleanup_traverse(visited, queue, result);
+    return ret;
 }
