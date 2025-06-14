@@ -86,7 +86,7 @@ TMPDIR=$(mktemp -d)
 cat > "$TMPDIR/test_path_validator.c" << 'EOF'
 #include <stdio.h>
 #include <string.h>
-#include "git-mind.h"
+#include "gitmind.h"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 }
 EOF
 
-gcc -o "$TMPDIR/test_path_validator" "$TMPDIR/test_path_validator.c" src/git-mind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation
+gcc -o "$TMPDIR/test_path_validator" "$TMPDIR/test_path_validator.c" src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation
 
 # Valid paths
 run_test "valid simple filename" "$TMPDIR/test_path_validator file.txt" 0
@@ -211,7 +211,7 @@ cat > "$ERROR_TEST_DIR/test_error_codes.c" << 'EOF'
 #include <stdio.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include "git-mind.h"
+#include "gitmind.h"
 
 // We need to check internal functions return GM_OK
 // This tests the ensure_dir function indirectly
@@ -233,7 +233,7 @@ int main() {
 }
 EOF
 
-gcc -o "$ERROR_TEST_DIR/test_error_codes" "$ERROR_TEST_DIR/test_error_codes.c" src/git-mind.c src/path.c src/sha1.c -I./include -Wall -Wextra
+gcc -o "$ERROR_TEST_DIR/test_error_codes" "$ERROR_TEST_DIR/test_error_codes.c" src/gitmind.c src/path.c src/sha1.c -I./include -Wall -Wextra
 run_test "error code consistency" "$ERROR_TEST_DIR/test_error_codes" 0
 rm -rf "$ERROR_TEST_DIR"
 

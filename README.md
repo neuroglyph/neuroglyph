@@ -111,7 +111,7 @@ Memory usage:       ~500KB    (About the size of a medium blog post)
 Dependencies:       Zero      (Just libc—already on your system)
 
 # Operations (tested on 100 links)
-Create link:        1.8ms
+Create link:        1.6ms     (11% faster with LTO!)
 List all links:     <1ms  
 Check integrity:    <1ms
 ```
