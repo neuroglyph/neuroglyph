@@ -20,6 +20,12 @@ check_docker() {
         return 0
     fi
     
+    # Method 4: Check if running in GitHub Actions (for cross-platform testing)
+    if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+        echo "⚠️  Running in GitHub Actions - Docker check bypassed for cross-platform testing"
+        return 0
+    fi
+    
     # Not in Docker!
     return 1
 }

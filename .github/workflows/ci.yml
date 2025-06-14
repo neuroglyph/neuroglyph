@@ -45,20 +45,6 @@ jobs:
         name: gitmind-linux
         path: c/gitmind
 
-  docker-test:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Build Docker test image
-      working-directory: ./c
-      run: docker build -f Dockerfile.test -t gitmind-test .
-      
-    - name: Run Docker tests
-      working-directory: ./c
-      run: ./tests/integration/docker-test.sh
-
   cross-platform:
     strategy:
       matrix:

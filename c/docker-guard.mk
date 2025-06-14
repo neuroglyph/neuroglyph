@@ -6,7 +6,12 @@ ifndef DOCKER_CONTAINER
     ifeq ($(wildcard /.dockerenv),)
         # Not in Docker! Check for other Docker indicators
         ifeq ($(shell grep -q docker /proc/1/cgroup 2>/dev/null && echo yes || echo no),no)
-            $(error ❌ FATAL: You must run this inside Docker! Use 'make' from the root directory or 'docker compose run dev make')
+            # Check if running in GitHub Actions (for cross-platform testing)
+            ifndef GITHUB_ACTIONS
+                $(error ❌ FATAL: You must run this inside Docker! Use 'make' from the root directory or 'docker compose run dev make')
+            else
+                $(info ⚠️  Running in GitHub Actions - Docker check bypassed for cross-platform testing)
+            endif
         endif
     endif
 endif
