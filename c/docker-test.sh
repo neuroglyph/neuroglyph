@@ -8,4 +8,4 @@ echo "Building Docker test image..."
 docker build -f Dockerfile.test -t gitmind-test .
 
 echo "Running tests in container..."
-docker run --rm gitmind-test /build/test.sh
+docker run --rm gitmind-test /build/test-all.sh

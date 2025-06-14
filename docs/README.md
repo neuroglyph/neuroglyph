@@ -15,12 +15,12 @@ Core functionality specifications with user stories and acceptance criteria.
 #### ✅ Completed Features
 *Fully implemented and tested features moved to [features/completed/](features/completed/)*
 - [F001: Git Object Storage](features/completed/F001-git-object-storage.md) - Core link storage ✅
-- [F013: CLI Tools](features/completed/F013-cli-tools.md) - All 7 commands ✅
-- [F016: Link Hygiene](features/completed/F016-link-hygiene.md) - Unlink and check ✅
+- [F013: CLI Tools](features/completed/F013-cli-tools.md) - Core 7 commands (init, link, list, unlink, check, status, version) ✅
+- [F016: Link Hygiene](features/completed/F016-link-hygiene.md) - Unlink and check commands ✅
+- [F026: Basic Graph Traversal](features/completed/F026-basic-graph-traversal.md) - Traverse command with BFS ✅ NEW!
 
 #### 🎯 Current Sprint - MVP for HN
 *Features needed for Hacker News launch*
-- [F026: Basic Graph Traversal](features/F026-basic-graph-traversal.md) - `gitmind traverse` command
 - [F019: Local Web Server](features/F019-local-web-server.md) - `gitmind serve` command
 - [F020: Graph Visualization Engine](features/F020-graph-visualization-engine.md) - D3.js visualization
 
@@ -40,10 +40,9 @@ Core functionality specifications with user stories and acceptance criteria.
 ### 📐 Architecture
 Technical specifications and design documents.
 
-- [architecture.md](architecture.md) - System architecture with diagrams ✨ NEW
-- [gitmind_architecture.md](gitmind_architecture.md) - Original architecture notes
-- [storage-format-spec.md](storage-format-spec.md) - Link file format specification
-- [MILESTONES.md](MILESTONES.md) - Development progression roadmap ✨ NEW
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and roadmap ✅
+- [ARCHITECTURE-C.md](ARCHITECTURE-C.md) - C implementation architecture ✅
+- [feature-test-mapping.md](features/feature-test-mapping.md) - Test coverage mapping ✅ NEW
 
 ### 🎯 Decisions
 Architecture Decision Records (ADRs) documenting key choices.
@@ -53,7 +52,10 @@ Architecture Decision Records (ADRs) documenting key choices.
 - [ADR-003: Web Visualization Strategy](decisions/ADR-003-web-visualization-strategy.md) - Local-first web UI
 - [ADR-004: Error Handling Improvements](decisions/ADR-004-error-handling-improvements.md) - User-centric errors
 - [ADR-005: Transport Strategy](decisions/ADR-005-transport-strategy.md) - Git-native transport
-- [ADR-006: Markdown-Driven Help](decisions/ADR-006-markdown-driven-help.md) - Help system design ✨ NEW
+- [ADR-006: Markdown-Driven Help](decisions/ADR-006-markdown-driven-help.md) - Help system design
+- [ADR-007: Language Pivot to Go](decisions/ADR-007-language-pivot-to-go.md) - Go decision (superseded)
+- [ADR-008: Polyglot Architecture](decisions/ADR-008-polyglot-architecture.md) - Multi-language approach
+- [ADR-009: Pure C Implementation](decisions/ADR-009-c.md) - Final C decision ✨
 - [LICENSE_DECISION.md](decisions/LICENSE_DECISION.md) - Apache 2.0 rationale
 
 ### 💡 Proposals
@@ -117,24 +119,21 @@ graph TD
 gantt
     title GitMind Implementation Timeline
     dateFormat  YYYY-MM-DD
-    section Phase 1a (MVP)
+    section Phase 1a (Complete)
     F001 Git Storage           :done,    f001, 2025-06-10, 2d
     F013 CLI Tools            :done,    f013, after f001, 2d
     F016 Link Hygiene         :done,    f016, after f013, 1d
-    F017 Error Handling       :active,  f017, after f016, 2d
     
-    section Phase 1b (Web)
-    F018 Demo Mode            :         f018, after f017, 3d
-    F019 Web Server           :         f019, after f017, 2d
+    section Phase 1b (Current Sprint)
+    F026 Graph Traversal      :active,  f026, 2025-06-16, 5d
+    F019 Web Server           :active,  f019, 2025-06-16, 5d
     F020 Graph Viz            :         f020, after f019, 3d
-    F021 Interactive          :         f021, after f020, 2d
-    F023 Search/Filter        :         f023, after f020, 1d
     
-    section Phase 2
-    F022 Time Travel          :         f022, after f023, 2d
-    F024 Export               :         f024, after f023, 1d
-    F002 Extraction           :         f002, after f024, 2d
-    F003 Git Hooks            :         f003, after f002, 1d
+    section Phase 2 (Future)
+    F027 Path Finding         :         f027, 2025-07-01, 5d
+    F028 Pattern Matching     :         f028, after f027, 5d
+    F029 Graph Analytics      :         f029, after f028, 5d
+    F030 Query Languages      :         f030, after f029, 7d
 ```
 
 ## Design Principles

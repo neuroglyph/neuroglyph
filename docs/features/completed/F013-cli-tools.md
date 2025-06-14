@@ -34,64 +34,83 @@ As a developer, I want a simple and intuitive CLI tool that allows me to create,
 ## Acceptance Criteria (Implemented)
 
 1. **Initialization**
-   - [x] `gitmind init` creates `.gitmind/links/` directory structure
-   - [x] Works in any Git repository
-   - [x] Idempotent - can be run multiple times safely
+   - [x] `gitmind init` creates `.gitmind/links/` directory structure (Test 1)
+   - [x] Works in any Git repository (Test 1 runs in git repo)
+   - [x] Idempotent - can be run multiple times safely (implicit)
 
 2. **Link Management**
-   - [x] `gitmind link <source> <target>` creates links with default type "REFERENCES"
-   - [x] `--type` flag allows specifying custom link types
-   - [x] Links are stored with SHA-based filenames for deduplication
-   - [x] Timestamp metadata is automatically added
+   - [x] `gitmind link <source> <target>` creates links (Test 2, Test 4)
+   - [x] `--type` flag allows specifying custom link types (Test 2: --type IMPLEMENTS)
+   - [x] Links are stored with SHA-based filenames for deduplication (Test 7: SHA consistency)
+   - [x] Timestamp metadata is automatically added (Test 3 shows format)
+   - [ ] Default type "REFERENCES" when --type not specified - NOT VERIFIED IN TESTS
 
 3. **Link Listing**
-   - [x] `gitmind list` shows all links in the repository
-   - [x] `--source` filter shows links from a specific file
-   - [x] `--target` filter shows links to a specific file
-   - [x] Output format: `TYPE: source -> target (ts:timestamp)`
+   - [x] `gitmind list` shows all links in the repository (Test 3)
+   - [x] `--source` filter shows links from a specific file (Test 5: filter by source)
+   - [ ] `--target` filter shows links to a specific file - NOT TESTED
+   - [x] Output format includes type, source, and target (Test 3 verifies format)
+   - [ ] Output format includes timestamp - NOT VERIFIED IN TEST OUTPUT
 
 4. **Link Removal**
-   - [x] `gitmind unlink <source> <target>` removes specific links
-   - [x] Handles non-existent links gracefully
+   - [x] `gitmind unlink <source> <target>` removes specific links (Test 6)
+   - [ ] Handles non-existent links gracefully - NOT TESTED
 
 5. **Link Integrity**
-   - [x] `gitmind check` validates all links and reports broken ones
-   - [x] `--fix` flag automatically removes broken links
-   - [x] Reports count of broken links found/fixed
+   - [x] `gitmind check` validates all links and reports broken ones (Test 10)
+   - [x] `--fix` flag automatically removes broken links (Test 11)
+   - [x] Reports broken links (Test 10 verifies output)
+   - [ ] Reports count of broken links found/fixed - NOT VERIFIED
 
 6. **Repository Status**
-   - [x] `gitmind status` shows summary information
-   - [x] Reports total number of links
-   - [x] Shows repository health status
+   - [x] `gitmind status` shows summary information (Test 9)
+   - [x] Reports total number of links (Test 9: "Total links: 2")
+   - [ ] Shows repository health status - NOT VERIFIED IN TEST
 
 7. **Version Information**
-   - [x] `gitmind version` displays current version
+   - [x] `gitmind version` displays current version (implicit - command exists)
 
-## Core CLI Commands
+## Core CLI Commands (Currently Implemented)
 
 ### Basic Operations
 ```bash
 # Initialize gitmind in repository
 gitmind init
 
-# Query the graph
-gitmind query "find all related to AI"
-gitmind query --gql 'MATCH (n)-[:REFERENCES]->(m) RETURN n,m'
-
 # Create relationships
 gitmind link README.md docs/api.md --type IMPLEMENTS
-gitmind link --auto  # Auto-discover relationships
 
-# Visualize
-gitmind viz --browser  # Open web interface
-gitmind viz --ascii    # Terminal visualization
+# List relationships
+gitmind list
+gitmind list --source README.md
 
-# Gonzai interaction
-gitmind gonzai suggest  # Get AI suggestions
-gitmind gonzai chaos   # Activate chaos mode
+# Remove relationships
+gitmind unlink README.md docs/api.md
+
+# Check link integrity
+gitmind check
+gitmind check --fix
+
+# Repository status
+gitmind status
+
+# Version
+gitmind version
 ```
 
-### Advanced Features
+### Planned Features (Not Yet Implemented)
+```bash
+# Query operations
+gitmind query "find all related to AI"
+gitmind traverse README.md --depth 3
+
+# Visualization
+gitmind serve  # Web interface
+
+# Auto-discovery
+gitmind link --auto
+
+### Future Advanced Features (Not Implemented)
 ```bash
 # Time travel
 gitmind at HEAD~10 query "what was connected"
@@ -101,95 +120,74 @@ gitmind import links.csv
 gitmind export --format cypher > graph.cypher
 
 # Performance
-gitmind stats
 gitmind optimize
 gitmind gc --aggressive
 
 # Configuration
-gitmind config gonzai.personality playful
-gitmind config cache.size 1GB
+gitmind config
 ```
 
-## Shell Integration
+## Shell Integration (Planned)
 
-### Zsh/Bash Completions
+### Future: Zsh/Bash Completions
 ```bash
 # Autocomplete for files
 gitmind link <TAB>  # Shows files
-gitmind query "find <TAB>  # Shows recent queries
 
 # Fuzzy search integration
 gitmind fzf  # Interactive node selection
 ```
 
-### Git Aliases
+### Git Aliases (User can configure)
 ```gitconfig
 [alias]
     mind = !gitmind
-    mindlog = !gitmind query "nodes modified in last commit"
-    mindshow = !gitmind viz --focus
 ```
 
-## Developer Experience
+## Developer Experience (Current)
 
-### REPL Mode
-```typescript
-class GitmindREPL {
-  async start() {
-    console.log(chalk.green('🐵 Gonzai: Welcome to Gitmind REPL!'));
-    
-    while (true) {
-      const input = await readline('gitmind> ');
-      
-      if (input.startsWith('query')) {
-        await this.handleQuery(input);
-      } else if (input === 'chaos') {
-        await this.activateChaosMode();
-      }
-      
-      // Gonzai responds to commands
-      this.gonzai.respond(input);
-    }
-  }
-}
+### Simple CLI Usage
+- Fast startup (<1ms)
+- Small binary (67KB)
+- No dependencies
+- Works with standard Git repos
+
+### Pipeline Integration (Current)
+```bash
+# Can be used in scripts
+gitmind init
+gitmind link file1.md file2.md --type REFERENCES
+gitmind check --fix
 ```
 
-### Pipeline Integration
-```yaml
-# GitHub Actions
-- name: Update Knowledge Graph
-  run: |
-    gitmind extract --changed-files
-    gitmind test --verify-links
-    gitmind push
-    
-# Pre-commit hook
-repos:
-  - repo: https://github.com/gitmind/gitmind
-    hooks:
-      - id: gitmind-extract
-      - id: gitmind-validate
-```
+## Future Developer Experience
 
-## ASCII Visualization
+### REPL Mode (Planned)
+- Interactive command mode
+- Query suggestions
+- Gonzai personality integration
+
+### ASCII Visualization (Planned for `gitmind traverse`)
 ```
-$ gitmind viz --ascii --depth 2
+$ gitmind traverse README.md --depth 2 --format tree
 
      README.md
     /    |    \
    /     |     \
 api.md  doc.md  test.md
-  |             /  \
-  |           /     \
-spec.md   unit.md  e2e.md
-
-Nodes: 7 | Edges: 6 | Gonzai: 😊
 ```
 
-## Key Features
+## Key Features (Current)
 
-1. **Scriptable API**: Full automation support
-2. **JSON Output**: Machine-readable formats
-3. **Watch Mode**: Auto-update on file changes
-4. **Batch Mode**: Process multiple operations
-5. **Plugin System**: Extend CLI functionality
+1. **Scriptable**: All commands return proper exit codes
+2. **Fast**: <1ms startup, operations complete in milliseconds
+3. **Git-native**: Links stored as regular files, committable
+4. **Simple**: No configuration needed, works out of the box
+
+## Planned Features
+
+1. **JSON Output**: Machine-readable formats for scripting
+2. **Watch Mode**: Auto-update on file changes
+3. **Batch Mode**: Process multiple operations
+4. **Query Language**: Advanced graph queries
+5. **Web Visualization**: D3.js-powered graph view

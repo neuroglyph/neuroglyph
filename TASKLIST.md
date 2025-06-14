@@ -41,53 +41,48 @@ gantt
 **Timeline:** 2 weeks (by June 28, 2025)  
 **Success Metric:** Users can explore and visualize their knowledge graph
 
-### 📋 Documentation Debt (June 14-15)
-*Fix the disconnect between what's built and what's documented*
+### 📋 Documentation Debt (June 14-15) ✅ COMPLETED!
+*Fixed the disconnect between what's built and what's documented*
 
-- [ ] **Update Feature Specs to Reality**
-  - [ ] Update F001 (Git Storage) - mark completed acceptance criteria
-  - [ ] Update F013 (CLI Tools) - add missing acceptance criteria
-  - [ ] Update F016 (Link Hygiene) - change from "Proposed" to "Implemented"
-  - [ ] Document which test in test.sh validates each criterion
+- [x] **Update Feature Specs to Reality**
+  - [x] Update F001 (Git Storage) - mark completed acceptance criteria
+  - [x] Update F013 (CLI Tools) - add missing acceptance criteria  
+  - [x] Update F016 (Link Hygiene) - change from "Proposed" to "Implemented"
+  - [x] Document which test in test.sh validates each criterion
   
-- [ ] **Create Feature-to-Test Mapping**
-  - [ ] Document: "Test 1 validates F001 criteria 1,2,3"
-  - [ ] Ensure every implemented feature has test coverage
-  - [ ] Identify any untested features
+- [x] **Create Feature-to-Test Mapping**
+  - [x] Created `docs/features/feature-test-mapping.md`
+  - [x] Mapped every test to its validated acceptance criteria
+  - [x] Identified gaps in test coverage
 
-- [ ] **Update User Documentation**
-  - [ ] Update README with actual capabilities
-  - [ ] Remove references to unimplemented features
-  - [ ] Add quick start guide that actually works
+- [x] **Update User Documentation**
+  - [x] Update README with actual capabilities
+  - [x] Remove references to unimplemented features
+  - [x] Add quick start guide at `docs/QUICK_START.md`
 
-### 🚀 Make It Useful: Graph Traversal (June 16-20)
+### 🚀 Make It Useful: Graph Traversal ✅ COMPLETED! (June 14)
 *One command that transforms GitMind from storage to exploration*
 
-- [ ] **Implement `gitmind traverse` Command**
-  - [ ] Basic BFS traversal from starting node
-  - [ ] `--depth N` flag (default: 1, max: 10)
-  - [ ] `--format tree` for ASCII tree output
-  - [ ] `--format list` for simple list output
-  - [ ] Show connection counts at each level
+- [x] **Implement `gitmind traverse` Command**
+  - [x] Basic BFS traversal from starting node
+  - [x] `--depth N` flag (default: 1, max: 10)
+  - [x] `--format tree` for ASCII tree output
+  - [x] `--format list` for simple list output
+  - [x] Show connection counts at each level
 
-- [ ] **Output Format**
+- [x] **Output Format**
   ```
-  $ gitmind traverse README.md --depth 3
-  README.md (4 direct, 12 total within 3 hops)
-  ├─→ docs/architecture.md [IMPLEMENTS]
-  │   ├─→ specs/api.md [REFERENCES]
-  │   │   └─→ examples/api-demo.py [DEMONSTRATES]
-  │   └─→ specs/storage.md [REFERENCES]
-  └─→ docs/quickstart.md [REFERENCES]
-      ├─→ examples/basic.md [INCLUDES]
-      └─→ examples/advanced.md [INCLUDES]
+  $ gitmind traverse README.md --depth 2
+  README.md (1 direct, 2 total within depth)
+  \-> docs/architecture.md [REFERENCES]
+      \-> docs/api-design.md [REFERENCES]
   ```
 
-- [ ] **Testing**
-  - [ ] Add traversal tests to test.sh
-  - [ ] Test with cycles (A→B→C→A)
-  - [ ] Test with large graphs (performance)
-  - [ ] Test depth limiting
+- [x] **Testing**
+  - [x] Add traversal tests to test-traverse.sh (10 tests!)
+  - [x] Test with cycles (A→B→C→A) - Test 5
+  - [x] Test with multiple depth levels
+  - [x] Test depth limiting and error handling
 
 ### 🌐 Make It Visual: Web UI (June 16-20)
 *Parallel track - seeing is believing*

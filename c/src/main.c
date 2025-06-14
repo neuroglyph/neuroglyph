@@ -16,6 +16,9 @@ static void print_usage(const char* prog) {
     fprintf(stderr, "  list                    List all links\n");
     fprintf(stderr, "    --source FILE         Filter by source file\n");
     fprintf(stderr, "    --target FILE         Filter by target file\n");
+    fprintf(stderr, "  traverse <file>         Traverse graph from file\n");
+    fprintf(stderr, "    --depth N             Traversal depth (default: 1, max: 10)\n");
+    fprintf(stderr, "    --format FORMAT       Output format: tree, list (default: tree)\n");
     fprintf(stderr, "  unlink <source> <target> Remove link between files\n");
     fprintf(stderr, "  check                   Check link integrity\n");
     fprintf(stderr, "    --fix                 Remove broken links\n");
@@ -198,6 +201,68 @@ static int cmd_version(int argc, char** argv) {
     return 0;
 }
 
+static int cmd_traverse(int argc, char** argv) {
+    if (argc < 3) {
+        fprintf(stderr, "Error: Missing file argument\n");
+        fprintf(stderr, "Usage: gitmind traverse <file> [options]\n");
+        return 1;
+    }
+    
+    const char* file = argv[2];
+    int depth = GM_DEFAULT_DEPTH;
+    gm_format_t format = GM_FORMAT_TREE;
+    
+    // Parse options
+    int opt;
+    static struct option long_options[] = {
+        {"depth", required_argument, 0, 'd'},
+        {"format", required_argument, 0, 'f'},
+        {0, 0, 0, 0}
+    };
+    
+    optind = 3; // Start after "gitmind traverse <file>"
+    while ((opt = getopt_long(argc, argv, "d:f:", long_options, NULL)) != -1) {
+        switch (opt) {
+        case 'd':
+            depth = atoi(optarg);
+            if (depth <= 0 || depth > GM_MAX_DEPTH) {
+                fprintf(stderr, "Error: Depth must be between 1 and %d\n", GM_MAX_DEPTH);
+                return 1;
+            }
+            break;
+        case 'f':
+            if (strcmp(optarg, "tree") == 0) {
+                format = GM_FORMAT_TREE;
+            } else if (strcmp(optarg, "list") == 0) {
+                format = GM_FORMAT_LIST;
+            } else {
+                fprintf(stderr, "Error: Unknown format '%s' (use 'tree' or 'list')\n", optarg);
+                return 1;
+            }
+            break;
+        default:
+            return 1;
+        }
+    }
+    
+    gm_traverse_result_t* result = NULL;
+    int ret = gm_traverse(file, depth, format, &result);
+    if (ret != GM_OK) {
+        fprintf(stderr, "Error: %s\n", gm_last_error());
+        return 1;
+    }
+    
+    // Print results based on format
+    if (format == GM_FORMAT_TREE) {
+        gm_traverse_print_tree(result, file);
+    } else {
+        gm_traverse_print_list(result, file);
+    }
+    
+    gm_traverse_result_free(result);
+    return 0;
+}
+
 int main(int argc, char** argv) {
     if (argc < 2) {
         print_usage(argv[0]);
@@ -218,6 +283,8 @@ int main(int argc, char** argv) {
         return cmd_check(argc, argv);
     } else if (strcmp(cmd, "status") == 0) {
         return cmd_status(argc, argv);
+    } else if (strcmp(cmd, "traverse") == 0) {
+        return cmd_traverse(argc, argv);
     } else if (strcmp(cmd, "version") == 0) {
         return cmd_version(argc, argv);
     } else {
