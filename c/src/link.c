@@ -110,10 +110,12 @@ int gm_link_create(const char* source, const char* target, const char* type) {
     
     fclose(f);
     
-    // Git add the file
+    // Git add the file (optional - we don't care if it fails)
     char cmd[GM_MAX_PATH * 2];
     snprintf(cmd, sizeof(cmd), "git add %s 2>/dev/null", filename);
-    (void)system(cmd);  // Ignore return value - git add is optional
+    if (system(cmd) != 0) {
+        // Ignore failure - git add is optional
+    }
     
     return GM_OK;
 }
@@ -290,7 +292,9 @@ int gm_link_unlink(const char* source, const char* target) {
         unlink(filename);
         char cmd[GM_MAX_PATH * 2];
         snprintf(cmd, sizeof(cmd), "git add %s 2>/dev/null", filename);
-        (void)system(cmd);  // Ignore return value - git add is optional
+        if (system(cmd) != 0) {
+            // Ignore failure - git add is optional
+        }
     }
     
     gm_link_set_free(set);

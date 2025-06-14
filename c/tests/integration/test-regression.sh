@@ -39,7 +39,8 @@ run_test() {
     echo -n "Testing $test_name... "
     
     set +e
-    eval "$test_cmd" > test_output.txt 2>&1
+    TMPFILE=$(mktemp)
+    eval "$test_cmd" > "$TMPFILE" 2>&1
     local result=$?
     set -e
     
@@ -49,21 +50,20 @@ run_test() {
     else
         echo -e "${RED}✗${NC}"
         echo "  Command: $test_cmd"
-        echo "  Output: $(cat test_output.txt)"
+        echo "  Output: $(cat "$TMPFILE")"
         echo "  Expected exit code: $expected_result, Got: $result"
         echo "  Output:"
-        cat test_output.txt | sed 's/^/    /'
+        cat "$TMPFILE" | sed 's/^/    /'
         FAILED_TESTS=$((FAILED_TESTS + 1))
     fi
     
-    rm -f test_output.txt
+    rm -f "$TMPFILE"
 }
 
 # Initialize a test repository
 init_test_repo() {
-    rm -rf test_repo
-    mkdir -p test_repo
-    cd test_repo
+    TEST_REPO_DIR=$(mktemp -d)
+    cd "$TEST_REPO_DIR"
     git init --quiet
     git config user.name "Test User"
     git config user.email "test@example.com"
@@ -71,13 +71,15 @@ init_test_repo() {
     git add README.md
     git commit -m "Initial commit" --quiet
     gitmind init
-    cd ..
+    cd - > /dev/null
+    echo "$TEST_REPO_DIR"
 }
 
 echo "=== 1. Path Traversal Security Tests ==="
 
 # Build a simple test program for path validation
-cat > test_path_validator.c << 'EOF'
+TMPDIR=$(mktemp -d)
+cat > "$TMPDIR/test_path_validator.c" << 'EOF'
 #include <stdio.h>
 #include <string.h>
 #include "gitmind.h"
@@ -99,31 +101,31 @@ int main(int argc, char** argv) {
 }
 EOF
 
-gcc -o test_path_validator test_path_validator.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation
+gcc -o "$TMPDIR/test_path_validator" "$TMPDIR/test_path_validator.c" src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation
 
 # Valid paths
-run_test "valid simple filename" "./test_path_validator file.txt" 0
-run_test "valid relative path" "./test_path_validator src/main.c" 0
-run_test "valid current dir prefix" "./test_path_validator ./file.txt" 0
+run_test "valid simple filename" "$TMPDIR/test_path_validator file.txt" 0
+run_test "valid relative path" "$TMPDIR/test_path_validator src/main.c" 0
+run_test "valid current dir prefix" "$TMPDIR/test_path_validator ./file.txt" 0
 
 # Invalid paths - absolute
-run_test "reject absolute path" "./test_path_validator /etc/passwd" 1
-run_test "reject Windows absolute" "./test_path_validator 'C:\\file.txt'" 1
+run_test "reject absolute path" "$TMPDIR/test_path_validator /etc/passwd" 1
+run_test "reject Windows absolute" "$TMPDIR/test_path_validator 'C:\\file.txt'" 1
 
 # Invalid paths - traversal
-run_test "reject simple .." "./test_path_validator ../file.txt" 1
-run_test "reject multiple .." "./test_path_validator ../../etc/passwd" 1
-run_test "reject .. in middle" "./test_path_validator foo/../bar" 1
-run_test "reject complex traversal" "./test_path_validator foo/bar/../../../etc" 1
-run_test "reject trailing .." "./test_path_validator foo/.." 1
-run_test "reject Windows traversal" "./test_path_validator '..\\file.txt'" 1
+run_test "reject simple .." "$TMPDIR/test_path_validator ../file.txt" 1
+run_test "reject multiple .." "$TMPDIR/test_path_validator ../../etc/passwd" 1
+run_test "reject .. in middle" "$TMPDIR/test_path_validator foo/../bar" 1
+run_test "reject complex traversal" "$TMPDIR/test_path_validator foo/bar/../../../etc" 1
+run_test "reject trailing .." "$TMPDIR/test_path_validator foo/.." 1
+run_test "reject Windows traversal" "$TMPDIR/test_path_validator '..\\file.txt'" 1
 
 # Edge cases
-run_test "reject empty path" "./test_path_validator ''" 1
-run_test "allow dots in names" "./test_path_validator ..file.txt" 0
-run_test "allow three dots" "./test_path_validator ..." 0
+run_test "reject empty path" "$TMPDIR/test_path_validator ''" 1
+run_test "allow dots in names" "$TMPDIR/test_path_validator ..file.txt" 0
+run_test "allow three dots" "$TMPDIR/test_path_validator ..." 0
 
-rm -f test_path_validator test_path_validator.c
+rm -rf "$TMPDIR"
 
 echo
 echo "=== 2. Memory Leak Tests ==="
@@ -141,10 +143,10 @@ fi
 # The binary is already built and installed at /usr/local/bin/gitmind
 echo "Using pre-built gitmind binary"
 
-init_test_repo
+TEST_REPO=$(init_test_repo)
 
 # Test traverse memory leaks
-cd test_repo
+cd "$TEST_REPO"
 echo "Testing traverse command for memory leaks..."
 
 # Create some links for traversal
@@ -180,13 +182,15 @@ else
         "valgrind --leak-check=full --error-exitcode=1 --quiet gitmind check --fix" 0
 fi
 
-cd ..
+cd - > /dev/null
+rm -rf "$TEST_REPO"
 
 echo
 echo "=== 3. Error Code Consistency Tests ==="
 
 # Create a test program to check return values
-cat > test_error_codes.c << 'EOF'
+ERROR_TEST_DIR=$(mktemp -d)
+cat > "$ERROR_TEST_DIR/test_error_codes.c" << 'EOF'
 #include <stdio.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -212,15 +216,16 @@ int main() {
 }
 EOF
 
-gcc -o test_error_codes test_error_codes.c src/gitmind.c src/path.c src/sha1.c -I./include -Wall -Wextra
-run_test "error code consistency" "./test_error_codes" 0
-rm -f test_error_codes test_error_codes.c
+gcc -o "$ERROR_TEST_DIR/test_error_codes" "$ERROR_TEST_DIR/test_error_codes.c" src/gitmind.c src/path.c src/sha1.c -I./include -Wall -Wextra
+run_test "error code consistency" "$ERROR_TEST_DIR/test_error_codes" 0
+rm -rf "$ERROR_TEST_DIR"
 
 echo
 echo "=== 4. Thread-Local Portability Test ==="
 
 # Test that thread-local compiles on different standards
-cat > test_thread_local.c << 'EOF'
+TLS_TEST_DIR=$(mktemp -d)
+cat > "$TLS_TEST_DIR/test_thread_local.c" << 'EOF'
 #include <stdio.h>
 
 #if __STDC_VERSION__ >= 201112L
@@ -244,20 +249,20 @@ int main() {
 EOF
 
 # Test C99 mode
-run_test "thread-local C99" "gcc -std=c99 -o test_tls test_thread_local.c && ./test_tls" 0
+run_test "thread-local C99" "gcc -std=c99 -o $TLS_TEST_DIR/test_tls $TLS_TEST_DIR/test_thread_local.c && $TLS_TEST_DIR/test_tls" 0
 
 # Test C11 mode if available
 if gcc -std=c11 -o /dev/null -x c /dev/null 2>/dev/null; then
-    run_test "thread-local C11" "gcc -std=c11 -o test_tls test_thread_local.c && ./test_tls" 0
+    run_test "thread-local C11" "gcc -std=c11 -o $TLS_TEST_DIR/test_tls $TLS_TEST_DIR/test_thread_local.c && $TLS_TEST_DIR/test_tls" 0
 fi
 
-rm -f test_tls test_thread_local.c
+rm -rf "$TLS_TEST_DIR"
 
 echo
 echo "=== 5. Performance Regression Test ==="
 
-init_test_repo
-cd test_repo
+TEST_REPO2=$(init_test_repo)
+cd "$TEST_REPO2"
 
 # Create many links to test O(n²) performance
 echo "Creating 100 links of different types..."
@@ -286,7 +291,8 @@ else
 fi
 ((TOTAL_TESTS++))
 
-cd ..
+cd - > /dev/null
+rm -rf "$TEST_REPO2"
 
 echo
 echo "=== Test Summary ==="

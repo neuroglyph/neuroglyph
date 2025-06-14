@@ -28,8 +28,9 @@ test_path() {
     local expected="$2"
     local description="$3"
     
-    # Create a simple test program
-    cat > test_path.c << 'EOF'
+    # Create a simple test program in a temp directory
+    TMPDIR=$(mktemp -d)
+    cat > "$TMPDIR/test_path.c" << 'EOF'
 #include <stdio.h>
 #include <string.h>
 #include "gitmind.h"
@@ -48,14 +49,14 @@ int main(int argc, char** argv) {
 EOF
     
     # Compile it (include all sources except main.c to avoid duplicate main)
-    if ! gcc -o test_path test_path.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation 2>&1; then
+    if ! gcc -o "$TMPDIR/test_path" "$TMPDIR/test_path.c" src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation 2>&1; then
         echo -e "${RED}✗${NC} Compilation failed for test"
-        rm -f test_path test_path.c
+        rm -rf "$TMPDIR"
         exit 1
     fi
     
     # Run the test
-    local result=$(./test_path "$path" 2>/dev/null || echo "-99")
+    local result=$("$TMPDIR/test_path" "$path" 2>/dev/null || echo "-99")
     
     if [ "$result" = "$expected" ]; then
         echo -e "${GREEN}✓${NC} $description"
@@ -67,7 +68,7 @@ EOF
         ((FAILED++))
     fi
     
-    rm -f test_path test_path.c
+    rm -rf "$TMPDIR"
 }
 
 echo "Testing path traversal patterns..."
