@@ -433,7 +433,7 @@ gantt
 - **TODO Checklist**: `/docs/TODO_CHECKLIST.md` - Comprehensive development checklist
 - **Demo Scenarios**: `/docs/DEMO_SCENARIOS.md` - How to demonstrate all 10 use cases
 - **Quick Start Guide**: `/docs/QUICK_START_RECOVERY.md` - For resuming development
-- **Feature Specifications**: `/docs/features/F001-F015-*.md` - Detailed technical specs
+- **Feature Specifications**: `/design/features/F001-F015-*.md` - Detailed technical specs
 - **Gonzai Personality**: `/docs/GONZAI_PERSONALITY.md` - Complete mascot design guide
 
 ### Reflections & Theory

@@ -26,7 +26,7 @@ We were creating the exact problem GitMind is meant to solve! 😅
 ### 23:55 UTC - Key Decisions Made
 
 1. **Language**: Go for core, Python for ML/chaos, TypeScript for web, Rust only if needed
-2. **Architecture**: Documented in ONE place (docs/ARCHITECTURE.md)
+2. **Architecture**: Documented in ONE place (design/ARCHITECTURE.md)
 3. **Documentation**: Everything in docs/, no more design/ confusion
 4. **Focus**: Ship something people can use, not perfect code
 

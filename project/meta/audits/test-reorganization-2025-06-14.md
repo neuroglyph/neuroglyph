@@ -57,10 +57,10 @@ c/
 
 ### 4. Documentation
 - `c/README.md` - Updated test instructions
-- `docs/features/feature-test-mapping.md` - Updated test suite path
-- `docs/features/completed/README.md` - Updated test references
-- `docs/features/completed/F016-link-hygiene.md` - Updated test references
-- `docs/audits/feature-test-mapping.md` - Updated test suite path
+- `design/features/feature-test-mapping.md` - Updated test suite path
+- `design/features/completed/README.md` - Updated test references
+- `design/features/completed/F016-link-hygiene.md` - Updated test references
+- `project/meta/audits/feature-test-mapping.md` - Updated test suite path
 - `TASKLIST.md` - Updated test script references
 
 ### 5. Docker Configuration

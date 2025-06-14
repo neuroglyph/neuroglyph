@@ -19,7 +19,7 @@
 - **F001 (Git Storage):** Changed from "In Progress" to "Implemented"
 - **F013 (CLI Tools):** Changed from "In Progress" to "Implemented" 
 - **F016 (Link Hygiene):** Changed from "Proposed" to "Implemented"
-- All three moved to `docs/features/completed/` directory
+- All three moved to `design/features/completed/` directory
 
 ### 3. ✅ Created New Documentation
 - **Feature Completion SITREP:** Comprehensive audit of claimed vs actual status

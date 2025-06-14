@@ -84,19 +84,19 @@ gitmind init
 
 ### Test 2: Create Link
 ```bash
-gitmind link README.md docs/ARCHITECTURE.md --type IMPLEMENTS
+gitmind link README.md design/ARCHITECTURE.md --type IMPLEMENTS
 # Verifies: Link file created in .gitmind/links/
 ```
 
 ### Test 3: List Links
 ```bash
 gitmind list
-# Verifies: Output format "IMPLEMENTS: README.md -> docs/ARCHITECTURE.md"
+# Verifies: Output format "IMPLEMENTS: README.md -> design/ARCHITECTURE.md"
 ```
 
 ### Test 4: Multiple Links
 ```bash
-gitmind link docs/ARCHITECTURE.md docs/api.md --type REFERENCES
+gitmind link design/ARCHITECTURE.md docs/api.md --type REFERENCES
 # Verifies: Can create multiple links (count = 2)
 ```
 
@@ -108,7 +108,7 @@ gitmind list --source README.md
 
 ### Test 6: Unlink
 ```bash
-gitmind unlink README.md docs/ARCHITECTURE.md
+gitmind unlink README.md design/ARCHITECTURE.md
 # Verifies: Link removed (count decreases to 1)
 ```
 

@@ -3,7 +3,7 @@
 **Status**: Pure C Implementation Complete ✅  
 **Decision**: [ADR-009](decisions/ADR-009-c.md)  
 **Performance**: 67KB binary, <1ms startup  
-**Tasks**: [See TASKLIST.md](../TASKLIST.md)  
+**Tasks**: [See TASKLIST.md](../project/meta/TASKLIST.md)  
 
 > 🎯 **ONE DOCUMENT TO RULE THEM ALL** - If you're looking for architecture, roadmap, or technical design, THIS IS IT.
 

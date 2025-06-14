@@ -77,8 +77,18 @@ It stores **relationships, confidence**, and **epistemic state**.
 neuroglyph/              # This monorepo
 ├── c/                   # gitmind CLI (Pure C, 130KB binary)
 ├── demos/               # Example applications
-├── docs/                # All documentation (specs, features, decisions)
-└── lore/                # Philosophy & Gonzai + Claude's Dev Logs
+├── design/              # Technical design documentation
+│   ├── features/        # Feature specs (active/planned/completed)
+│   ├── decisions/       # Architecture Decision Records (ADRs)
+│   ├── proposals/       # Design proposals
+│   └── research/        # Research documents
+├── docs/                # User documentation
+├── lore/                # Philosophy & Gonzai + Claude's Dev Logs
+├── project/             # Project management
+│   ├── community/       # Community guidelines
+│   ├── legal/           # Legal & security docs
+│   └── meta/            # Project metadata
+└── scripts/             # Development scripts
 ```
 
 Coming Soon:
@@ -235,17 +245,17 @@ make build        # Build binary in Docker
 ```
 
 Pre-push hooks enforce tests and style.
-See [MONOREPO.md](MONOREPO.md) for repository structure.
+See [MONOREPO.md](project/meta/MONOREPO.md) for repository structure.
 
 ## 📚 Learn More
 
 - [Technical Roadmap](docs/README.md)
-- [Architecture Diagrams](design/gitmind_architecture.md)
-- [Semlink Protocol Spec](design/features/F001-git-object-storage.md)
+- [Architecture Overview](design/ARCHITECTURE.md)
+- [Semlink Protocol Spec](design/features/completed/F001-git-object-storage.md)
 - [The Gonzai Engine](lore/GONZAI_PERSONALITY.md)
-- [Use Cases](docs/archive/use-cases.md)
-- [Contributing Guide](CONTRIBUTING.md)
-- [Early Testers Program](docs/early-testers.md)
+- [Use Cases](project/meta/archive/use-cases.md)
+- [Contributing Guide](project/community/CONTRIBUTING.md)
+- [Early Testers Program](project/community/early-testers.md)
 
 Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. We try to track everything, including rationale behind important decisions, ideas, and we honor our digital  collaborators by granting them space to keep a dev log (see `lore/claude-mind`) and encouraging them to write freely to it.
 
@@ -259,8 +269,8 @@ Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. 
 - [ ] Phase 3: Plugin ecosystem
 - [ ] Phase 4: Chaos engine with Gonzai 🐵
 
-See [TASKLIST.md](TASKLIST.md) for detailed implementation plan.  
-Also [design/README](design/README.md).
+See [TASKLIST.md](project/meta/TASKLIST.md) for detailed implementation plan.  
+Also [design/README.md](design/README.md) for technical documentation.
 
 ## 🌐 Project Ecosystem
 
@@ -270,9 +280,9 @@ Also [design/README](design/README.md).
 ## 🧑‍💻 Contributing
 
 This project is open to dreamers, hackers, historians, poets, and systems architects.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get involved.
+See [CONTRIBUTING.md](project/community/CONTRIBUTING.md) for how to get involved.
 
-**For AI assistants**: See [CLAUDE.md](CLAUDE.md) for important project conventions.
+**For AI assistants**: See [CLAUDE.md](project/meta/CLAUDE.md) for important project conventions.
 
 **Key points:**
 - All tests run in Docker

@@ -47,7 +47,7 @@ cd demos/
 - [Project Overview](README.md) - What is Neuroglyph?
 - [Technical Roadmap](docs/README.md) - Architecture and features
 - [C Implementation](c/README.md) - Pure C gitmind CLI
-- [Contributing](CONTRIBUTING.md) - How to contribute
+- [Contributing](../community/CONTRIBUTING.md) - How to contribute
 
 ## ⚡ Quick Links
 

@@ -33,7 +33,7 @@
 
 1. **Vision & Roadmap:** `/docs/README.md`
 2. **Technical Whitepaper:** `/docs/git-knowledge-graph-whitepaper.md`
-3. **Feature Specs:** `/docs/features/F001-F015-*.md`
+3. **Feature Specs:** `/design/features/F001-F015-*.md`
 4. **Use Cases:** `/docs/use-cases.md`
 
 ---

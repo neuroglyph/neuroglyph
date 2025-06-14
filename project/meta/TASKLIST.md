@@ -51,7 +51,7 @@ gantt
   - [x] Document which test in tests/integration/test.sh validates each criterion
   
 - [x] **Create Feature-to-Test Mapping**
-  - [x] Created `docs/features/feature-test-mapping.md`
+  - [x] Created `design/features/feature-test-mapping.md`
   - [x] Mapped every test to its validated acceptance criteria
   - [x] Identified gaps in test coverage
 
