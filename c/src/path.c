@@ -25,8 +25,7 @@ int gm_normalize_path(const char* path, char* out_normalized) {
     }
     
     // For now, just copy - TODO: implement proper normalization
-    strncpy(out_normalized, path, GM_MAX_PATH - 1);
-    out_normalized[GM_MAX_PATH - 1] = '\0';
+    snprintf(out_normalized, GM_MAX_PATH, "%s", path);
     
     // Remove trailing slash if present
     size_t len = strlen(out_normalized);

@@ -83,8 +83,7 @@ int gm_status(void) {
                 // New type
                 type_entry_t* new_entry = malloc(sizeof(type_entry_t));
                 if (new_entry) {
-                    strncpy(new_entry->type, type, GM_MAX_TYPE - 1);
-                    new_entry->type[GM_MAX_TYPE - 1] = '\0';
+                    snprintf(new_entry->type, GM_MAX_TYPE, "%s", type);
                     new_entry->count = 1;
                     new_entry->next = NULL;
                     

@@ -325,8 +325,7 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
     // Start BFS traversal
     gm_traverse_node_t start = {0};
     start.depth = 0;
-    strncpy(start.path, normalized_start, GM_MAX_PATH - 1);
-    start.path[GM_MAX_PATH - 1] = '\0';
+    snprintf(start.path, GM_MAX_PATH, "%s", normalized_start);
     
     if (path_set_add(visited, normalized_start) != GM_OK ||
         queue_push(queue, &start) != GM_OK) {
@@ -379,10 +378,8 @@ int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traver
             // Create neighbor node
             gm_traverse_node_t neighbor_node = {0};
             neighbor_node.depth = current.depth + 1;
-            strncpy(neighbor_node.path, neighbor, GM_MAX_PATH - 1);
-            neighbor_node.path[GM_MAX_PATH - 1] = '\0';
-            strncpy(neighbor_node.parent, current.path, GM_MAX_PATH - 1);
-            neighbor_node.parent[GM_MAX_PATH - 1] = '\0';
+            snprintf(neighbor_node.path, GM_MAX_PATH, "%s", neighbor);
+            snprintf(neighbor_node.parent, GM_MAX_PATH, "%s", current.path);
             
             // Add to queue
             if (queue_push(queue, &neighbor_node) != GM_OK) {
