@@ -60,9 +60,9 @@ int gm_link_create(const char* source, const char* target, const char* type) {
     ret = build_link_content(&link, content, sizeof(content));
     if (ret != GM_OK) return ret;
     
-    // Compute SHA1
-    char sha[GM_SHA1_STRING_SIZE];
-    ret = gm_sha1_string(content, sha);
+    // Compute SHA256
+    char sha[GM_SHA256_STRING_SIZE];
+    ret = gm_sha256_string(content, sha);
     if (ret != GM_OK) return ret;
     
     // Build filename
@@ -274,8 +274,8 @@ int gm_link_unlink(const char* source, const char* target) {
         char content[8192];
         build_link_content(link, content, sizeof(content));
         
-        char sha[GM_SHA1_STRING_SIZE];
-        gm_sha1_string(content, sha);
+        char sha[GM_SHA256_STRING_SIZE];
+        gm_sha256_string(content, sha);
         
         // Remove file
         char links_dir[GM_MAX_PATH];

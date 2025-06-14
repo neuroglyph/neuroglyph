@@ -12,6 +12,13 @@
 // Fixed-size hash table for type counting
 #define TYPE_HASH_SIZE 64
 
+// Type entry for hash table
+typedef struct type_entry {
+    char type[GM_MAX_TYPE];
+    int count;
+    struct type_entry* next;
+} type_entry_t;
+
 // Simple hash function for type strings
 static unsigned int type_hash(const char* str) {
     unsigned int h = 5381;
@@ -19,6 +26,30 @@ static unsigned int type_hash(const char* str) {
     while ((c = *str++))
         h = ((h << 5) + h) + (unsigned int)c;
     return h % TYPE_HASH_SIZE;
+}
+
+// Free hash table
+static void free_hash_table(type_entry_t* hash_table[TYPE_HASH_SIZE]) {
+    for (int i = 0; i < TYPE_HASH_SIZE; i++) {
+        type_entry_t* entry = hash_table[i];
+        while (entry) {
+            type_entry_t* next = entry->next;
+            free(entry);
+            entry = next;
+        }
+        hash_table[i] = NULL;
+    }
+}
+
+// Print type counts from hash table
+static void print_type_counts(type_entry_t* hash_table[TYPE_HASH_SIZE]) {
+    for (int i = 0; i < TYPE_HASH_SIZE; i++) {
+        type_entry_t* entry = hash_table[i];
+        while (entry) {
+            printf("  %s: %d\n", entry->type, entry->count);
+            entry = entry->next;
+        }
+    }
 }
 
 // Show gitmind status
@@ -42,7 +73,7 @@ int gm_status(void) {
     }
     
     // List all links
-    gm_link_set_t* set;
+    gm_link_set_t* set = NULL;
     int ret = gm_link_list(&set, NULL, NULL);
     if (ret != GM_OK) return ret;
     
@@ -55,16 +86,11 @@ int gm_status(void) {
         // Count by type using simple hash table
         printf("\nLinks by type:\n");
         
-        typedef struct type_entry {
-            char type[GM_MAX_TYPE];
-            int count;
-            struct type_entry* next;
-        } type_entry_t;
-        
         type_entry_t* hash_table[TYPE_HASH_SIZE] = {0};
+        int allocation_failed = 0;
         
         // Count each type
-        for (size_t i = 0; i < set->count; i++) {
+        for (size_t i = 0; i < set->count && !allocation_failed; i++) {
             const char* type = set->links[i].type;
             unsigned int h = type_hash(type);
             
@@ -82,7 +108,12 @@ int gm_status(void) {
             } else {
                 // New type
                 type_entry_t* new_entry = malloc(sizeof(type_entry_t));
-                if (new_entry) {
+                if (!new_entry) {
+                    // Allocation failed - clean up and continue
+                    allocation_failed = 1;
+                    free_hash_table(hash_table);
+                    printf("  (Memory allocation failed - type counts unavailable)\n");
+                } else {
                     snprintf(new_entry->type, GM_MAX_TYPE, "%s", type);
                     new_entry->count = 1;
                     new_entry->next = NULL;
@@ -96,15 +127,10 @@ int gm_status(void) {
             }
         }
         
-        // Print and free hash table
-        for (int i = 0; i < TYPE_HASH_SIZE; i++) {
-            type_entry_t* entry = hash_table[i];
-            while (entry) {
-                printf("  %s: %d\n", entry->type, entry->count);
-                type_entry_t* next = entry->next;
-                free(entry);
-                entry = next;
-            }
+        // Print and free hash table (if allocation succeeded)
+        if (!allocation_failed) {
+            print_type_counts(hash_table);
+            free_hash_table(hash_table);
         }
         
         // Show last 5 links

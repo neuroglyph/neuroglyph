@@ -11,10 +11,14 @@
 #include <stdarg.h>
 
 // Thread-local error storage with portability
-#if __STDC_VERSION__ >= 201112L
-    #define THREAD_LOCAL _Thread_local
-#elif defined(__GNUC__) || defined(__clang__)
+// Note: We compile with -std=c99, so __STDC_VERSION__ == 199901L
+// _Thread_local is C11, so we rely on compiler extensions
+#if defined(__GNUC__) || defined(__clang__)
     #define THREAD_LOCAL __thread
+#elif defined(_MSC_VER)
+    #define THREAD_LOCAL __declspec(thread)
+#elif __STDC_VERSION__ >= 201112L
+    #define THREAD_LOCAL _Thread_local
 #else
     #define THREAD_LOCAL  // fallback: no TLS
     #warning "Thread-local storage not available, using global error buffer"

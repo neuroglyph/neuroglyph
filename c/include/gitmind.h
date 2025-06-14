@@ -87,8 +87,8 @@ typedef enum {
 #define GM_ERROR_BUFFER_SIZE 256
 
 // SHA constants
-#define GM_SHA1_SIZE 20
-#define GM_SHA1_STRING_SIZE 41
+#define GM_SHA256_SIZE 32
+#define GM_SHA256_STRING_SIZE 65
 
 // Default values
 #define GM_DEFAULT_LINK_TYPE "REFERENCES"
@@ -166,7 +166,7 @@ const char* gm_last_error(void);
 const char* gm_error_string(int error_code);
 
 // Utilities
-int gm_sha1_string(const char* content, char* out_sha);
+int gm_sha256_string(const char* content, char* out_sha);
 int gm_normalize_path(const char* path, char* out_normalized);
 int gm_path_join(char* dest, size_t dest_size, const char* dir, const char* file);
 int gm_validate_link_path(const char* path);
