@@ -23,10 +23,10 @@ This file contains important instructions for Claude and other AI assistants wor
 
 All new files MUST include SPDX headers:
 
-#### Source Code Files (.rs, .js, .ts, .py, .sh, etc.)
-```rust
-// SPDX-License-Identifier: Apache-2.0
-// © 2025 J. Kirby Ross / Neuroglyph Collective
+#### Source Code Files (.h, .c, .sh, etc.)
+```c
+/* SPDX-License-Identifier: Apache-2.0 */
+/* © 2025 J. Kirby Ross / Neuroglyph Collective */
 ```
 
 #### Shell Scripts
