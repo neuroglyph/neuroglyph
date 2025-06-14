@@ -36,3 +36,14 @@ services:
       - .:/test
     working_dir: /test
     command: ./benchmark.sh
+    
+  ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile.ubuntu
+    volumes:
+      - .:/test
+    working_dir: /test
+    environment:
+      - DOCKER_BUILD=1
+      - DOCKER_CONTAINER=1

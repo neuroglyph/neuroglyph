@@ -14,6 +14,9 @@ echo "=== GitMind C Test Suite ==="
 TESTDIR=$(mktemp -d)
 cd "$TESTDIR"
 
+# Configure git to use main branch
+git config --global init.defaultBranch main 2>/dev/null || true
+
 # Initialize git repo
 git init
 git config user.email "test@example.com"

@@ -54,34 +54,32 @@ static int cmd_init(int argc, char** argv) {
 static int cmd_link(int argc, char** argv) {
     const char* type = "REFERENCES";
     
-    // Parse options starting from argv[2] (after "gitmind link")
-    int opt;
-    static struct option long_options[] = {
-        {"type", required_argument, 0, 't'},
-        {0, 0, 0, 0}
-    };
+    // Save global optind 
+    int cmd_index = optind;  // This points to "link"
     
-    optind = 2; // Start after "gitmind link"
-    while ((opt = getopt_long(argc, argv, "t:", long_options, NULL)) != -1) {
-        switch (opt) {
-            case 't':
-                type = optarg;
-                break;
-            default:
-                print_usage(argv[0]);
-                return 1;
-        }
-    }
-    
-    // Need exactly 2 arguments after options
-    if (optind + 2 != argc) {
+    // We need to find source and target before any options
+    // They should be right after the command
+    if (argc < cmd_index + 3) {  // Need at least: link source target
         fprintf(stderr, ERR_MSG_LINK_REQUIRES_ARGS);
         print_usage(argv[0]);
         return 1;
     }
     
-    const char* source = argv[optind];
-    const char* target = argv[optind + 1];
+    const char* source = argv[cmd_index + 1];
+    const char* target = argv[cmd_index + 2];
+    
+    // Now check for --type option after source and target
+    for (int i = cmd_index + 3; i < argc; i++) {
+        if (strcmp(argv[i], "--type") == 0 || strcmp(argv[i], "-t") == 0) {
+            if (i + 1 < argc) {
+                type = argv[i + 1];
+                i++; // Skip the argument
+            } else {
+                fprintf(stderr, "Error: --type requires an argument\n");
+                return 1;
+            }
+        }
+    }
     
     int ret = gm_link_create(source, target, type);
     if (ret != GM_OK) {
@@ -109,7 +107,10 @@ static int cmd_list(int argc, char** argv) {
         {0, 0, 0, 0}
     };
     
-    optind = 2; // Start after "gitmind list"
+    // Save global optind and set it to after the command
+    int saved_optind = optind;
+    optind = saved_optind + 1;  // Skip past "list" command
+    
     while ((opt = getopt_long(argc, argv, "s:t:", long_options, NULL)) != -1) {
         switch (opt) {
             case 's':
@@ -153,14 +154,18 @@ static int cmd_list(int argc, char** argv) {
 }
 
 static int cmd_unlink(int argc, char** argv) {
-    if (argc != 4) {
+    // Save global optind
+    int saved_optind = optind;
+    int cmd_start = saved_optind + 1;  // Skip past "unlink" command
+    
+    if (argc != cmd_start + 2) {
         fprintf(stderr, ERR_MSG_UNLINK_REQUIRES_ARGS);
         print_usage(argv[0]);
         return 1;
     }
     
-    const char* source = argv[2];
-    const char* target = argv[3];
+    const char* source = argv[cmd_start];
+    const char* target = argv[cmd_start + 1];
     
     int ret = gm_link_unlink(source, target);
     if (ret != GM_OK) {
@@ -179,8 +184,12 @@ static int cmd_unlink(int argc, char** argv) {
 static int cmd_check(int argc, char** argv) {
     int fix = 0;
     
+    // Save global optind
+    int saved_optind = optind;
+    int cmd_start = saved_optind + 1;  // Skip past "check" command
+    
     // Check for --fix flag
-    for (int i = 2; i < argc; i++) {
+    for (int i = cmd_start; i < argc; i++) {
         if (strcmp(argv[i], "--fix") == 0) {
             fix = 1;
             break;
@@ -228,13 +237,17 @@ static int cmd_version(int argc, char** argv) {
 }
 
 static int cmd_traverse(int argc, char** argv) {
-    if (argc < 3) {
+    // Save global optind
+    int saved_optind = optind;
+    int cmd_start = saved_optind + 1;  // Skip past "traverse" command
+    
+    if (argc < cmd_start + 1) {
         fprintf(stderr, ERR_MSG_MISSING_FILE_ARG);
         fprintf(stderr, "Usage: gitmind traverse <file> [options]\n");
         return 1;
     }
     
-    const char* file = argv[2];
+    const char* file = argv[cmd_start];
     int depth = GM_DEFAULT_DEPTH;
     gm_format_t format = GM_FORMAT_TREE;
     
@@ -246,7 +259,7 @@ static int cmd_traverse(int argc, char** argv) {
         {0, 0, 0, 0}
     };
     
-    optind = 3; // Start after "gitmind traverse <file>"
+    optind = cmd_start + 1; // Start after "traverse <file>"
     while ((opt = getopt_long(argc, argv, "d:f:", long_options, NULL)) != -1) {
         switch (opt) {
         case 'd':
@@ -329,9 +342,7 @@ int main(int argc, char** argv) {
     
     const char* cmd = argv[optind];
     
-    // Shift arguments to maintain compatibility with existing functions
-    argc -= (optind - 1);
-    argv += (optind - 1);
+    // Don't shift argv - pass original with adjusted indices
     
     if (strcmp(cmd, "init") == 0) {
         return cmd_init(argc, argv);
