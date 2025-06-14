@@ -17,18 +17,18 @@ services:
 
   test:
     build:
-      context: ./c
+      context: .
       dockerfile: Dockerfile.test
     volumes:
-      - ./c:/test
+      - .:/test
     working_dir: /test
-    command: ./test.sh
+    command: ./tests/integration/test.sh
     
   benchmark:
     build:
-      context: ./c
+      context: .
       dockerfile: Dockerfile.test
     volumes:
-      - ./c:/test
+      - .:/test
     working_dir: /test
     command: ./benchmark.sh

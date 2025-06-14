@@ -5,7 +5,7 @@
 
 ## Test Suite Overview
 
-The primary test suite is `c/test.sh` which runs 11 integration tests in an isolated Docker environment.
+The primary test suite is `c/tests/integration/test.sh` which runs 11 integration tests in an isolated Docker environment.
 
 ## Feature Coverage Map
 

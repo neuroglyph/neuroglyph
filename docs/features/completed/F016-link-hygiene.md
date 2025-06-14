@@ -192,7 +192,7 @@ The core functionality of F016 has been implemented in the C version:
 
 2. **Check Command**: Validates all links by checking if both source and target files exist. The `--fix` option automatically removes broken links, maintaining graph integrity.
 
-3. **Test Coverage**: Tests 6, 10, and 11 in `test.sh` validate the unlink and check functionality, including the automatic cleanup of broken links.
+3. **Test Coverage**: Tests 6, 10, and 11 in `tests/integration/test.sh` validate the unlink and check functionality, including the automatic cleanup of broken links.
 
 The implementation follows the design exactly, using SHA-based filenames for link storage and providing clear user feedback about the number of broken links found and fixed.
 

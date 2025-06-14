@@ -19,27 +19,27 @@ help:
 
 # Build the binary in Docker
 build:
-	docker compose build dev
-	docker compose run --rm dev sh -c "cd c && make clean && make"
+	cd c && docker compose build dev
+	cd c && docker compose run --rm dev make clean all
 
 # Run tests in Docker
 test:
-	docker compose build test
-	docker compose run --rm -T test
+	cd c && docker compose build test
+	cd c && docker compose run --rm -T test
 
 # Clean build artifacts
 clean:
-	docker compose down
+	cd c && docker compose down
 	rm -f c/gitmind c/src/*.o
 
 # Development shell
 dev:
-	docker compose run --rm dev
+	cd c && docker compose run --rm dev
 
 # Run benchmarks in Docker
 benchmark:
-	docker compose build benchmark
-	docker compose run --rm benchmark
+	cd c && docker compose build benchmark
+	cd c && docker compose run --rm benchmark
 
 # Install locally (build first in Docker, then copy)
 install: build
@@ -51,11 +51,11 @@ demo:
 
 # Run fuzz testing
 fuzz:
-	cd c && ./fuzz-test.sh
+	cd c && ./tests/integration/fuzz-test.sh
 
 # Run memory checks
 valgrind:
-	cd c && ./valgrind-test.sh
+	cd c && ./tests/integration/valgrind-test.sh
 
 # Generate man pages
 man:

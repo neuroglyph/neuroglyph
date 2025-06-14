@@ -21,7 +21,7 @@ This directory contains feature specifications that have been fully implemented 
 
 ## Test Coverage
 
-All completed features are validated by the test suite in `c/test.sh`:
+All completed features are validated by the test suite in `c/tests/integration/test.sh`:
 - Test 1-2: F001 - Link storage and initialization
 - Test 3-8: F013 - CLI commands  
 - Test 6,10,11: F016 - Unlink and check functionality

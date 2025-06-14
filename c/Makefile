@@ -40,6 +40,6 @@ clean:
 	rm -f $(TARGET) $(OBJS)
 
 test: $(TARGET)
-	./test.sh
+	./tests/integration/test.sh
 
 .PHONY: all clean test debug

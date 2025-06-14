@@ -1,10 +1,10 @@
 # Feature-to-Test Mapping
 
-This document maps each implemented feature's acceptance criteria to the specific tests in `c/test.sh` that validate them.
+This document maps each implemented feature's acceptance criteria to the specific tests in `c/tests/integration/test.sh` that validate them.
 
 **Generated:** June 14, 2025  
-**Test Suite:** c/test.sh  
-**Binary:** gitmind (C implementation, 67KB)
+**Test Suite:** c/tests/integration/test.sh  
+**Binary:** gitmind (C implementation, 130KB)
 
 ## Test Overview
 

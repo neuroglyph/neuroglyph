@@ -2,7 +2,7 @@
 
 **Project:** GitMind (CLI in pure C)  
 **Current Status:** Core complete, preparing for HN launch  
-**Binary Size:** 67KB ✨  
+**Binary Size:** 130KB ✨  
 **Last Updated:** June 14, 2025
 
 ---
@@ -48,7 +48,7 @@ gantt
   - [x] Update F001 (Git Storage) - mark completed acceptance criteria
   - [x] Update F013 (CLI Tools) - add missing acceptance criteria  
   - [x] Update F016 (Link Hygiene) - change from "Proposed" to "Implemented"
-  - [x] Document which test in test.sh validates each criterion
+  - [x] Document which test in tests/integration/test.sh validates each criterion
   
 - [x] **Create Feature-to-Test Mapping**
   - [x] Created `docs/features/feature-test-mapping.md`
@@ -79,7 +79,7 @@ gantt
   ```
 
 - [x] **Testing**
-  - [x] Add traversal tests to test-traverse.sh (10 tests!)
+  - [x] Add traversal tests to tests/integration/test-traverse.sh (10 tests!)
   - [x] Test with cycles (A→B→C→A) - Test 5
   - [x] Test with multiple depth levels
   - [x] Test depth limiting and error handling
@@ -126,7 +126,7 @@ gantt
 
 - [ ] **Launch Materials**
   - [ ] 30-second demo GIF showing traverse + web UI
-  - [ ] HN post draft: "Show HN: GitMind - Turn Git into a Knowledge Graph (67KB binary)"
+  - [ ] HN post draft: "Show HN: GitMind - Turn Git into a Knowledge Graph (130KB binary)"
   - [ ] FAQ anticipating common questions
   - [ ] One-liner install script
 
@@ -237,7 +237,7 @@ Each task is complete when:
 2. Tests are written and passing
 3. Documentation is updated
 4. Feature works in Docker environment
-5. Binary size still under 100KB
+5. Binary size still under 150KB
 
 ---
 

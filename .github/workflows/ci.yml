@@ -32,7 +32,7 @@ jobs:
       run: |
         # Add gitmind to PATH for tests
         export PATH="$PWD:$PATH"
-        ./test.sh
+        ./tests/integration/test.sh
         
     - name: Run benchmarks
       working-directory: ./c
@@ -58,7 +58,7 @@ jobs:
       
     - name: Run Docker tests
       working-directory: ./c
-      run: ./docker-test.sh
+      run: ./tests/integration/docker-test.sh
 
   cross-platform:
     strategy:
@@ -85,4 +85,4 @@ jobs:
       working-directory: ./c
       run: |
         export PATH="$PWD:$PATH"
-        ./test.sh
+        ./tests/integration/test.sh

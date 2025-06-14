@@ -9,12 +9,12 @@ echo ""
 
 # Run basic tests
 echo ">>> Running basic tests..."
-/build/test.sh
+./test.sh
 echo ""
 
 # Run traverse tests
 echo ">>> Running traverse tests..."
-/build/test-traverse.sh
+./test-traverse.sh
 echo ""
 
 echo "=== All test suites passed! ===🚀"

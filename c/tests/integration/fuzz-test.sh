@@ -5,7 +5,7 @@
 set -e
 
 echo "🔨 Building fuzzing image..."
-docker build -f Dockerfile.fuzz -t gitmind-fuzz .
+docker build -f ../../Dockerfile.fuzz -t gitmind-fuzz ../..
 
 echo "🎯 Starting fuzzer (press Ctrl+C to stop)..."
 echo "Results will be in the container at /fuzz/findings"

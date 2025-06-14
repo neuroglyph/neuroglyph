@@ -5,7 +5,7 @@
 set -e
 
 echo "🔍 Building Valgrind test image..."
-docker build -f Dockerfile.valgrind -t gitmind-valgrind .
+docker build -f ../../Dockerfile.valgrind -t gitmind-valgrind ../..
 
 echo "🧪 Running memory checks..."
 docker run --rm gitmind-valgrind

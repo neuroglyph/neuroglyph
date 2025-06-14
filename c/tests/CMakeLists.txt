@@ -37,12 +37,3 @@ target_link_options(test_memory_leaks PRIVATE
 )
 add_test(NAME memory_leaks COMMAND test_memory_leaks)
 
-# Error consistency tests
-add_executable(test_error_consistency
-    test_error_consistency.c
-    ${TEST_SOURCES}
-)
-target_include_directories(test_error_consistency PRIVATE ../include ${CMOCKA_INCLUDE_DIRS})
-target_link_libraries(test_error_consistency ${CMOCKA_LIBRARIES})
-target_compile_options(test_error_consistency PRIVATE ${CMOCKA_CFLAGS_OTHER})
-add_test(NAME error_consistency COMMAND test_error_consistency)

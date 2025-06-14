@@ -1,6 +1,6 @@
 # GitMind C Implementation
 
-Pure C. No BS. 65KB binary. Zero dependencies.
+Pure C. No BS. 130KB binary. Zero dependencies.
 
 ## Build
 
@@ -13,7 +13,12 @@ That's it. You get a `gitmind` binary.
 ## Test
 
 ```bash
-./docker-test.sh  # Safe, isolated tests
+# Run all tests in Docker (safe, isolated)
+docker compose run test
+
+# Or run specific test suites
+./tests/integration/test.sh        # Main test suite
+./tests/integration/docker-test.sh # Full Docker test
 ```
 
 ## Philosophy

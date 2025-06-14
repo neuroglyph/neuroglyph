@@ -75,7 +75,7 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 ```
 neuroglyph/              # This monorepo
-├── c/                   # gitmind CLI (Pure C, 67KB binary)
+├── c/                   # gitmind CLI (Pure C, 130KB binary)
 ├── demos/               # Example applications
 ├── docs/                # All documentation (specs, features, decisions)
 └── lore/                # Philosophy & Gonzai + Claude's Dev Logs
@@ -95,9 +95,9 @@ GitMind is **the fastest knowledge graph tool on Earth**. Not a claim—a fact.
 ### Benchmarks
 
 ```bash
-Binary size:        67KB      (0.067MB)
+Binary size:        130KB     (0.13MB - still smaller than this README!)
 Startup time:       <1ms      ("Process too fast to measure!")
-Memory usage:       ~500KB    (Less than this README)
+Memory usage:       ~500KB    (About the size of a medium blog post)
 Dependencies:       Zero      (Just libc—already on your system)
 
 # Operations (tested on 100 links)
@@ -110,13 +110,13 @@ Check integrity:    <1ms
 
 | Tool | Size | Startup | Runtime |
 |------|------|---------|---------|
-| **GitMind** | **67KB** | **<1ms** | **None** |
+| **GitMind** | **130KB** | **<1ms** | **None** |
 | Obsidian | 150MB+ | ~2s | Electron |
 | Roam Research | Web app | Network latency | Browser |
 | Neo4j Desktop | 200MB+ | ~3s | JVM |
 | Logseq | 200MB+ | ~3s | Electron |
 
-That's not a typo. We're **2,000x smaller** than Electron apps. By the time their splash screen loads, you've already:
+That's not a typo. We're **1,000x smaller** than Electron apps. By the time their splash screen loads, you've already:
 - Created 100 links
 - Queried your entire graph  
 - Made coffee
