@@ -21,6 +21,14 @@ echo ""
 FAILED_TESTS=()
 PASSED_TESTS=()
 
+# Check for random order flag
+RANDOM_ORDER=false
+if [ "${1:-}" = "--random" ] || [ "${RANDOM_TESTS:-}" = "1" ]; then
+    RANDOM_ORDER=true
+    echo -e "${YELLOW}🎲 Running tests in random order${NC}"
+    echo ""
+fi
+
 # Function to run a test suite
 run_test() {
     local test_name="$1"
@@ -49,27 +57,34 @@ run_test() {
     echo ""
 }
 
-# Core functionality tests
-run_test "Core Commands" "$SCRIPT_DIR/test.sh"
+# Define all test suites
+declare -a TEST_SUITES=(
+    "Core Commands|$SCRIPT_DIR/test.sh"
+    "Graph Traversal|$SCRIPT_DIR/test-traverse.sh"
+    "Path Security|$SCRIPT_DIR/test-path-validation.sh"
+    "Output Modes|$SCRIPT_DIR/test-output-modes.sh"
+    "Regression Suite|$SCRIPT_DIR/test-regression.sh"
+    "Depth Errors|$SCRIPT_DIR/test-depth-error.sh"
+)
 
-# Graph traversal tests
-run_test "Graph Traversal" "$SCRIPT_DIR/test-traverse.sh"
-
-# Path validation security tests
-run_test "Path Security" "$SCRIPT_DIR/test-path-validation.sh"
-
-# Regression tests
-run_test "Regression Suite" "$SCRIPT_DIR/test-regression.sh"
-
-# Edge case tests
-run_test "Depth Errors" "$SCRIPT_DIR/test-depth-error.sh"
-
-# Memory leak tests (if valgrind available)
+# Add memory test if valgrind available
 if command -v valgrind >/dev/null 2>&1; then
-    run_test "Memory Leaks" "$SCRIPT_DIR/valgrind-test.sh"
+    TEST_SUITES+=("Memory Leaks|$SCRIPT_DIR/valgrind-test.sh")
 else
     echo -e "${YELLOW}⚠️  Skipping memory tests (valgrind not available)${NC}"
 fi
+
+# Randomize order if requested
+if [ "$RANDOM_ORDER" = true ]; then
+    # Shuffle array using awk and RANDOM
+    readarray -t TEST_SUITES < <(printf '%s\n' "${TEST_SUITES[@]}" | awk 'BEGIN{srand()} {print rand() "\t" $0}' | sort -n | cut -f2-)
+fi
+
+# Run all test suites
+for suite in "${TEST_SUITES[@]}"; do
+    IFS='|' read -r test_name test_script <<< "$suite"
+    run_test "$test_name" "$test_script"
+done
 
 # Summary
 echo "📊 === Test Summary ==="

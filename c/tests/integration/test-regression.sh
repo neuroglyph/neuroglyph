@@ -61,8 +61,11 @@ run_test() {
 }
 
 # Initialize a test repository
+# Must be called after GITMIND_BIN is set!
 init_test_repo() {
-    TEST_REPO_DIR=$(mktemp -d)
+    local TEST_REPO_DIR=$(mktemp -d)
+    local SAVED_PWD=$(pwd)
+    
     cd "$TEST_REPO_DIR"
     git init --quiet
     git config user.name "Test User"
@@ -70,8 +73,9 @@ init_test_repo() {
     echo "test" > README.md
     git add README.md
     git commit -m "Initial commit" --quiet
-    gitmind init
-    cd - > /dev/null
+    gitmind init >/dev/null 2>&1
+    
+    cd "$SAVED_PWD"
     echo "$TEST_REPO_DIR"
 }
 
@@ -139,21 +143,34 @@ else
     ASAN_FLAGS=""
 fi
 
-# Skip rebuilding - use the pre-built binary
-# The binary is already built and installed at /usr/local/bin/gitmind
-echo "Using pre-built gitmind binary"
+# Check if gitmind is available
+if ! command -v gitmind >/dev/null 2>&1; then
+    echo "ERROR: gitmind not found in PATH!"
+    exit 1
+fi
+echo "Using gitmind from PATH"
 
+echo "Creating test repository..."
 TEST_REPO=$(init_test_repo)
+echo "DEBUG: TEST_REPO='$TEST_REPO'"
+if [ -z "$TEST_REPO" ]; then
+    echo "ERROR: Failed to create test repository"
+    exit 1
+fi
+echo "Test repository created at: $TEST_REPO"
 
 # Test traverse memory leaks
-cd "$TEST_REPO"
+cd "$TEST_REPO" || { echo "ERROR: Cannot cd to $TEST_REPO"; exit 1; }
 echo "Testing traverse command for memory leaks..."
 
 # Create some links for traversal
 touch file1.txt file2.txt file3.txt
-gitmind link file1.txt file2.txt
-gitmind link file2.txt file3.txt
-gitmind link file3.txt file1.txt  # Create a cycle
+echo "Creating first link..."
+gitmind link file1.txt file2.txt || echo "FAILED: link 1"
+echo "Creating second link..."
+gitmind link file2.txt file3.txt || echo "FAILED: link 2"
+echo "Creating third link (cycle)..."
+gitmind link file3.txt file1.txt || echo "FAILED: link 3"
 
 if [ -n "$ASAN_FLAGS" ]; then
     # With ASAN, just run the command

@@ -21,8 +21,9 @@ COPY . .
 # Build gitmind
 RUN DOCKER_CONTAINER=1 DOCKER_BUILD=1 make clean && DOCKER_CONTAINER=1 DOCKER_BUILD=1 make
 
-# Copy binary as root
-RUN cp /build/gitmind /usr/local/bin/
+# Copy binary as root and ensure it's in PATH
+RUN cp /build/gitmind /usr/local/bin/ && \
+    chmod +x /usr/local/bin/gitmind
 
 # Set up test environment
 USER testuser
@@ -31,4 +32,7 @@ WORKDIR /home/testuser
 # Configure git for testuser
 RUN git config --global init.defaultBranch main
 
-ENTRYPOINT ["/bin/bash"]
+# Ensure PATH includes standard locations
+ENV PATH="/usr/local/bin:/usr/bin:/bin"
+
+# No entrypoint - let docker-compose command take over

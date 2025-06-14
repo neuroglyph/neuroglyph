@@ -7,8 +7,15 @@
 #include <string.h>
 #include <getopt.h>
 
+// Global flags
+static int verbose = 0;
+static int porcelain = 0;
+
 static void print_usage(const char* prog) {
-    fprintf(stderr, "Usage: %s <command> [options]\n", prog);
+    fprintf(stderr, "Usage: %s [--verbose] [--porcelain] <command> [options]\n", prog);
+    fprintf(stderr, "\nGlobal options:\n");
+    fprintf(stderr, "  --verbose, -v           Enable verbose output\n");
+    fprintf(stderr, "  --porcelain             Machine-readable output\n");
     fprintf(stderr, "\nCommands:\n");
     fprintf(stderr, "  init                    Initialize gitmind in current repository\n");
     fprintf(stderr, "  link <source> <target>  Create a link between files\n");
@@ -36,7 +43,11 @@ static int cmd_init(int argc, char** argv) {
         return 1;
     }
     
-    printf("Initialized gitmind in current repository\n");
+    if (porcelain) {
+        printf(PORCELAIN_INIT_OK);
+    } else if (verbose) {
+        printf(MSG_INIT_SUCCESS);
+    }
     return 0;
 }
 
@@ -64,7 +75,7 @@ static int cmd_link(int argc, char** argv) {
     
     // Need exactly 2 arguments after options
     if (optind + 2 != argc) {
-        fprintf(stderr, "Error: link requires source and target arguments\n");
+        fprintf(stderr, ERR_MSG_LINK_REQUIRES_ARGS);
         print_usage(argv[0]);
         return 1;
     }
@@ -78,7 +89,11 @@ static int cmd_link(int argc, char** argv) {
         return 1;
     }
     
-    printf("Created link: %s -> %s (%s)\n", source, target, type);
+    if (porcelain) {
+        printf(PORCELAIN_LINK_CREATED, source, target, type);
+    } else if (verbose) {
+        printf(MSG_LINK_CREATED, source, target, type);
+    }
     return 0;
 }
 
@@ -117,12 +132,19 @@ static int cmd_list(int argc, char** argv) {
     }
     
     if (set->count == 0) {
-        printf("No links found\n");
+        if (!porcelain) {
+            printf(MSG_NO_LINKS);
+        }
     } else {
         for (size_t i = 0; i < set->count; i++) {
             gm_link_t* link = &set->links[i];
-            printf("%s: %s -> %s (ts:%ld)\n", 
-                link->type, link->source, link->target, link->timestamp);
+            if (porcelain) {
+                printf(PORCELAIN_LINK_FORMAT, 
+                    link->type, link->source, link->target, link->timestamp);
+            } else {
+                printf(MSG_LINK_FORMAT, 
+                    link->type, link->source, link->target, link->timestamp);
+            }
         }
     }
     
@@ -132,7 +154,7 @@ static int cmd_list(int argc, char** argv) {
 
 static int cmd_unlink(int argc, char** argv) {
     if (argc != 4) {
-        fprintf(stderr, "Error: unlink requires source and target arguments\n");
+        fprintf(stderr, ERR_MSG_UNLINK_REQUIRES_ARGS);
         print_usage(argv[0]);
         return 1;
     }
@@ -146,7 +168,11 @@ static int cmd_unlink(int argc, char** argv) {
         return 1;
     }
     
-    printf("Removed link: %s -> %s\n", source, target);
+    if (porcelain) {
+        printf(PORCELAIN_LINK_REMOVED, source, target);
+    } else if (verbose) {
+        printf(MSG_LINK_REMOVED, source, target);
+    }
     return 0;
 }
 
@@ -169,12 +195,12 @@ static int cmd_check(int argc, char** argv) {
     }
     
     if (broken_count == 0) {
-        printf("All links are valid\n");
+        printf(MSG_ALL_LINKS_VALID);
     } else if (!fix) {
-        printf("Found %d broken link%s\n", broken_count, broken_count == 1 ? "" : "s");
-        printf("Run 'gitmind check --fix' to remove them\n");
+        printf(MSG_BROKEN_LINKS_FOUND, broken_count, broken_count == 1 ? "" : "s");
+        printf(MSG_RUN_CHECK_FIX);
     } else {
-        printf("Removed %d broken link%s\n", broken_count, broken_count == 1 ? "" : "s");
+        printf(MSG_BROKEN_LINKS_REMOVED, broken_count, broken_count == 1 ? "" : "s");
     }
     
     return 0;
@@ -197,13 +223,13 @@ static int cmd_version(int argc, char** argv) {
     (void)argc;
     (void)argv;
     
-    printf("gitmind version %s\n", gm_version_string());
+    printf(MSG_VERSION_FORMAT, gm_version_string());
     return 0;
 }
 
 static int cmd_traverse(int argc, char** argv) {
     if (argc < 3) {
-        fprintf(stderr, "Error: Missing file argument\n");
+        fprintf(stderr, ERR_MSG_MISSING_FILE_ARG);
         fprintf(stderr, "Usage: gitmind traverse <file> [options]\n");
         return 1;
     }
@@ -226,7 +252,7 @@ static int cmd_traverse(int argc, char** argv) {
         case 'd':
             depth = atoi(optarg);
             if (depth <= 0 || depth > GM_MAX_DEPTH) {
-                fprintf(stderr, "Error: Depth must be between 1 and %d\n", GM_MAX_DEPTH);
+                fprintf(stderr, ERR_MSG_DEPTH_OUT_OF_RANGE, GM_MAX_DEPTH);
                 return 1;
             }
             break;
@@ -269,7 +295,43 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-    const char* cmd = argv[1];
+    // Parse global options
+    int opt;
+    static struct option long_options[] = {
+        {"verbose", no_argument, 0, 'v'},
+        {"porcelain", no_argument, 0, 'p'},
+        {0, 0, 0, 0}
+    };
+    
+    // Reset optind for global option parsing
+    optind = 1;
+    
+    // Process global options until we hit a non-option
+    while ((opt = getopt_long(argc, argv, "+v", long_options, NULL)) != -1) {
+        switch (opt) {
+            case 'v':
+                verbose = 1;
+                break;
+            case 'p':
+                porcelain = 1;
+                break;
+            default:
+                print_usage(argv[0]);
+                return 1;
+        }
+    }
+    
+    // Check if we have a command after options
+    if (optind >= argc) {
+        print_usage(argv[0]);
+        return 1;
+    }
+    
+    const char* cmd = argv[optind];
+    
+    // Shift arguments to maintain compatibility with existing functions
+    argc -= (optind - 1);
+    argv += (optind - 1);
     
     if (strcmp(cmd, "init") == 0) {
         return cmd_init(argc, argv);
@@ -288,7 +350,7 @@ int main(int argc, char** argv) {
     } else if (strcmp(cmd, "version") == 0) {
         return cmd_version(argc, argv);
     } else {
-        fprintf(stderr, "Error: Unknown command '%s'\n", cmd);
+        fprintf(stderr, ERR_MSG_UNKNOWN_COMMAND, cmd);
         print_usage(argv[0]);
         return 1;
     }

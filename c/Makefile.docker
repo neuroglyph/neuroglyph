@@ -31,6 +31,11 @@ test:
 	docker compose build test
 	docker compose run --rm -T test
 
+# Run tests in random order
+test-random:
+	docker compose build test
+	RANDOM_TESTS=1 docker compose run --rm -T test
+
 # Clean build artifacts
 clean:
 	docker compose down

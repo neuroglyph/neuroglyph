@@ -53,6 +53,8 @@ typedef enum {
 #define ERR_MSG_LINK_REQUIRES_ARGS "Error: link requires source and target arguments\n"
 #define ERR_MSG_UNLINK_REQUIRES_ARGS "Error: unlink requires source and target arguments\n"
 #define ERR_MSG_UNKNOWN_COMMAND "Error: Unknown command '%s'\n"
+#define ERR_MSG_MISSING_FILE_ARG "Error: Missing file argument\n"
+#define ERR_MSG_DEPTH_OUT_OF_RANGE "Error: Depth must be between 1 and %d\n"
 
 // Status messages
 #define MSG_INIT_SUCCESS "Initialized gitmind in current repository\n"
@@ -67,6 +69,15 @@ typedef enum {
 
 // Version info
 #define MSG_VERSION_FORMAT "gitmind version %s\n"
+
+// Porcelain output formats
+#define PORCELAIN_INIT_OK "init:ok\n"
+#define PORCELAIN_LINK_CREATED "link:created:%s:%s:%s\n"
+#define PORCELAIN_LINK_REMOVED "link:removed:%s:%s\n"
+#define PORCELAIN_LINK_FORMAT "link:%s:%s:%s:%ld\n"
+
+// Human-readable formats
+#define MSG_LINK_FORMAT "%s: %s -> %s (ts:%ld)\n"
 
 // Buffer sizes - centralized for maintainability
 #define GM_MAX_PATH 4096
