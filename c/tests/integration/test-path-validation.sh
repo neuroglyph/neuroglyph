@@ -2,13 +2,14 @@
 # SPDX-License-Identifier: Apache-2.0
 # © 2025 J. Kirby Ross / Neuroglyph Collective
 
-set -euo pipefail
+set -uo pipefail  # Remove -e to allow tests to fail without exiting
 
 # Source Docker guard - will exit if not in Docker
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../docker-guard.sh"
 
-cd "$(dirname "$0")"
+# Get to the C implementation root
+cd "$(dirname "$0")/../.."
 
 echo "=== Path Validation Security Tests ==="
 echo
@@ -46,8 +47,12 @@ int main(int argc, char** argv) {
 }
 EOF
     
-    # Compile it
-    gcc -o test_path test_path.c src/path.c src/gitmind.c -I./include -Wall -Wextra
+    # Compile it (include all sources except main.c to avoid duplicate main)
+    if ! gcc -o test_path test_path.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation 2>&1; then
+        echo -e "${RED}✗${NC} Compilation failed for test"
+        rm -f test_path test_path.c
+        exit 1
+    fi
     
     # Run the test
     local result=$(./test_path "$path" 2>/dev/null || echo "-99")
@@ -99,9 +104,9 @@ test_path "foo/..bar/baz" "0" "Dots after slash (valid)"
 test_path "foo%2F..%2Fbar" "0" "URL encoded slashes (treated as literal)"
 test_path "foo/../bar" "-6" "Real traversal for comparison"
 
-# Windows-style paths
-test_path "C:\\file.txt" "0" "Windows absolute (we don't check for this yet)"
-test_path "..\\file.txt" "0" "Windows traversal (we don't check for this yet)"
+# Windows-style paths (should be rejected due to backslashes)
+test_path "C:\\file.txt" "-6" "Windows absolute (rejected - contains backslash)"
+test_path "..\\file.txt" "-6" "Windows traversal (rejected - contains backslash)"
 
 # Empty and special
 test_path "" "-6" "Empty path"

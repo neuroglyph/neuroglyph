@@ -50,23 +50,23 @@ run_test() {
 }
 
 # Core functionality tests
-run_test "Core Commands" "./test.sh"
+run_test "Core Commands" "$SCRIPT_DIR/test.sh"
 
 # Graph traversal tests
-run_test "Graph Traversal" "./test-traverse.sh"
+run_test "Graph Traversal" "$SCRIPT_DIR/test-traverse.sh"
 
 # Path validation security tests
-run_test "Path Security" "./test-path-validation.sh"
+run_test "Path Security" "$SCRIPT_DIR/test-path-validation.sh"
 
 # Regression tests
-run_test "Regression Suite" "./test-regression.sh"
+run_test "Regression Suite" "$SCRIPT_DIR/test-regression.sh"
 
 # Edge case tests
-run_test "Depth Errors" "./test-depth-error.sh"
+run_test "Depth Errors" "$SCRIPT_DIR/test-depth-error.sh"
 
 # Memory leak tests (if valgrind available)
 if command -v valgrind >/dev/null 2>&1; then
-    run_test "Memory Leaks" "./valgrind-test.sh"
+    run_test "Memory Leaks" "$SCRIPT_DIR/valgrind-test.sh"
 else
     echo -e "${YELLOW}⚠️  Skipping memory tests (valgrind not available)${NC}"
 fi
