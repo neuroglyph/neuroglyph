@@ -13,6 +13,8 @@ GitMind uses Git as a knowledge substrate. Links between files are stored as `.g
 
 ## Architecture (Pure C)
 
+> 📘 **Implementation Details**: See [ARCHITECTURE-C.md](ARCHITECTURE-C.md) for low-level C design patterns and data structures.
+
 ```mermaid
 graph TB
     subgraph "What Ships"

@@ -12,23 +12,25 @@ This directory contains all technical design documentation for the Neuroglyph pr
 ### 📋 Features
 Core functionality specifications with user stories and acceptance criteria.
 
-#### Phase 1a - MVP (Complete)
-- [F001: Git Object Storage](features/F001-git-object-storage.md) - Core link storage in `.gitmind/links/`
-- [F013: CLI Tools](features/F013-cli-tools.md) - Command-line interface
-- [F016: Link Hygiene](features/F016-link-hygiene.md) - Unlink and check commands
-- [F017: Error Handling Improvements](features/F017-error-handling-improvements.md) - User-friendly error messages
-- [F025: CLI Help System](features/F025-cli-help-system.md) - Markdown-driven help ✨ NEW
+#### ✅ Completed Features
+*Fully implemented and tested features moved to [features/completed/](features/completed/)*
+- [F001: Git Object Storage](features/completed/F001-git-object-storage.md) - Core link storage ✅
+- [F013: CLI Tools](features/completed/F013-cli-tools.md) - All 7 commands ✅
+- [F016: Link Hygiene](features/completed/F016-link-hygiene.md) - Unlink and check ✅
 
-#### Phase 1b - Web Visualization
-- [F018: Web Demo Mode](features/F018-web-demo-mode.md) - Static marketing demo
+#### 🎯 Current Sprint - MVP for HN
+*Features needed for Hacker News launch*
+- [F026: Basic Graph Traversal](features/F026-basic-graph-traversal.md) - `gitmind traverse` command
 - [F019: Local Web Server](features/F019-local-web-server.md) - `gitmind serve` command
 - [F020: Graph Visualization Engine](features/F020-graph-visualization-engine.md) - D3.js visualization
-- [F021: Interactive Graph Editing](features/F021-interactive-graph-editing.md) - Drag-and-drop links
-- [F022: Time Travel Interface](features/F022-time-travel-interface.md) - History navigation
-- [F023: Search and Filter UI](features/F023-search-and-filter-ui.md) - Finding nodes
-- [F024: Export and Sharing](features/F024-export-and-sharing.md) - PNG/SVG/data export
 
-#### Phase 2 - Full Implementation
+#### 🔜 Next Up
+- [F027: Path Finding](features/F027-path-finding.md) - How are A and B connected?
+- [F028: Pattern Matching](features/F028-pattern-matching.md) - Find structural patterns
+- [F029: Graph Analytics](features/F029-graph-analytics.md) - PageRank, centrality
+- [F030: Query Languages](features/F030-pluggable-query-languages.md) - SQL/Cypher/Natural
+
+#### 📋 Future Features
 - [F002: Relationship Extraction](features/F002-relationship-extraction.md) - Auto-detect links
 - [F003: Git Hook Integration](features/F003-git-hook-integration.md) - Automatic updates
 - [F006: Web Visualization](features/F006-web-visualization.md) - Original web UI spec

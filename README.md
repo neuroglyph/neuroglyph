@@ -46,13 +46,28 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 > This is version control for understanding itself.
 
-## ✨ Core Features
-- 🔗 gitmind link A B — establish semlinks between concepts
-- 📜 gitmind scan — extract links from markdown, wikis, and code
-- 🧱 Git-native object storage — decentralized, content-addressable
-- 🧠 Visualize the graph of meaning
-- 🧬 Plugin-ready (VSCode, Obsidian, anything Git-aware)
-- 🧨 Chaos Mode — Gonzai adds speculative links and uncanny insight
+## ✨ What's Working Today
+
+**Current Status:** Core CLI complete in pure C (67KB binary!)
+
+### Available Commands
+- `gitmind init` — Initialize semantic links in your repo
+- `gitmind link A B --type TYPE` — Create semantic relationships
+- `gitmind list [--source FILE]` — Query your knowledge graph  
+- `gitmind unlink A B` — Remove specific links
+- `gitmind check [--fix]` — Find and fix broken links
+- `gitmind status` — See graph statistics
+- `gitmind version` — Version info
+
+### Coming Soon (MVP Sprint)
+- 🚧 `gitmind traverse FILE --depth N` — Explore connections
+- 🚧 `gitmind serve` — Local web visualization
+- 🚧 Interactive D3.js graph view
+
+### Future Vision
+- 📜 Auto-extract links from markdown
+- 🧬 Plugin ecosystem (VSCode, Obsidian)
+- 🧨 Chaos Mode with Gonzai 🐵
 
 ---
 
@@ -60,11 +75,10 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 ```
 neuroglyph/              # This monorepo
-├── c/                   # gitmind CLI (Pure C implementation)
+├── c/                   # gitmind CLI (Pure C, 67KB binary)
 ├── demos/               # Example applications
 ├── docs/                # All documentation (specs, features, decisions)
-├── lore/                # Philosophy & Gonzai + Claude's Dev Logs
-└── testdata/            # Test fixtures
+└── lore/                # Philosophy & Gonzai + Claude's Dev Logs
 ```
 
 Planned:
