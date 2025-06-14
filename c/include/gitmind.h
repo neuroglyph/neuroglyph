@@ -63,6 +63,32 @@ typedef struct {
 // Repository handle
 typedef struct gm_repo gm_repo;
 
+// Traversal constants
+#define GM_MAX_DEPTH 10
+#define GM_DEFAULT_DEPTH 1
+
+// Traversal formats
+typedef enum {
+    GM_FORMAT_TREE = 0,
+    GM_FORMAT_LIST = 1
+} gm_format_t;
+
+// Traversal node
+typedef struct {
+    char path[GM_MAX_PATH];
+    int depth;
+    char parent[GM_MAX_PATH];
+} gm_traverse_node_t;
+
+// Traversal result
+typedef struct {
+    gm_traverse_node_t* nodes;
+    size_t count;
+    size_t capacity;
+    int direct_count;
+    int total_count;
+} gm_traverse_result_t;
+
 // Core operations
 int gm_init(const char* repo_path);
 int gm_link_create(const char* source, const char* target, const char* type);
@@ -71,11 +97,19 @@ int gm_link_unlink(const char* source, const char* target);
 int gm_link_unlink_all(const char* source);
 int gm_link_check(int fix, int* broken_count);
 int gm_status(void);
+int gm_traverse(const char* start_node, int depth, gm_format_t format, gm_traverse_result_t** result);
 
 // Link set operations
 gm_link_set_t* gm_link_set_new(void);
 void gm_link_set_free(gm_link_set_t* set);
 int gm_link_set_add(gm_link_set_t* set, const gm_link_t* link);
+
+// Traverse result operations
+gm_traverse_result_t* gm_traverse_result_new(void);
+void gm_traverse_result_free(gm_traverse_result_t* result);
+int gm_traverse_result_add(gm_traverse_result_t* result, const gm_traverse_node_t* node);
+void gm_traverse_print_tree(const gm_traverse_result_t* result, const char* start_node);
+void gm_traverse_print_list(const gm_traverse_result_t* result, const char* start_node);
 
 // Error handling
 const char* gm_last_error(void);

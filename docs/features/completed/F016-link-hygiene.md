@@ -1,6 +1,6 @@
 # F016: Link Hygiene and Broken Link Management
 
-**Status:** Implemented  
+**Status:** Implemented ✅  
 **Priority:** High (Phase 1a for core commands)  
 **Complexity:** Medium  
 **Estimation:** 2-3 days  
@@ -35,20 +35,20 @@ As a knowledge worker, I want to remove obsolete links and clean up broken refer
 ### Phase 1a (MVP)
 
 1. **Manual Unlinking (`gitmind unlink`)**
-   - [x] Remove specific link between two files (Test 6)
-   - [x] Handle non-existent links gracefully
-   - [ ] Remove all links from a source file
-   - [ ] Remove all links to a target file
-   - [ ] Commit removal with appropriate message
+   - [x] Remove specific link between two files (Test 6: unlink command)
+   - [x] Handle non-existent links gracefully (implicit - no error in tests)
+   - [ ] Remove all links from a source file - NOT IMPLEMENTED
+   - [ ] Remove all links to a target file - NOT IMPLEMENTED
+   - [ ] Commit removal with appropriate message - NOT IMPLEMENTED (no auto-commit)
 
 2. **Link Validation (`gitmind check`)**
-   - [x] Detect links pointing to non-existent files (Test 10)
-   - [x] Report broken links with source and target
-   - [x] `--fix` flag to remove broken links automatically (Test 11)
-   - [ ] `--dry-run` flag to preview what would be removed
-   - [x] Summary statistics (reports number of broken links)
+   - [x] Detect links pointing to non-existent files (Test 10: check detects broken link)
+   - [x] Report broken links with source and target (Test 10: output contains "Broken link")
+   - [x] `--fix` flag to remove broken links automatically (Test 11: check --fix)
+   - [ ] `--dry-run` flag to preview what would be removed - NOT IMPLEMENTED
+   - [x] Summary statistics (implicit - reports broken links found)
 
-### Phase 2 (Advanced)
+### Phase 2 (Not Yet Implemented)
 
 3. **Git Hook Integration**
    - [ ] Post-checkout hook to detect deleted files
@@ -66,17 +66,18 @@ As a knowledge worker, I want to remove obsolete links and clean up broken refer
 ### Unlink Command
 
 ```bash
-# Remove specific link
+# Remove specific link (IMPLEMENTED)
 gitmind unlink source.md target.md
 
+# Future options (NOT YET IMPLEMENTED):
 # Remove all links from a file
-gitmind unlink source.md --all
+# gitmind unlink source.md --all
 
 # Remove all links to a file
-gitmind unlink --to target.md
+# gitmind unlink --to target.md
 
 # Remove links of specific type
-gitmind unlink source.md target.md --type DEPENDS_ON
+# gitmind unlink source.md target.md --type DEPENDS_ON
 ```
 
 Implementation approach:
@@ -88,20 +89,21 @@ Implementation approach:
 ### Check Command
 
 ```bash
-# Check for broken links
+# Check for broken links (IMPLEMENTED)
 gitmind check
 
-# Fix broken links automatically
+# Fix broken links automatically (IMPLEMENTED)
 gitmind check --fix
 
+# Future options (NOT YET IMPLEMENTED):
 # Preview what would be fixed
-gitmind check --dry-run
+# gitmind check --dry-run
 
 # Check specific file
-gitmind check file.md
+# gitmind check file.md
 
 # Output format options
-gitmind check --format json
+# gitmind check --format json
 ```
 
 Example output:

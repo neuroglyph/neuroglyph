@@ -27,28 +27,28 @@ As a knowledge graph user, I want my relationships between files to be stored di
 ## Acceptance Criteria
 
 1. **Relationship Storage**
-   - [x] Relationships stored in `.gitmind/links/` directory
-   - [x] Each relationship has a unique SHA-1 identifier (filename)
-   - [x] Relationships are immutable once stored
-   - [x] Duplicate relationships are automatically deduplicated via content hashing (Test 7)
+   - [x] Relationships stored in `.gitmind/links/` directory (Test 1: init creates directory)
+   - [x] Each relationship has a unique SHA-1 identifier (filename) (Test 2: link creates file)
+   - [x] Relationships are immutable once stored (stored as files)
+   - [x] Duplicate relationships are automatically deduplicated via content hashing (Test 7: SHA consistency)
 
 2. **Relationship Retrieval**
-   - [x] All relationships can be listed with `gitmind list`
-   - [x] All relationships for a given source file can be queried (Test 5)
-   - [ ] Bidirectional lookups are supported (find all files linking to target)
-   - [x] Performance remains sub-second for typical operations
+   - [x] All relationships can be listed with `gitmind list` (Test 3: list shows links)
+   - [x] All relationships for a given source file can be queried (Test 5: filter by source)
+   - [ ] Bidirectional lookups are supported (find all files linking to target) - NOT IMPLEMENTED
+   - [x] Performance remains sub-second for typical operations (implicit in all tests)
 
 3. **Storage Format**
-   - [x] Standardized relationship format: `TYPE: source_path -> target_path  # ts:timestamp`
-   - [x] Support for timestamp metadata
-   - [ ] JSON serialization for complex relationship data
-   - [x] Plain text format implemented
+   - [x] Standardized relationship format: `TYPE: source_path -> target_path  # ts:timestamp` (Test 3: format verified)
+   - [x] Support for timestamp metadata (implicit in format)
+   - [ ] JSON serialization for complex relationship data - NOT IMPLEMENTED (using plain text)
+   - [x] Plain text format implemented (all tests use plain text)
 
 4. **Integration**
-   - [x] Works with standard Git commands (push, pull, clone) (Test 8)
-   - [x] Links can be committed to Git
-   - [ ] No corruption during concurrent operations
-   - [ ] Compatible with Git's packfile optimization
+   - [x] Works with standard Git commands (push, pull, clone) (Test 8: Git integration)
+   - [x] Links can be committed to Git (Test 8: commits links)
+   - [ ] No corruption during concurrent operations - NOT TESTED
+   - [ ] Compatible with Git's packfile optimization - NOT TESTED
 
 ## Technical Design
 

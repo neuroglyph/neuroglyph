@@ -23,7 +23,7 @@ else
     TARGET = gitmind
 endif
 
-SRCS = src/main.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c
+SRCS = src/main.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)

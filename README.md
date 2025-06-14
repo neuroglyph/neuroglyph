@@ -59,13 +59,13 @@ It stores **relationships, confidence**, and **epistemic state**.
 - `gitmind status` — See graph statistics
 - `gitmind version` — Version info
 
-### Coming Soon (MVP Sprint)
-- 🚧 `gitmind traverse FILE --depth N` — Explore connections
-- 🚧 `gitmind serve` — Local web visualization
-- 🚧 Interactive D3.js graph view
+### Coming Soon (MVP Sprint - June 2025)
+- 🚧 `gitmind traverse FILE --depth N` — Explore connections (in development)
+- 🚧 `gitmind serve` — Local web visualization (in development)
+- 🚧 Interactive D3.js graph view (in development)
 
 ### Future Vision
-- 📜 Auto-extract links from markdown
+- 📜 Query languages (SQL, Cypher, Natural)
 - 🧬 Plugin ecosystem (VSCode, Obsidian)
 - 🧨 Chaos Mode with Gonzai 🐵
 
@@ -81,10 +81,10 @@ neuroglyph/              # This monorepo
 └── lore/                # Philosophy & Gonzai + Claude's Dev Logs
 ```
 
-Planned:
-- glyphd/ — Optional daemon for Web UI
-- plugins/ — Editor integrations
-- sdk/ — Language bindings
+Coming Soon:
+- `gitmind traverse` — Graph exploration command
+- `gitmind serve` — Web visualization server
+- Query languages — SQL/Cypher/Natural language support
 
 ---
 
@@ -154,6 +154,8 @@ We ran the numbers. Sonic lost.
 
 ## 🚀 Quick Start
 
+**→ See the [Quick Start Guide](docs/QUICK_START.md) for detailed instructions!**
+
 ### Install Binary (Recommended)
 
 ```bash
@@ -190,9 +192,9 @@ gitmind link README.md docs/api.md --type IMPLEMENTS
 gitmind link design.md implementation.c --type REFERENCES
 
 # View your knowledge graph
-gitmind list
+gitmind list                     # Show all links
 gitmind list --source README.md  # What does README link to?
-gitmind list --target api.md     # What links to the API?
+# Note: --target filter coming soon
 
 # Keep links healthy
 gitmind check        # Find broken links
@@ -250,11 +252,12 @@ Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. 
 ## 🗺️ Roadmap
 
 - [x] Phase 0: Repository setup and documentation
-- [x] Phase 1: MVP CLI (init, link, list)
-- [ ] Phase 2: Full CLI implementation  
-- [ ] Phase 3: Web visualization
-- [ ] Phase 4: Chaos engine
-- [ ] Phase 5: World domination
+- [x] Phase 1a: Core CLI (init, link, list, unlink, check, status) ✅
+- [x] Phase 1b: Pure C implementation (67KB binary!) ✅
+- [ ] Phase 1c: Graph traversal & web visualization (June 2025)
+- [ ] Phase 2: Query languages & advanced features
+- [ ] Phase 3: Plugin ecosystem
+- [ ] Phase 4: Chaos engine with Gonzai 🐵
 
 See [TASKLIST.md](TASKLIST.md) for detailed implementation plan.  
 Also [design/README](design/README.md).
