@@ -73,7 +73,7 @@ init_test_repo() {
     echo "test" > README.md
     git add README.md
     git commit -m "Initial commit" --quiet
-    gitmind init >/dev/null 2>&1
+    git-mind init >/dev/null 2>&1
     
     cd "$SAVED_PWD"
     echo "$TEST_REPO_DIR"
@@ -86,7 +86,7 @@ TMPDIR=$(mktemp -d)
 cat > "$TMPDIR/test_path_validator.c" << 'EOF'
 #include <stdio.h>
 #include <string.h>
-#include "gitmind.h"
+#include "git-mind.h"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -105,7 +105,7 @@ int main(int argc, char** argv) {
 }
 EOF
 
-gcc -o "$TMPDIR/test_path_validator" "$TMPDIR/test_path_validator.c" src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation
+gcc -o "$TMPDIR/test_path_validator" "$TMPDIR/test_path_validator.c" src/git-mind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation
 
 # Valid paths
 run_test "valid simple filename" "$TMPDIR/test_path_validator file.txt" 0
@@ -143,12 +143,12 @@ else
     ASAN_FLAGS=""
 fi
 
-# Check if gitmind is available
-if ! command -v gitmind >/dev/null 2>&1; then
-    echo "ERROR: gitmind not found in PATH!"
+# Check if git-mind is available
+if ! command -v git-mind >/dev/null 2>&1; then
+    echo "ERROR: git-mind not found in PATH!"
     exit 1
 fi
-echo "Using gitmind from PATH"
+echo "Using git-mind from PATH"
 
 echo "Creating test repository..."
 TEST_REPO=$(init_test_repo)
@@ -166,37 +166,37 @@ echo "Testing traverse command for memory leaks..."
 # Create some links for traversal
 touch file1.txt file2.txt file3.txt
 echo "Creating first link..."
-gitmind link file1.txt file2.txt || echo "FAILED: link 1"
+git-mind link file1.txt file2.txt || echo "FAILED: link 1"
 echo "Creating second link..."
-gitmind link file2.txt file3.txt || echo "FAILED: link 2"
+git-mind link file2.txt file3.txt || echo "FAILED: link 2"
 echo "Creating third link (cycle)..."
-gitmind link file3.txt file1.txt || echo "FAILED: link 3"
+git-mind link file3.txt file1.txt || echo "FAILED: link 3"
 
 if [ -n "$ASAN_FLAGS" ]; then
     # With ASAN, just run the command
-    run_test "traverse with cycle (ASAN)" "gitmind traverse file1.txt --depth 5" 0
-    run_test "traverse list format (ASAN)" "gitmind traverse file1.txt --format list" 0
+    run_test "traverse with cycle (ASAN)" "git-mind traverse file1.txt --depth 5" 0
+    run_test "traverse list format (ASAN)" "git-mind traverse file1.txt --format list" 0
 else
     # With valgrind
     run_test "traverse with cycle (valgrind)" \
-        "valgrind --leak-check=full --error-exitcode=1 --quiet gitmind traverse file1.txt --depth 5" 0
+        "valgrind --leak-check=full --error-exitcode=1 --quiet git-mind traverse file1.txt --depth 5" 0
     run_test "traverse list format (valgrind)" \
-        "valgrind --leak-check=full --error-exitcode=1 --quiet gitmind traverse file1.txt --format list" 0
+        "valgrind --leak-check=full --error-exitcode=1 --quiet git-mind traverse file1.txt --format list" 0
 fi
 
 # Test check command memory leaks
 touch file4.txt
-gitmind link file3.txt file4.txt
+git-mind link file3.txt file4.txt
 rm file4.txt  # Create a broken link
 
 if [ -n "$ASAN_FLAGS" ]; then
-    run_test "check command (ASAN)" "gitmind check" 0
-    run_test "check --fix (ASAN)" "gitmind check --fix" 0
+    run_test "check command (ASAN)" "git-mind check" 0
+    run_test "check --fix (ASAN)" "git-mind check --fix" 0
 else
     run_test "check command (valgrind)" \
-        "valgrind --leak-check=full --error-exitcode=1 --quiet gitmind check" 0
+        "valgrind --leak-check=full --error-exitcode=1 --quiet git-mind check" 0
     run_test "check --fix (valgrind)" \
-        "valgrind --leak-check=full --error-exitcode=1 --quiet gitmind check --fix" 0
+        "valgrind --leak-check=full --error-exitcode=1 --quiet git-mind check --fix" 0
 fi
 
 cd - > /dev/null
@@ -211,7 +211,7 @@ cat > "$ERROR_TEST_DIR/test_error_codes.c" << 'EOF'
 #include <stdio.h>
 #include <sys/stat.h>
 #include <errno.h>
-#include "gitmind.h"
+#include "git-mind.h"
 
 // We need to check internal functions return GM_OK
 // This tests the ensure_dir function indirectly
@@ -233,7 +233,7 @@ int main() {
 }
 EOF
 
-gcc -o "$ERROR_TEST_DIR/test_error_codes" "$ERROR_TEST_DIR/test_error_codes.c" src/gitmind.c src/path.c src/sha1.c -I./include -Wall -Wextra
+gcc -o "$ERROR_TEST_DIR/test_error_codes" "$ERROR_TEST_DIR/test_error_codes.c" src/git-mind.c src/path.c src/sha1.c -I./include -Wall -Wextra
 run_test "error code consistency" "$ERROR_TEST_DIR/test_error_codes" 0
 rm -rf "$ERROR_TEST_DIR"
 
@@ -285,16 +285,16 @@ cd "$TEST_REPO2"
 echo "Creating 100 links of different types..."
 for i in {1..25}; do
     touch "fileA$i.txt" "fileB$i.txt" "fileC$i.txt" "fileD$i.txt"
-    gitmind link "fileA$i.txt" "fileB$i.txt" --type "TYPE_A" > /dev/null 2>&1
-    gitmind link "fileB$i.txt" "fileC$i.txt" --type "TYPE_B" > /dev/null 2>&1
-    gitmind link "fileC$i.txt" "fileD$i.txt" --type "TYPE_C" > /dev/null 2>&1
-    gitmind link "fileD$i.txt" "fileA$i.txt" --type "TYPE_D" > /dev/null 2>&1
+    git-mind link "fileA$i.txt" "fileB$i.txt" --type "TYPE_A" > /dev/null 2>&1
+    git-mind link "fileB$i.txt" "fileC$i.txt" --type "TYPE_B" > /dev/null 2>&1
+    git-mind link "fileC$i.txt" "fileD$i.txt" --type "TYPE_C" > /dev/null 2>&1
+    git-mind link "fileD$i.txt" "fileA$i.txt" --type "TYPE_D" > /dev/null 2>&1
 done
 
 # Time the status command (should complete quickly even with O(n²))
 echo -n "Testing status performance with 100 links... "
 start_time=$(date +%s.%N)
-timeout 2s gitmind status > /dev/null 2>&1
+timeout 2s git-mind status > /dev/null 2>&1
 result=$?
 end_time=$(date +%s.%N)
 

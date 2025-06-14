@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
-# Test script for gitmind traverse command - runs in isolated Docker container
+# Test script for git-mind traverse command - runs in isolated Docker container
 
 set -e
 
@@ -35,8 +35,8 @@ git commit -m "Initial test structure"
 
 echo "✓ Test repo created"
 
-# Initialize gitmind
-gitmind init
+# Initialize git-mind
+git-mind init
 
 # Create a graph with multiple levels of connections
 # README -> architecture -> api-design -> api.c
@@ -45,20 +45,20 @@ gitmind init
 # api.c -> tests/api.test.c
 # main.c -> tests/main.test.c
 
-gitmind link README.md docs/architecture.md --type REFERENCES
-gitmind link docs/architecture.md docs/api-design.md --type DETAILS
-gitmind link docs/architecture.md docs/db-schema.md --type DETAILS
-gitmind link docs/api-design.md src/api.c --type IMPLEMENTS
-gitmind link docs/db-schema.md src/database.c --type IMPLEMENTS
-gitmind link src/main.c src/database.c --type DEPENDS_ON
-gitmind link src/api.c tests/api.test.c --type TESTED_BY
-gitmind link src/main.c tests/main.test.c --type TESTED_BY
+git-mind link README.md docs/architecture.md --type REFERENCES
+git-mind link docs/architecture.md docs/api-design.md --type DETAILS
+git-mind link docs/architecture.md docs/db-schema.md --type DETAILS
+git-mind link docs/api-design.md src/api.c --type IMPLEMENTS
+git-mind link docs/db-schema.md src/database.c --type IMPLEMENTS
+git-mind link src/main.c src/database.c --type DEPENDS_ON
+git-mind link src/api.c tests/api.test.c --type TESTED_BY
+git-mind link src/main.c tests/main.test.c --type TESTED_BY
 
 echo "✓ Test graph created"
 
 # Test 1: Basic traversal (depth 1)
 echo -n "Test 1: Traverse depth 1... "
-OUTPUT=$(gitmind traverse README.md --depth 1)
+OUTPUT=$(git-mind traverse README.md --depth 1)
 if echo "$OUTPUT" | grep -q "docs/architecture.md"; then
     if echo "$OUTPUT" | grep -q "docs/api-design.md"; then
         echo "✗ FAIL: Depth 1 should not show api-design.md"
@@ -72,7 +72,7 @@ fi
 
 # Test 2: Traverse depth 2
 echo -n "Test 2: Traverse depth 2... "
-OUTPUT=$(gitmind traverse README.md --depth 2)
+OUTPUT=$(git-mind traverse README.md --depth 2)
 if echo "$OUTPUT" | grep -q "docs/architecture.md" && \
    echo "$OUTPUT" | grep -q "docs/api-design.md" && \
    echo "$OUTPUT" | grep -q "docs/db-schema.md"; then
@@ -88,7 +88,7 @@ fi
 
 # Test 3: Traverse depth 3
 echo -n "Test 3: Traverse depth 3... "
-OUTPUT=$(gitmind traverse README.md --depth 3)
+OUTPUT=$(git-mind traverse README.md --depth 3)
 if echo "$OUTPUT" | grep -q "src/api.c" && \
    echo "$OUTPUT" | grep -q "src/database.c"; then
     echo "✓ PASS"
@@ -99,8 +99,8 @@ fi
 
 # Test 4: Default depth (should be 1)
 echo -n "Test 4: Default depth... "
-OUTPUT1=$(gitmind traverse README.md)
-OUTPUT2=$(gitmind traverse README.md --depth 1)
+OUTPUT1=$(git-mind traverse README.md)
+OUTPUT2=$(git-mind traverse README.md --depth 1)
 if [ "$OUTPUT1" = "$OUTPUT2" ]; then
     echo "✓ PASS"
 else
@@ -114,10 +114,10 @@ echo -n "Test 5: Cycle detection... "
 echo "A" > A.txt
 echo "B" > B.txt
 echo "C" > C.txt
-gitmind link A.txt B.txt --type REFS
-gitmind link B.txt C.txt --type REFS
-gitmind link C.txt A.txt --type REFS
-OUTPUT=$(gitmind traverse A.txt --depth 10)
+git-mind link A.txt B.txt --type REFS
+git-mind link B.txt C.txt --type REFS
+git-mind link C.txt A.txt --type REFS
+OUTPUT=$(git-mind traverse A.txt --depth 10)
 # Count occurrences of each file - should be exactly once
 COUNT_A=$(echo "$OUTPUT" | grep -c "A.txt" || true)
 COUNT_B=$(echo "$OUTPUT" | grep -c "B.txt" || true)
@@ -134,7 +134,7 @@ fi
 
 # Test 6: Tree format
 echo -n "Test 6: Tree format output... "
-OUTPUT=$(gitmind traverse README.md --depth 2 --format tree)
+OUTPUT=$(git-mind traverse README.md --depth 2 --format tree)
 if echo "$OUTPUT" | grep -q "+->" || echo "$OUTPUT" | grep -q "\\\->"; then
     echo "✓ PASS"
 else
@@ -145,7 +145,7 @@ fi
 
 # Test 7: List format
 echo -n "Test 7: List format output... "
-OUTPUT=$(gitmind traverse src/main.c --depth 2 --format list)
+OUTPUT=$(git-mind traverse src/main.c --depth 2 --format list)
 # Should be simple list without tree formatting
 if echo "$OUTPUT" | grep -q "├─→"; then
     echo "✗ FAIL: List format should not have tree characters"
@@ -161,7 +161,7 @@ fi
 
 # Test 8: Connection count
 echo -n "Test 8: Connection count display... "
-OUTPUT=$(gitmind traverse README.md --depth 3)
+OUTPUT=$(git-mind traverse README.md --depth 3)
 if echo "$OUTPUT" | grep -q "direct" && echo "$OUTPUT" | grep -q "total"; then
     echo "✓ PASS"
 else
@@ -172,7 +172,7 @@ fi
 
 # Test 9: Maximum depth limit
 echo -n "Test 9: Maximum depth limit... "
-if gitmind traverse README.md --depth 11 2>&1 | grep -qi "depth.*between.*1.*10"; then
+if git-mind traverse README.md --depth 11 2>&1 | grep -qi "depth.*between.*1.*10"; then
     echo "✓ PASS"
 else
     echo "✗ FAIL: Should enforce maximum depth of 10"
@@ -181,7 +181,7 @@ fi
 
 # Test 10: Non-existent starting node
 echo -n "Test 10: Non-existent starting node... "
-if gitmind traverse nonexistent.md 2>&1 | grep -q "not found"; then
+if git-mind traverse nonexistent.md 2>&1 | grep -q "not found"; then
     echo "✓ PASS"
 else
     echo "✗ FAIL: Should handle non-existent starting nodes"

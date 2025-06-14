@@ -11,7 +11,7 @@ if [ -f /.dockerenv ] || [ "${DOCKER_CONTAINER:-}" = "1" ]; then
 fi
 
 echo "🔍 Building Valgrind test image..."
-docker build -f ../../Dockerfile.valgrind -t gitmind-valgrind ../..
+docker build -f ../../Dockerfile.valgrind -t git-mind-valgrind ../..
 
 echo "🧪 Running memory checks..."
-docker run --rm gitmind-valgrind
+docker run --rm git-mind-valgrind

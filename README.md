@@ -75,7 +75,7 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 ```
 neuroglyph/              # This monorepo
-├── c/                   # gitmind CLI (Pure C, 130KB binary)
+├── c/                   # git-mind CLI (Pure C, 130KB binary)
 ├── demos/               # Example applications
 ├── design/              # Technical design documentation
 │   ├── features/        # Feature specs (active/planned/completed)

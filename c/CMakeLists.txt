@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 cmake_minimum_required(VERSION 3.10)
-project(gitmind VERSION 0.1.0 LANGUAGES C)
+project(git-mind VERSION 0.1.0 LANGUAGES C)
 
 # C99 standard
 set(CMAKE_C_STANDARD 99)
@@ -22,7 +22,7 @@ include_directories(include)
 
 # Main executable source files (no test code!)
 set(SOURCES
-    src/gitmind.c
+    src/git-mind.c
     src/link.c
     src/sha1.c
     src/path.c
@@ -33,7 +33,7 @@ set(SOURCES
 )
 
 # Main executable - pure C, no external dependencies
-add_executable(gitmind ${SOURCES})
+add_executable(git-mind ${SOURCES})
 
 # Static linking (optional)
 if(BUILD_STATIC)
@@ -41,8 +41,8 @@ if(BUILD_STATIC)
 endif()
 
 # Installation
-install(TARGETS gitmind DESTINATION bin)
-install(FILES include/gitmind.h DESTINATION include)
+install(TARGETS git-mind DESTINATION bin)
+install(FILES include/git-mind.h DESTINATION include)
 
 # Tests (optional) - completely separate from main binary
 option(BUILD_TESTS "Build test suite" OFF)

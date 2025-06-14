@@ -17,7 +17,7 @@ static void print_usage(const char* prog) {
     fprintf(stderr, "  --verbose, -v           Enable verbose output\n");
     fprintf(stderr, "  --porcelain             Machine-readable output\n");
     fprintf(stderr, "\nCommands:\n");
-    fprintf(stderr, "  init                    Initialize gitmind in current repository\n");
+    fprintf(stderr, "  init                    Initialize git-mind in current repository\n");
     fprintf(stderr, "  link <source> <target>  Create a link between files\n");
     fprintf(stderr, "    --type TYPE           Link type (default: REFERENCES)\n");
     fprintf(stderr, "  list                    List all links\n");

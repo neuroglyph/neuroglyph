@@ -28,27 +28,27 @@ echo "README" > README.md
 git add .
 git commit -m "Initial"
 
-# Initialize gitmind
-/build/gitmind init
+# Initialize git-mind
+/build/git-mind init
 
 # Create a simple link
 echo "Doc" > doc.md
 git add doc.md
 git commit -m "Add doc"
 
-/build/gitmind link README.md doc.md --type REFERENCES
+/build/git-mind link README.md doc.md --type REFERENCES
 
 # List to verify
 echo "Links created:"
-/build/gitmind list
+/build/git-mind list
 
 # Try traverse with gdb if available
 echo ""
 echo "Testing traverse command:"
 if command -v gdb &> /dev/null; then
-    echo "run traverse README.md --depth 1" | gdb /build/gitmind -batch -ex "bt"
+    echo "run traverse README.md --depth 1" | gdb /build/git-mind -batch -ex "bt"
 else
-    /build/gitmind traverse README.md --depth 1 || echo "Exit code: $?"
+    /build/git-mind traverse README.md --depth 1 || echo "Exit code: $?"
 fi
 
 # Clean up

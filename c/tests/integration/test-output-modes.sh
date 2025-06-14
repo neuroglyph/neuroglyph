@@ -71,64 +71,64 @@ echo "content" > test.txt
 git add README.md test.txt
 git commit -m "Initial commit" --quiet
 
-# Initialize gitmind first
-gitmind init >/dev/null 2>&1
+# Initialize git-mind first
+git-mind init >/dev/null 2>&1
 
 echo "=== 1. Silent Mode (default) ==="
 
 # Init again - should be silent (idempotent)
-test_output "init silent" "gitmind init" "." "no"
+test_output "init silent" "git-mind init" "." "no"
 
 # Link - should be silent
-test_output "link silent" "gitmind link README.md test.txt" "." "no"
+test_output "link silent" "git-mind link README.md test.txt" "." "no"
 
 # List - should show output (query commands always output)
-test_output "list output" "gitmind list" "README.md" "yes"
+test_output "list output" "git-mind list" "README.md" "yes"
 
 # Unlink - should be silent
-test_output "unlink silent" "gitmind unlink README.md test.txt" "." "no"
+test_output "unlink silent" "git-mind unlink README.md test.txt" "." "no"
 
 echo
 echo "=== 2. Verbose Mode (-v) ==="
 
 # Init - should show message
-test_output "init verbose" "gitmind -v init" "Initialized gitmind" "yes"
+test_output "init verbose" "git-mind -v init" "Initialized git-mind" "yes"
 
 # Link - should show message
-test_output "link verbose" "gitmind -v link README.md test.txt" "Created link" "yes"
+test_output "link verbose" "git-mind -v link README.md test.txt" "Created link" "yes"
 
 # Unlink - should show message
-test_output "unlink verbose" "gitmind -v unlink README.md test.txt" "Removed link" "yes"
+test_output "unlink verbose" "git-mind -v unlink README.md test.txt" "Removed link" "yes"
 
 echo
 echo "=== 3. Porcelain Mode (--porcelain) ==="
 
 # Init - should show porcelain format
-test_output "init porcelain" "gitmind --porcelain init" "init:ok" "yes"
+test_output "init porcelain" "git-mind --porcelain init" "init:ok" "yes"
 
 # Link - should show porcelain format
-test_output "link porcelain" "gitmind --porcelain link README.md test.txt --type DEPENDS" "link:created:README.md:test.txt:DEPENDS" "yes"
+test_output "link porcelain" "git-mind --porcelain link README.md test.txt --type DEPENDS" "link:created:README.md:test.txt:DEPENDS" "yes"
 
 # List - should show porcelain format
-test_output "list porcelain" "gitmind --porcelain list" "link:DEPENDS:README.md:test.txt:" "yes"
+test_output "list porcelain" "git-mind --porcelain list" "link:DEPENDS:README.md:test.txt:" "yes"
 
 # Unlink - should show porcelain format
-test_output "unlink porcelain" "gitmind --porcelain unlink README.md test.txt" "link:removed:README.md:test.txt" "yes"
+test_output "unlink porcelain" "git-mind --porcelain unlink README.md test.txt" "link:removed:README.md:test.txt" "yes"
 
 echo
 echo "=== 4. Combined Modes ==="
 
 # Both verbose and porcelain should prefer porcelain
-test_output "both flags prefer porcelain" "gitmind -v --porcelain init" "init:ok" "yes"
-test_output "both flags not verbose" "gitmind -v --porcelain init" "Initialized gitmind" "no"
+test_output "both flags prefer porcelain" "git-mind -v --porcelain init" "init:ok" "yes"
+test_output "both flags not verbose" "git-mind -v --porcelain init" "Initialized git-mind" "no"
 
 echo
 echo "=== 5. Error Output ==="
 
 # Errors should always be shown
-test_output "error shown in silent" "gitmind link" "Error:" "yes"
-test_output "error shown in verbose" "gitmind -v link" "Error:" "yes"
-test_output "error shown in porcelain" "gitmind --porcelain link" "Error:" "yes"
+test_output "error shown in silent" "git-mind link" "Error:" "yes"
+test_output "error shown in verbose" "git-mind -v link" "Error:" "yes"
+test_output "error shown in porcelain" "git-mind --porcelain link" "Error:" "yes"
 
 # Cleanup
 cd ..

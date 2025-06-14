@@ -18,12 +18,12 @@ RUN git config --global init.defaultBranch main
 WORKDIR /build
 COPY . .
 
-# Build gitmind
+# Build git-mind
 RUN DOCKER_CONTAINER=1 DOCKER_BUILD=1 make clean && DOCKER_CONTAINER=1 DOCKER_BUILD=1 make
 
 # Copy binary as root and ensure it's in PATH
-RUN cp /build/gitmind /usr/local/bin/ && \
-    chmod +x /usr/local/bin/gitmind
+RUN cp /build/git-mind /usr/local/bin/ && \
+    chmod +x /usr/local/bin/git-mind
 
 # Set up test environment
 USER testuser

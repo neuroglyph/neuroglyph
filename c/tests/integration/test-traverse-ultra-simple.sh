@@ -24,12 +24,12 @@ echo "README" > README.md
 git add .
 git commit -q -m "Initial"
 
-# Initialize gitmind
-gitmind init
+# Initialize git-mind
+git-mind init
 
 # Try traverse on file with NO links - should show 0 connections
 echo "Testing traverse with no links:"
-gitmind traverse README.md --depth 1 --format list || echo "Exit code: $?"
+git-mind traverse README.md --depth 1 --format list || echo "Exit code: $?"
 
 echo ""
 echo "Now create a link and try again:"
@@ -37,9 +37,9 @@ echo "Doc" > doc.md
 git add doc.md
 git commit -q -m "Add doc"
 
-gitmind link README.md doc.md --type REFERENCES
+git-mind link README.md doc.md --type REFERENCES
 echo "Link created. Now traverse:"
-gitmind traverse README.md --depth 1 --format list || echo "Exit code: $?"
+git-mind traverse README.md --depth 1 --format list || echo "Exit code: $?"
 
 # Clean up
 cd /

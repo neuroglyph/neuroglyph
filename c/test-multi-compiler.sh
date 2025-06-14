@@ -24,7 +24,7 @@ EXTRA_STRICT="$EXTRA_STRICT -Wpointer-arith -Wredundant-decls -Wshadow -Wstrict-
 EXTRA_STRICT="$EXTRA_STRICT -Wundef -Wunreachable-code -Wwrite-strings"
 
 # Source files
-SOURCES="src/main.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c"
+SOURCES="src/main.c src/git-mind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c"
 
 # Test with each compiler
 test_compiler() {
@@ -43,10 +43,10 @@ test_compiler() {
     $compiler --version 2>&1 | head -1 || true
     
     # Clean first
-    rm -f gitmind *.o src/*.o
+    rm -f git-mind *.o src/*.o
     
     # Try to compile
-    if $compiler $BASE_FLAGS $STRICT_FLAGS $EXTRA_STRICT $extra_flags -o gitmind $SOURCES 2>&1; then
+    if $compiler $BASE_FLAGS $STRICT_FLAGS $EXTRA_STRICT $extra_flags -o git-mind $SOURCES 2>&1; then
         echo -e "${GREEN}✅ $name: Build successful${NC}"
         return 0
     else

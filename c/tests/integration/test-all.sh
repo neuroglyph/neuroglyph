@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
-# Run all test suites for gitmind
+# Run all test suites for git-mind
 
 set -e
 

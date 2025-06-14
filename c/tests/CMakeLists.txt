@@ -3,7 +3,7 @@
 
 # Test source files (excluding main.c!)
 set(TEST_SOURCES
-    ../src/gitmind.c
+    ../src/git-mind.c
     ../src/link.c
     ../src/sha1.c
     ../src/path.c

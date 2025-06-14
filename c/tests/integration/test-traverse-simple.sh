@@ -25,24 +25,24 @@ echo "Doc" > doc.md
 git add .
 git commit -m "Initial"
 
-# Initialize gitmind
-gitmind init
+# Initialize git-mind
+git-mind init
 
 # Create a simple link
-gitmind link README.md doc.md --type REFERENCES
+git-mind link README.md doc.md --type REFERENCES
 
 # List to verify
 echo "Links created:"
-gitmind list
+git-mind list
 
 # Try traverse with list format first
 echo ""
 echo "Testing traverse command (list format):"
-gitmind traverse README.md --depth 1 --format list
+git-mind traverse README.md --depth 1 --format list
 
 echo ""
 echo "Testing traverse command (tree format):"
-gitmind traverse README.md --depth 1 --format tree
+git-mind traverse README.md --depth 1 --format tree
 
 # Clean up
 cd /

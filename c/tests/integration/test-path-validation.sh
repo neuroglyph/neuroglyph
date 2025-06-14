@@ -33,7 +33,7 @@ test_path() {
     cat > "$TMPDIR/test_path.c" << 'EOF'
 #include <stdio.h>
 #include <string.h>
-#include "gitmind.h"
+#include "git-mind.h"
 
 // Test wrapper
 int main(int argc, char** argv) {
@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 EOF
     
     # Compile it (include all sources except main.c to avoid duplicate main)
-    if ! gcc -o "$TMPDIR/test_path" "$TMPDIR/test_path.c" src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation 2>&1; then
+    if ! gcc -o "$TMPDIR/test_path" "$TMPDIR/test_path.c" src/git-mind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c -I./include -Wall -Wextra -Wno-format-truncation 2>&1; then
         echo -e "${RED}✗${NC} Compilation failed for test"
         rm -rf "$TMPDIR"
         exit 1

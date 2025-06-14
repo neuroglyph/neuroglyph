@@ -5,7 +5,7 @@
 set -e
 
 echo "Building Docker test image..."
-docker build -f ../../Dockerfile.test -t gitmind-test ../..
+docker build -f ../../Dockerfile.test -t git-mind-test ../..
 
 echo "Running tests in container..."
-docker run --rm gitmind-test /build/tests/integration/test-all.sh
+docker run --rm git-mind-test /build/tests/integration/test-all.sh

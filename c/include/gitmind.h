@@ -57,18 +57,18 @@ typedef enum {
 #define ERR_MSG_DEPTH_OUT_OF_RANGE "Error: Depth must be between 1 and %d\n"
 
 // Status messages
-#define MSG_INIT_SUCCESS "Initialized gitmind in current repository\n"
+#define MSG_INIT_SUCCESS "Initialized git-mind in current repository\n"
 #define MSG_LINK_CREATED "Created link: %s -> %s (%s)\n"
 #define MSG_LINK_REMOVED "Removed link: %s -> %s\n"
 #define MSG_NO_LINKS "No links found\n"
 #define MSG_ALL_LINKS_VALID "All links are valid\n"
 #define MSG_BROKEN_LINKS_FOUND "Found %d broken link%s\n"
 #define MSG_BROKEN_LINKS_REMOVED "Removed %d broken link%s\n"
-#define MSG_RUN_CHECK_FIX "Run 'gitmind check --fix' to remove them\n"
-#define MSG_NOT_INITIALIZED "GitMind: Not initialized (run 'gitmind init')\n"
+#define MSG_RUN_CHECK_FIX "Run 'git mind check --fix' to remove them\n"
+#define MSG_NOT_INITIALIZED "git-mind: Not initialized (run 'git mind init')\n"
 
 // Version info
-#define MSG_VERSION_FORMAT "gitmind version %s\n"
+#define MSG_VERSION_FORMAT "git-mind version %s\n"
 
 // Porcelain output formats
 #define PORCELAIN_INIT_OK "init:ok\n"

@@ -15,11 +15,11 @@ git config user.email "test@example.com"
 git config user.name "Test User"
 echo "README" > README.md
 git add . && git commit -q -m "Initial"
-gitmind init
+git-mind init
 
 echo "Testing depth 11:"
 set +e  # Allow the command to fail
-gitmind traverse README.md --depth 11 2>&1
+git-mind traverse README.md --depth 11 2>&1
 EXIT_CODE=$?
 set -e
 

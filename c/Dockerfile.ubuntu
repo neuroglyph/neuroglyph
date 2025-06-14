@@ -29,5 +29,5 @@ RUN DOCKER_BUILD=1 DOCKER_CONTAINER=1 make clean && DOCKER_BUILD=1 DOCKER_CONTAI
 WORKDIR /test
 COPY . .
 
-# Add gitmind to PATH
+# Add git-mind to PATH
 ENV PATH="/build:${PATH}"

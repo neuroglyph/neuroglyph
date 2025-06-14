@@ -24,12 +24,12 @@ echo "README" > README.md
 git add .
 git commit -q -m "Initial"
 
-# Initialize gitmind
-gitmind init
+# Initialize git-mind
+git-mind init
 
 # Try traverse with no links
 echo "Testing traverse with no links:"
-gitmind traverse README.md --depth 1 || echo "Exit code: $?"
+git-mind traverse README.md --depth 1 || echo "Exit code: $?"
 
 # Clean up
 cd /
