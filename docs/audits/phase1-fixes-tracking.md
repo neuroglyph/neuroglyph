@@ -6,31 +6,31 @@
 
 ## 🔥 Must-Fix Bugs Checklist
 
-### 1. Path Traversal Security
-- [ ] Write proper path parser that catches all `..` variants
+### 1. Path Traversal Security ✅
+- [x] Write proper path parser that catches all `..` variants
   - `../`, `..\\`, `foo/../bar`, `./../../etc`
   - Unicode variants, URL encoding
-- [ ] Add comprehensive test cases for path validation
-- [ ] Replace `strstr("..")` in `path.c:55`
+- [x] Add comprehensive test cases for path validation
+- [x] Replace `strstr("..")` in `path.c:55`
 
-### 2. Memory Leaks
-- [ ] **traverse.c**: Add `path_set_free()` on all early returns
+### 2. Memory Leaks ✅
+- [x] **traverse.c**: Add `path_set_free()` on all early returns
   - Line ~150-250: Multiple return paths without cleanup
-- [ ] **check.c**: Fix leak when `broken_indices` alloc fails
-  - Line ~36: Need to free `set` before return
-- [ ] Audit all `malloc`/`calloc` paths with:
+- [x] **check.c**: Fix leak when `broken_indices` alloc fails
+  - Line ~36: Need to free `set` before return (was already correct!)
+- [x] Audit all `malloc`/`calloc` paths with:
   ```bash
   valgrind --leak-check=full --show-leak-kinds=all ./gitmind
   ```
 
-### 3. Error Code Consistency  
-- [ ] Global search/replace: `return 0;` → `return GM_OK;`
-- [ ] Affected files:
+### 3. Error Code Consistency ✅
+- [x] Global search/replace: `return 0;` → `return GM_OK;`
+- [x] Affected files:
   - `gitmind.c`: `ensure_dir()` returns raw 0
   - All helper functions should return `gm_error_t`
 
-### 4. Thread-Local Portability
-- [ ] Add to `gitmind.c`:
+### 4. Thread-Local Portability ✅
+- [x] Add to `gitmind.c`:
   ```c
   #if __STDC_VERSION__ >= 201112L
     #define THREAD_LOCAL _Thread_local
@@ -43,10 +43,10 @@
   static THREAD_LOCAL char gm_err_buf[GM_ERROR_BUFFER_SIZE];
   ```
 
-### 5. O(n) Type Counting
-- [ ] Implement simple fixed-size hash table (~30 lines)
-- [ ] Replace O(n²) loop in `status.c:46-69`
-- [ ] Consider: Open addressing, linear probing, fixed buckets
+### 5. O(n) Type Counting ✅
+- [x] Implement simple fixed-size hash table (~30 lines)
+- [x] Replace O(n²) loop in `status.c:46-69`
+- [x] Consider: Open addressing, linear probing, fixed buckets
 
 ## Implementation Order
 
