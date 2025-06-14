@@ -2,7 +2,6 @@
 // © 2025 J. Kirby Ross / Neuroglyph Collective
 
 #include "gitmind.h"
-#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

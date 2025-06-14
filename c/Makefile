@@ -7,7 +7,7 @@ ifeq ($(DOCKER_BUILD),1)
     include docker-guard.mk
     
     CC ?= cc
-CFLAGS ?= -O3 -Wall -Wextra -std=c99 -Iinclude
+CFLAGS ?= -O3 -Wall -Wextra -Werror -pedantic -std=c99 -Iinclude
 LDFLAGS ?=
 
 # Platform detection

@@ -2,13 +2,24 @@
 // © 2025 J. Kirby Ross / Neuroglyph Collective
 
 #include "gitmind.h"
-#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
+
+// Fixed-size hash table for type counting
+#define TYPE_HASH_SIZE 64
+
+// Simple hash function for type strings
+static unsigned int type_hash(const char* str) {
+    unsigned int h = 5381;
+    int c;
+    while ((c = *str++))
+        h = ((h << 5) + h) + c;
+    return h % TYPE_HASH_SIZE;
+}
 
 // Show gitmind status
 int gm_status(void) {
@@ -44,8 +55,6 @@ int gm_status(void) {
         // Count by type using simple hash table
         printf("\nLinks by type:\n");
         
-        // Fixed-size hash table for type counting
-        #define TYPE_HASH_SIZE 64
         typedef struct type_entry {
             char type[GM_MAX_TYPE];
             int count;
@@ -54,19 +63,10 @@ int gm_status(void) {
         
         type_entry_t* hash_table[TYPE_HASH_SIZE] = {0};
         
-        // Simple hash function
-        unsigned int hash(const char* str) {
-            unsigned int h = 5381;
-            int c;
-            while ((c = *str++))
-                h = ((h << 5) + h) + c;
-            return h % TYPE_HASH_SIZE;
-        }
-        
         // Count each type
         for (size_t i = 0; i < set->count; i++) {
             const char* type = set->links[i].type;
-            unsigned int h = hash(type);
+            unsigned int h = type_hash(type);
             
             // Look for existing entry
             type_entry_t* entry = hash_table[h];
