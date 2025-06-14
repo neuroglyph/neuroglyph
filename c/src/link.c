@@ -141,7 +141,10 @@ static int parse_link_file(const char* filename, gm_link_t* link) {
     
     // Extract type
     *colon = '\0';
-    snprintf(link->type, GM_MAX_TYPE, "%s", line);
+    size_t type_len = colon - line;
+    if (type_len >= GM_MAX_TYPE) type_len = GM_MAX_TYPE - 1;
+    memcpy(link->type, line, type_len);
+    link->type[type_len] = '\0';
     
     // Find arrow
     char* arrow = strstr(colon + 1, " -> ");
@@ -151,7 +154,10 @@ static int parse_link_file(const char* filename, gm_link_t* link) {
     *arrow = '\0';
     char* source_start = colon + 1;
     while (*source_start == ' ') source_start++;
-    snprintf(link->source, GM_MAX_PATH, "%s", source_start);
+    size_t source_len = arrow - source_start;
+    if (source_len >= GM_MAX_PATH) source_len = GM_MAX_PATH - 1;
+    memcpy(link->source, source_start, source_len);
+    link->source[source_len] = '\0';
     
     // Find timestamp marker
     char* ts_marker = strstr(arrow + 4, "  # ts:");
@@ -159,7 +165,11 @@ static int parse_link_file(const char* filename, gm_link_t* link) {
     
     // Extract target
     *ts_marker = '\0';
-    snprintf(link->target, GM_MAX_PATH, "%s", arrow + 4);
+    char* target_start = arrow + 4;
+    size_t target_len = ts_marker - target_start;
+    if (target_len >= GM_MAX_PATH) target_len = GM_MAX_PATH - 1;
+    memcpy(link->target, target_start, target_len);
+    link->target[target_len] = '\0';
     
     // Extract timestamp
     link->timestamp = atol(ts_marker + 7);
