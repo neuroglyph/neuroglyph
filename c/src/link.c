@@ -10,9 +10,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-// Forward declarations
-extern void gm_set_error(const char* fmt, ...);
-extern int gm_sha1_string(const char* content, char* out_sha);
+// Forward declarations are already in gitmind.h, no need to redeclare
 
 // Build link content string
 static int build_link_content(const gm_link_t* link, char* buffer, size_t size) {
@@ -52,12 +50,9 @@ int gm_link_create(const char* source, const char* target, const char* type) {
     
     // Build link structure
     gm_link_t link;
-    strncpy(link.type, type, GM_MAX_TYPE - 1);
-    link.type[GM_MAX_TYPE - 1] = '\0';
-    strncpy(link.source, source, GM_MAX_PATH - 1);
-    link.source[GM_MAX_PATH - 1] = '\0';
-    strncpy(link.target, target, GM_MAX_PATH - 1);
-    link.target[GM_MAX_PATH - 1] = '\0';
+    snprintf(link.type, GM_MAX_TYPE, "%s", type);
+    snprintf(link.source, GM_MAX_PATH, "%s", source);
+    snprintf(link.target, GM_MAX_PATH, "%s", target);
     link.timestamp = time(NULL);
     
     // Build content
@@ -75,8 +70,21 @@ int gm_link_create(const char* source, const char* target, const char* type) {
     ret = get_cwd(cwd, sizeof(cwd));
     if (ret != GM_OK) return ret;
     
+    char links_dir[GM_MAX_PATH];
     char filename[GM_MAX_PATH];
-    snprintf(filename, sizeof(filename), "%s/.gitmind/links/%s.link", cwd, sha);
+    char link_name[GM_MAX_PATH];
+    
+    // Build path safely
+    if (gm_path_join(links_dir, sizeof(links_dir), cwd, ".gitmind/links") != GM_OK) {
+        gm_set_error("Path too long");
+        return GM_ERR_PATH_TOO_LONG;
+    }
+    
+    snprintf(link_name, sizeof(link_name), "%s.link", sha);
+    if (gm_path_join(filename, sizeof(filename), links_dir, link_name) != GM_OK) {
+        gm_set_error("Path too long");
+        return GM_ERR_PATH_TOO_LONG;
+    }
     
     // Check if link already exists
     struct stat st;
@@ -99,10 +107,12 @@ int gm_link_create(const char* source, const char* target, const char* type) {
     
     fclose(f);
     
-    // Git add the file
+    // Git add the file (optional - we don't care if it fails)
     char cmd[GM_MAX_PATH * 2];
     snprintf(cmd, sizeof(cmd), "git add %s 2>/dev/null", filename);
-    system(cmd);
+    if (system(cmd) != 0) {
+        // Ignore failure - git add is optional
+    }
     
     return GM_OK;
 }
@@ -131,8 +141,10 @@ static int parse_link_file(const char* filename, gm_link_t* link) {
     
     // Extract type
     *colon = '\0';
-    strncpy(link->type, line, GM_MAX_TYPE - 1);
-    link->type[GM_MAX_TYPE - 1] = '\0';
+    size_t type_len = colon - line;
+    if (type_len >= GM_MAX_TYPE) type_len = GM_MAX_TYPE - 1;
+    memcpy(link->type, line, type_len);
+    link->type[type_len] = '\0';
     
     // Find arrow
     char* arrow = strstr(colon + 1, " -> ");
@@ -142,8 +154,10 @@ static int parse_link_file(const char* filename, gm_link_t* link) {
     *arrow = '\0';
     char* source_start = colon + 1;
     while (*source_start == ' ') source_start++;
-    strncpy(link->source, source_start, GM_MAX_PATH - 1);
-    link->source[GM_MAX_PATH - 1] = '\0';
+    size_t source_len = arrow - source_start;
+    if (source_len >= GM_MAX_PATH) source_len = GM_MAX_PATH - 1;
+    memcpy(link->source, source_start, source_len);
+    link->source[source_len] = '\0';
     
     // Find timestamp marker
     char* ts_marker = strstr(arrow + 4, "  # ts:");
@@ -151,8 +165,11 @@ static int parse_link_file(const char* filename, gm_link_t* link) {
     
     // Extract target
     *ts_marker = '\0';
-    strncpy(link->target, arrow + 4, GM_MAX_PATH - 1);
-    link->target[GM_MAX_PATH - 1] = '\0';
+    char* target_start = arrow + 4;
+    size_t target_len = ts_marker - target_start;
+    if (target_len >= GM_MAX_PATH) target_len = GM_MAX_PATH - 1;
+    memcpy(link->target, target_start, target_len);
+    link->target[target_len] = '\0';
     
     // Extract timestamp
     link->timestamp = atol(ts_marker + 7);
@@ -181,7 +198,11 @@ int gm_link_list(gm_link_set_t** set, const char* filter_source, const char* fil
     }
     
     char links_dir[GM_MAX_PATH];
-    snprintf(links_dir, sizeof(links_dir), "%s/.gitmind/links", cwd);
+    if (gm_path_join(links_dir, sizeof(links_dir), cwd, ".gitmind/links") != GM_OK) {
+        gm_link_set_free(*set);
+        *set = NULL;
+        return GM_ERR_PATH_TOO_LONG;
+    }
     
     DIR* dir = opendir(links_dir);
     if (!dir) {
@@ -200,7 +221,9 @@ int gm_link_list(gm_link_set_t** set, const char* filter_source, const char* fil
         
         // Build full path
         char filepath[GM_MAX_PATH];
-        snprintf(filepath, sizeof(filepath), "%s/%s", links_dir, entry->d_name);
+        if (gm_path_join(filepath, sizeof(filepath), links_dir, entry->d_name) != GM_OK) {
+            continue;  // Skip files with too-long paths
+        }
         
         // Parse link
         gm_link_t link;
@@ -255,14 +278,27 @@ int gm_link_unlink(const char* source, const char* target) {
         gm_sha1_string(content, sha);
         
         // Remove file
+        char links_dir[GM_MAX_PATH];
         char filename[GM_MAX_PATH];
-        snprintf(filename, sizeof(filename), "%s/.gitmind/links/%s.link", cwd, sha);
+        char link_name[GM_MAX_PATH];
+        
+        // Build path safely
+        if (gm_path_join(links_dir, sizeof(links_dir), cwd, ".gitmind/links") != GM_OK) {
+            continue;  // Skip if path too long
+        }
+        
+        snprintf(link_name, sizeof(link_name), "%s.link", sha);
+        if (gm_path_join(filename, sizeof(filename), links_dir, link_name) != GM_OK) {
+            continue;  // Skip if path too long
+        }
         
         // Remove file and stage deletion
         unlink(filename);
         char cmd[GM_MAX_PATH * 2];
         snprintf(cmd, sizeof(cmd), "git add %s 2>/dev/null", filename);
-        system(cmd);
+        if (system(cmd) != 0) {
+            // Ignore failure - git add is optional
+        }
     }
     
     gm_link_set_free(set);

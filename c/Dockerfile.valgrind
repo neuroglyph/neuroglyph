@@ -40,23 +40,23 @@ git add . && git commit -m "Initial"
 # Run tests under valgrind
 echo "Testing init..."
 valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 \
-    /test/gitmind init
+    /test/git-mind init
 
 echo "Testing link..."
 valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 \
-    /test/gitmind link test1.md test2.md
+    /test/git-mind link test1.md test2.md
 
 echo "Testing list..."
 valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 \
-    /test/gitmind list
+    /test/git-mind list
 
 echo "Testing check..."
 valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 \
-    /test/gitmind check
+    /test/git-mind check
 
 echo "Testing status..."
 valgrind --leak-check=full --show-leak-kinds=all --error-exitcode=1 \
-    /test/gitmind status
+    /test/git-mind status
 
 # Cleanup
 cd /

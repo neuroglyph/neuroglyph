@@ -38,7 +38,7 @@ RUN mkdir -p corpus && \
 
 # Create fuzzing script
 RUN echo '#!/bin/bash' > fuzz.sh && \
-    echo 'afl-fuzz -i corpus -o findings -- ./gitmind @@' >> fuzz.sh && \
+    echo 'afl-fuzz -i corpus -o findings -- ./git-mind @@' >> fuzz.sh && \
     chmod +x fuzz.sh
 
 CMD ["./fuzz.sh"]

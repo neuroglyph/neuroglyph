@@ -1,9 +1,14 @@
 # SPDX-License-Identifier: Apache-2.0
-# Simple Makefile for quick builds
+# GitMind C Implementation Makefile
 
-CC ?= cc
-CFLAGS ?= -O3 -Wall -Wextra -std=c99 -Iinclude
-LDFLAGS ?=
+# Two modes: Direct compilation (inside Docker) or Docker orchestration
+ifeq ($(DOCKER_BUILD),1)
+    # Inside Docker - compilation mode
+    include docker-guard.mk
+    
+    CC ?= cc
+CFLAGS ?= -O3 -Wall -Wextra -Werror -pedantic -std=c99 -Iinclude -flto
+LDFLAGS ?= -flto
 
 # Platform detection
 UNAME_S := $(shell uname -s)
@@ -18,9 +23,9 @@ endif
 
 # Windows/MinGW detection
 ifeq ($(OS),Windows_NT)
-    TARGET = gitmind.exe
+    TARGET = git-mind.exe
 else
-    TARGET = gitmind
+    TARGET = git-mind
 endif
 
 SRCS = src/main.c src/gitmind.c src/link.c src/sha1.c src/path.c src/check.c src/status.c src/traverse.c
@@ -30,7 +35,11 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CC) -o $@ $^ $(LDFLAGS)
+ifeq ($(UNAME_S),Darwin)
 	strip $@
+else
+	strip --strip-all $@
+endif
 
 debug: CFLAGS = -g -O0 -Wall -Wextra -std=c99 -Iinclude -fsanitize=address,undefined
 debug: LDFLAGS += -fsanitize=address,undefined
@@ -39,7 +48,8 @@ debug: $(TARGET)
 clean:
 	rm -f $(TARGET) $(OBJS)
 
-test: $(TARGET)
-	./test.sh
-
-.PHONY: all clean test debug
+.PHONY: all clean debug
+else
+    # Outside Docker - orchestration mode
+    include Makefile.docker
+endif

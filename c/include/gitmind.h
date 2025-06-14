@@ -29,6 +29,56 @@ typedef enum {
     GM_ERR_ALREADY_EXISTS = -8
 } gm_error_t;
 
+// Error message constants
+#define ERR_MSG_NOT_REPO "Not a git repository: %s"
+#define ERR_MSG_NOT_FOUND "Not found: %s"
+#define ERR_MSG_IO_ERROR "I/O error: %s"
+#define ERR_MSG_GIT_FAILED "Git operation failed: %s"
+#define ERR_MSG_MEMORY "Memory allocation failed"
+#define ERR_MSG_INVALID_ARG "Invalid argument: %s"
+#define ERR_MSG_PATH_TOO_LONG "Path too long: %s"
+#define ERR_MSG_ALREADY_EXISTS "Already exists: %s"
+#define ERR_MSG_EMPTY_PATH "Empty path"
+#define ERR_MSG_ABSOLUTE_PATH "Absolute paths not allowed in links: %s"
+#define ERR_MSG_PATH_TRAVERSAL "Path traversal not allowed: %s"
+#define ERR_MSG_LINK_NOT_FOUND "Link not found"
+#define ERR_MSG_DIR_CREATE_FAILED "Failed to create directory %s: %s"
+#define ERR_MSG_FILE_CREATE_FAILED "Failed to create file: %s"
+#define ERR_MSG_FILE_WRITE_FAILED "Failed to write file"
+#define ERR_MSG_LINK_CONTENT_TOO_LONG "Link content too long"
+#define ERR_MSG_CWD_FAILED "Failed to get current directory"
+#define ERR_MSG_NULL_POINTER "NULL pointer provided for %s"
+
+// CLI error messages
+#define ERR_MSG_LINK_REQUIRES_ARGS "Error: link requires source and target arguments\n"
+#define ERR_MSG_UNLINK_REQUIRES_ARGS "Error: unlink requires source and target arguments\n"
+#define ERR_MSG_UNKNOWN_COMMAND "Error: Unknown command '%s'\n"
+#define ERR_MSG_MISSING_FILE_ARG "Error: Missing file argument\n"
+#define ERR_MSG_DEPTH_OUT_OF_RANGE "Error: Depth must be between 1 and %d\n"
+
+// Status messages
+#define MSG_INIT_SUCCESS "Initialized git-mind in current repository\n"
+#define MSG_LINK_CREATED "Created link: %s -> %s (%s)\n"
+#define MSG_LINK_REMOVED "Removed link: %s -> %s\n"
+#define MSG_NO_LINKS "No links found\n"
+#define MSG_ALL_LINKS_VALID "All links are valid\n"
+#define MSG_BROKEN_LINKS_FOUND "Found %d broken link%s\n"
+#define MSG_BROKEN_LINKS_REMOVED "Removed %d broken link%s\n"
+#define MSG_RUN_CHECK_FIX "Run 'git mind check --fix' to remove them\n"
+#define MSG_NOT_INITIALIZED "git-mind: Not initialized (run 'git mind init')\n"
+
+// Version info
+#define MSG_VERSION_FORMAT "git-mind version %s\n"
+
+// Porcelain output formats
+#define PORCELAIN_INIT_OK "init:ok\n"
+#define PORCELAIN_LINK_CREATED "link:created:%s:%s:%s\n"
+#define PORCELAIN_LINK_REMOVED "link:removed:%s:%s\n"
+#define PORCELAIN_LINK_FORMAT "link:%s:%s:%s:%ld\n"
+
+// Human-readable formats
+#define MSG_LINK_FORMAT "%s: %s -> %s (ts:%ld)\n"
+
 // Buffer sizes - centralized for maintainability
 #define GM_MAX_PATH 4096
 #define GM_MAX_TYPE 64

@@ -5,7 +5,7 @@
 set -e
 
 echo "Building Docker image..."
-docker build -f Dockerfile.test -t gitmind-test . >/dev/null 2>&1
+docker build -f Dockerfile.test -t git-mind-test . >/dev/null 2>&1
 
 echo "Running benchmarks..."
-docker run --rm gitmind-test /build/benchmark.sh
+docker run --rm git-mind-test /build/benchmark.sh

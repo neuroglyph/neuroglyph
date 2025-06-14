@@ -56,14 +56,15 @@ All new files MUST include SPDX headers:
 This is a monorepo with the following structure:
 ```
 neuroglyph/
-├── cli/           # gitmind CLI (Rust) - main component
+├── c/             # gitmind CLI (Pure C) - current implementation
 ├── demos/         # Example applications
 ├── design/        # Technical specifications
 ├── docs/          # User documentation  
 ├── lore/          # Philosophy, Gonzai mascot, creative content
-├── scripts/       # Development scripts
-└── testdata/      # Test fixtures
+└── scripts/       # Development scripts
 ```
+
+**Important:** There is NO root Makefile. Each component (like c/) has its own build system. Always cd into the component directory before running make commands.
 
 ### 5. Development Practices
 
@@ -76,7 +77,7 @@ neuroglyph/
 
 #### Testing
 - All tests run in Docker for consistency
-- Use `make test` to run the full test suite
+- Use `cd c && make test` to run the full test suite
 - Pre-push hooks enforce test passing
 - Write tests BEFORE implementation (TDD)
 - Each function should have corresponding tests
@@ -161,11 +162,11 @@ A feature is only complete when:
 
 ### 8. Important Files to Read
 When starting work, always check:
-1. `TASKLIST.md` - Current implementation status
-2. `README.md` - Project overview
-3. `docs/README.md` - Technical roadmap
-4. `design/gitmind_architecture.md` - Architecture details
-5. This file (`CLAUDE.md`) - For updates
+1. `project/meta/TASKLIST.md` - Current implementation status
+2. `/README.md` - Project overview (root)
+3. `design/README.md` - Technical documentation
+4. `design/ARCHITECTURE.md` - Architecture details
+5. This file (`project/meta/CLAUDE.md`) - For updates
 
 ## Common Tasks
 
@@ -177,9 +178,9 @@ When starting work, always check:
 
 ### Updating Documentation
 1. Add SPDX headers to new docs (optional but encouraged)
-2. Keep technical docs in `/docs/` or `/design/`
+2. Keep technical docs in `/design/` or `/docs/` (user docs)
 3. Keep creative content in `/lore/`
-4. Update `TASKLIST.md` when completing tasks
+4. Update `project/meta/TASKLIST.md` when completing tasks
 
 ### Working with Git
 1. NEVER commit without explicit permission
@@ -190,8 +191,8 @@ When starting work, always check:
    ```bash
    git add <files> && git commit -m "type(scope): message"
    ```
-6. Suggest commits after completing each task from TASKLIST.md
-7. Keep TASKLIST.md up-to-date as tasks are completed
+6. Suggest commits after completing each task from project/meta/TASKLIST.md
+7. Keep project/meta/TASKLIST.md up-to-date as tasks are completed
 
 ## Development Workflow Guidelines
 

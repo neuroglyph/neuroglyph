@@ -2,12 +2,24 @@
 // © 2025 J. Kirby Ross / Neuroglyph Collective
 
 #include "gitmind.h"
-#include "errors.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
+
+// Fixed-size hash table for type counting
+#define TYPE_HASH_SIZE 64
+
+// Simple hash function for type strings
+static unsigned int type_hash(const char* str) {
+    unsigned int h = 5381;
+    int c;
+    while ((c = *str++))
+        h = ((h << 5) + h) + (unsigned int)c;
+    return h % TYPE_HASH_SIZE;
+}
 
 // Show gitmind status
 int gm_status(void) {
@@ -40,32 +52,59 @@ int gm_status(void) {
     printf("Total links: %zu\n", set->count);
     
     if (set->count > 0) {
-        // Count by type
+        // Count by type using simple hash table
         printf("\nLinks by type:\n");
         
-        // Simple type counting (could be optimized with hash table)
+        typedef struct type_entry {
+            char type[GM_MAX_TYPE];
+            int count;
+            struct type_entry* next;
+        } type_entry_t;
+        
+        type_entry_t* hash_table[TYPE_HASH_SIZE] = {0};
+        
+        // Count each type
         for (size_t i = 0; i < set->count; i++) {
             const char* type = set->links[i].type;
-            int count = 1;
+            unsigned int h = type_hash(type);
             
-            // Skip if we've already counted this type
-            int already_counted = 0;
-            for (size_t j = 0; j < i; j++) {
-                if (strcmp(set->links[j].type, type) == 0) {
-                    already_counted = 1;
-                    break;
-                }
-            }
-            if (already_counted) continue;
-            
-            // Count occurrences
-            for (size_t j = i + 1; j < set->count; j++) {
-                if (strcmp(set->links[j].type, type) == 0) {
-                    count++;
-                }
+            // Look for existing entry
+            type_entry_t* entry = hash_table[h];
+            type_entry_t* prev = NULL;
+            while (entry && strcmp(entry->type, type) != 0) {
+                prev = entry;
+                entry = entry->next;
             }
             
-            printf("  %s: %d\n", type, count);
+            if (entry) {
+                // Found existing type
+                entry->count++;
+            } else {
+                // New type
+                type_entry_t* new_entry = malloc(sizeof(type_entry_t));
+                if (new_entry) {
+                    snprintf(new_entry->type, GM_MAX_TYPE, "%s", type);
+                    new_entry->count = 1;
+                    new_entry->next = NULL;
+                    
+                    if (prev) {
+                        prev->next = new_entry;
+                    } else {
+                        hash_table[h] = new_entry;
+                    }
+                }
+            }
+        }
+        
+        // Print and free hash table
+        for (int i = 0; i < TYPE_HASH_SIZE; i++) {
+            type_entry_t* entry = hash_table[i];
+            while (entry) {
+                printf("  %s: %d\n", entry->type, entry->count);
+                type_entry_t* next = entry->next;
+                free(entry);
+                entry = next;
+            }
         }
         
         // Show last 5 links

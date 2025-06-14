@@ -2,7 +2,6 @@
 // © 2025 J. Kirby Ross / Neuroglyph Collective
 
 #include "gitmind.h"
-#include "errors.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -26,8 +25,7 @@ int gm_normalize_path(const char* path, char* out_normalized) {
     }
     
     // For now, just copy - TODO: implement proper normalization
-    strncpy(out_normalized, path, GM_MAX_PATH - 1);
-    out_normalized[GM_MAX_PATH - 1] = '\0';
+    snprintf(out_normalized, GM_MAX_PATH, "%s", path);
     
     // Remove trailing slash if present
     size_t len = strlen(out_normalized);
@@ -36,6 +34,12 @@ int gm_normalize_path(const char* path, char* out_normalized) {
     }
     
     return GM_OK;
+}
+
+// Check if a path component is exactly ".."
+static int is_parent_ref(const char* start, const char* end) {
+    size_t len = (size_t)(end - start);
+    return len == 2 && start[0] == '.' && start[1] == '.';
 }
 
 // Validate path is safe (no .., no absolute paths for links)
@@ -51,9 +55,9 @@ int gm_validate_link_path(const char* path) {
         return GM_ERR_INVALID_ARG;
     }
     
-    // No .. components
-    if (strstr(path, "..")) {
-        gm_set_error("Path traversal not allowed: %s", path);
+    // Windows-style absolute paths (C:\, D:\, etc.)
+    if (strlen(path) >= 3 && path[1] == ':' && (path[2] == '\\' || path[2] == '/')) {
+        gm_set_error("Absolute paths not allowed in links: %s", path);
         return GM_ERR_INVALID_ARG;
     }
     
@@ -61,6 +65,31 @@ int gm_validate_link_path(const char* path) {
     if (strlen(path) >= GM_MAX_PATH) {
         gm_set_error("Path too long: %s", path);
         return GM_ERR_PATH_TOO_LONG;
+    }
+    
+    // Parse path components to detect ".."
+    const char* p = path;
+    const char* component_start = p;
+    
+    while (*p) {
+        if (*p == '/' || *p == '\\') {
+            // Check if this component is ".."
+            if (is_parent_ref(component_start, p)) {
+                gm_set_error("Path traversal not allowed: %s", path);
+                return GM_ERR_INVALID_ARG;
+            }
+            // Skip the separator and start next component
+            p++;
+            component_start = p;
+        } else {
+            p++;
+        }
+    }
+    
+    // Check the last component
+    if (is_parent_ref(component_start, p)) {
+        gm_set_error("Path traversal not allowed: %s", path);
+        return GM_ERR_INVALID_ARG;
     }
     
     return GM_OK;

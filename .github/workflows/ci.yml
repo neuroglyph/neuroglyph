@@ -21,44 +21,29 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y build-essential git
         
-    - name: Build
+    - name: Build and Test
       working-directory: ./c
       run: |
-        make clean
-        make
-        
-    - name: Run tests
-      working-directory: ./c
-      run: |
-        # Add gitmind to PATH for tests
-        export PATH="$PWD:$PATH"
-        ./test.sh
+        # Use Docker for all builds and tests
+        docker compose build
+        docker compose run --rm -T test
         
     - name: Run benchmarks
       working-directory: ./c
       run: |
-        export PATH="$PWD:$PATH"
-        ./benchmark.sh
+        docker compose run --rm benchmark
+        
+    - name: Extract binary from Docker
+      working-directory: ./c
+      run: |
+        # Build and extract the binary
+        docker compose run --rm dev sh -c "DOCKER_BUILD=1 make clean all"
         
     - name: Upload binary
       uses: actions/upload-artifact@v4
       with:
         name: gitmind-linux
         path: c/gitmind
-
-  docker-test:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Build Docker test image
-      working-directory: ./c
-      run: docker build -f Dockerfile.test -t gitmind-test .
-      
-    - name: Run Docker tests
-      working-directory: ./c
-      run: ./docker-test.sh
 
   cross-platform:
     strategy:
@@ -78,11 +63,11 @@ jobs:
     - name: Build
       working-directory: ./c
       run: |
-        make clean
-        make
+        DOCKER_BUILD=1 make clean
+        DOCKER_BUILD=1 make
         
     - name: Test
       working-directory: ./c
       run: |
         export PATH="$PWD:$PATH"
-        ./test.sh
+        ./tests/integration/test.sh

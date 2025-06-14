@@ -139,3 +139,43 @@ docker-volumes/
 # Screenshots and temporary files
 Screenshot*.png
 /var/folders/
+
+# C/C++ development artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# C build outputs
+c/gitmind
+c/build/
+c/cmake-build-*/
+c/CMakeCache.txt
+c/CMakeFiles/
+c/cmake_install.cmake
+c/Makefile.cmake
+
+# C test artifacts
+c/test_*
+c/test_output.txt
+c/test_repo/
+c/*.log
+
+# Debug symbols
+*.dSYM/
+*.pdb
+
+# Core dumps
+core
+core.*
+vgcore.*
+
+# C Coverage files
+*.gcov
+*.gcda
+*.gcno
+
+# GitMind specific
+.gitmind/

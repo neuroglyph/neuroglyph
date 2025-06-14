@@ -1,6 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: Apache-2.0
-# Benchmark gitmind performance in Docker
+# Benchmark git-mind performance in Docker
 
 set -e
 
@@ -18,12 +18,12 @@ git config user.name "Test User"
 
 # Startup time
 echo "Startup time (version command):"
-time -p gitmind version
+time -p git-mind version
 echo
 
 # Init benchmark
 echo "Init command:"
-time -p gitmind init
+time -p git-mind init
 echo
 
 # Create test files
@@ -35,29 +35,29 @@ git commit -m "Add files" >/dev/null 2>&1
 
 # Link creation benchmark
 echo "Creating 100 links:"
-time -p bash -c 'for i in {1..100}; do gitmind link file$i.md file$((i%10+1)).md >/dev/null; done'
+time -p bash -c 'for i in {1..100}; do git-mind link file$i.md file$((i%10+1)).md >/dev/null; done'
 echo
 
 # List benchmark
 echo "Listing all links:"
-time -p gitmind list >/dev/null
-LINK_COUNT=$(gitmind list | wc -l)
+time -p git-mind list >/dev/null
+LINK_COUNT=$(git-mind list | wc -l)
 echo "Total links: $LINK_COUNT"
 echo
 
 # Status benchmark
 echo "Status command with $LINK_COUNT links:"
-time -p gitmind status >/dev/null
+time -p git-mind status >/dev/null
 echo
 
 # Memory usage
 echo "Memory usage:"
-ps aux | grep gitmind | grep -v grep || echo "Process too fast to measure!"
+ps aux | grep git-mind | grep -v grep || echo "Process too fast to measure!"
 
 # Binary details
 echo
-echo "Binary size: $(ls -lh $(which gitmind) | awk '{print $5}')"
-echo "Stripped size: $(file $(which gitmind) | grep -o 'stripped')"
+echo "Binary size: $(ls -lh $(which git-mind) | awk '{print $5}')"
+echo "Stripped size: $(file $(which git-mind) | grep -o 'stripped')"
 
 # Clean up
 cd /

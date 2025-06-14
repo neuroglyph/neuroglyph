@@ -150,7 +150,7 @@ int gm_sha1_string(const char* content, char* out_sha) {
     uint8_t hash[20];
     
     SHA1Init(&ctx);
-    SHA1Update(&ctx, (const uint8_t*)content, strlen(content));
+    SHA1Update(&ctx, (const uint8_t*)content, (uint32_t)strlen(content));
     SHA1Final(hash, &ctx);
     
     // Convert to hex string

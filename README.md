@@ -75,10 +75,20 @@ It stores **relationships, confidence**, and **epistemic state**.
 
 ```
 neuroglyph/              # This monorepo
-├── c/                   # gitmind CLI (Pure C, 67KB binary)
+├── c/                   # git-mind CLI (Pure C, 130KB binary)
 ├── demos/               # Example applications
-├── docs/                # All documentation (specs, features, decisions)
-└── lore/                # Philosophy & Gonzai + Claude's Dev Logs
+├── design/              # Technical design documentation
+│   ├── features/        # Feature specs (active/planned/completed)
+│   ├── decisions/       # Architecture Decision Records (ADRs)
+│   ├── proposals/       # Design proposals
+│   └── research/        # Research documents
+├── docs/                # User documentation
+├── lore/                # Philosophy & Gonzai + Claude's Dev Logs
+├── project/             # Project management
+│   ├── community/       # Community guidelines
+│   ├── legal/           # Legal & security docs
+│   └── meta/            # Project metadata
+└── scripts/             # Development scripts
 ```
 
 Coming Soon:
@@ -95,13 +105,13 @@ GitMind is **the fastest knowledge graph tool on Earth**. Not a claim—a fact.
 ### Benchmarks
 
 ```bash
-Binary size:        67KB      (0.067MB)
+Binary size:        130KB     (0.13MB - still smaller than this README!)
 Startup time:       <1ms      ("Process too fast to measure!")
-Memory usage:       ~500KB    (Less than this README)
+Memory usage:       ~500KB    (About the size of a medium blog post)
 Dependencies:       Zero      (Just libc—already on your system)
 
 # Operations (tested on 100 links)
-Create link:        1.8ms
+Create link:        1.6ms     (11% faster with LTO!)
 List all links:     <1ms  
 Check integrity:    <1ms
 ```
@@ -110,13 +120,13 @@ Check integrity:    <1ms
 
 | Tool | Size | Startup | Runtime |
 |------|------|---------|---------|
-| **GitMind** | **67KB** | **<1ms** | **None** |
+| **GitMind** | **130KB** | **<1ms** | **None** |
 | Obsidian | 150MB+ | ~2s | Electron |
 | Roam Research | Web app | Network latency | Browser |
 | Neo4j Desktop | 200MB+ | ~3s | JVM |
 | Logseq | 200MB+ | ~3s | Electron |
 
-That's not a typo. We're **2,000x smaller** than Electron apps. By the time their splash screen loads, you've already:
+That's not a typo. We're **1,000x smaller** than Electron apps. By the time their splash screen loads, you've already:
 - Created 100 links
 - Queried your entire graph  
 - Made coffee
@@ -171,14 +181,12 @@ curl -fsSL https://raw.githubusercontent.com/neuroglyph/neuroglyph/main/install.
 Prerequisites:
 - Docker (for development)
 - Git 2.40+
-- C compiler (gcc, clang, or compatible)
-- Make
 
 ```bash
 git clone https://github.com/neuroglyph/neuroglyph.git
-cd neuroglyph
-make build  # Builds in Docker
-# Binary is now at c/gitmind
+cd neuroglyph/c  # Enter the C implementation directory
+make build       # Builds in Docker
+# Binary is now at ./gitmind
 ```
 
 ### Basic Usage
@@ -226,26 +234,28 @@ Docker provides isolated, ephemeral Git environments where tests can safely:
 
 ## 🧪 Dev Workflow
 
-All dev runs in Docker for consistency:
+Development happens in component directories:
 
 ```bash
+cd c/             # Enter C implementation
 make dev          # Dev container shell
-make test         # Full suite
+make test         # Full test suite
 make benchmark    # Performance tests
 make build        # Build binary in Docker
 ```
 
 Pre-push hooks enforce tests and style.
+See [MONOREPO.md](project/meta/MONOREPO.md) for repository structure.
 
 ## 📚 Learn More
 
 - [Technical Roadmap](docs/README.md)
-- [Architecture Diagrams](design/gitmind_architecture.md)
-- [Semlink Protocol Spec](design/features/F001-git-object-storage.md)
+- [Architecture Overview](design/ARCHITECTURE.md)
+- [Semlink Protocol Spec](design/features/completed/F001-git-object-storage.md)
 - [The Gonzai Engine](lore/GONZAI_PERSONALITY.md)
-- [Use Cases](docs/archive/use-cases.md)
-- [Contributing Guide](CONTRIBUTING.md)
-- [Early Testers Program](docs/early-testers.md)
+- [Use Cases](project/meta/archive/use-cases.md)
+- [Contributing Guide](project/community/CONTRIBUTING.md)
+- [Early Testers Program](project/community/early-testers.md)
 
 Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. We try to track everything, including rationale behind important decisions, ideas, and we honor our digital  collaborators by granting them space to keep a dev log (see `lore/claude-mind`) and encouraging them to write freely to it.
 
@@ -259,8 +269,8 @@ Explore `docs/ideas` and `design/` and, of course, `lore/` for lots of goodies. 
 - [ ] Phase 3: Plugin ecosystem
 - [ ] Phase 4: Chaos engine with Gonzai 🐵
 
-See [TASKLIST.md](TASKLIST.md) for detailed implementation plan.  
-Also [design/README](design/README.md).
+See [TASKLIST.md](project/meta/TASKLIST.md) for detailed implementation plan.  
+Also [design/README.md](design/README.md) for technical documentation.
 
 ## 🌐 Project Ecosystem
 
@@ -270,9 +280,9 @@ Also [design/README](design/README.md).
 ## 🧑‍💻 Contributing
 
 This project is open to dreamers, hackers, historians, poets, and systems architects.
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to get involved.
+See [CONTRIBUTING.md](project/community/CONTRIBUTING.md) for how to get involved.
 
-**For AI assistants**: See [CLAUDE.md](CLAUDE.md) for important project conventions.
+**For AI assistants**: See [CLAUDE.md](project/meta/CLAUDE.md) for important project conventions.
 
 **Key points:**
 - All tests run in Docker

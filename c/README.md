@@ -1,6 +1,6 @@
 # GitMind C Implementation
 
-Pure C. No BS. 65KB binary. Zero dependencies.
+Pure C. No BS. 130KB binary. Zero dependencies.
 
 ## Build
 
@@ -8,12 +8,17 @@ Pure C. No BS. 65KB binary. Zero dependencies.
 make
 ```
 
-That's it. You get a `gitmind` binary.
+That's it. You get a `git-mind` binary.
 
 ## Test
 
 ```bash
-./docker-test.sh  # Safe, isolated tests
+# Run all tests in Docker (safe, isolated)
+docker compose run test
+
+# Or run specific test suites
+./tests/integration/test.sh        # Main test suite
+./tests/integration/docker-test.sh # Full Docker test
 ```
 
 ## Philosophy
@@ -51,10 +56,10 @@ void test_massive_link_count() {
 ### Phase 3: Fuzz Testing
 ```bash
 # AFL fuzzing
-afl-fuzz -i seeds -o findings ./gitmind_fuzz @@
+afl-fuzz -i seeds -o findings ./git-mind_fuzz @@
 
 # libFuzzer
-clang -fsanitize=fuzzer,address gitmind_fuzz.c -o fuzz
+clang -fsanitize=fuzzer,address git-mind_fuzz.c -o fuzz
 ./fuzz corpus/
 ```
 
@@ -68,11 +73,11 @@ clang -fsanitize=fuzzer,address gitmind_fuzz.c -o fuzz
 
 ```bash
 # Valgrind memcheck
-valgrind --leak-check=full ./gitmind list
+valgrind --leak-check=full ./git-mind list
 
 # AddressSanitizer (built-in)
 make debug
-./gitmind list  # ASAN will catch issues
+./git-mind list  # ASAN will catch issues
 
 # Static analysis
 scan-build make
