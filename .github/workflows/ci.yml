@@ -63,8 +63,8 @@ jobs:
     - name: Build
       working-directory: ./c
       run: |
-        make clean
-        make
+        DOCKER_BUILD=1 make clean
+        DOCKER_BUILD=1 make
         
     - name: Test
       working-directory: ./c
