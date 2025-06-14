@@ -149,6 +149,7 @@ Screenshot*.png
 *.exe
 
 # C build outputs
+c/git-mind
 c/gitmind
 c/build/
 c/cmake-build-*/
