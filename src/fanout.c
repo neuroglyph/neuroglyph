@@ -100,7 +100,7 @@ int gm_update_tree_with_blob(const char* tree_sha, const char* path,
         return GM_ERR_GIT;
     }
     
-    if (!fgets(out_new_tree, 41, fp)) {
+    if (!fgets(out_new_tree, GM_SHA1_STRING_SIZE, fp)) {
         pclose(fp);
         gm_set_error("Failed to create tree");
         return GM_ERR_GIT;
@@ -141,12 +141,13 @@ int gm_build_edge_tree(const char* edge_path, const char* edge_blob_sha,
     }
     
     // Start with the blob at the deepest level
-    char current_sha[41];
-    strncpy(current_sha, edge_blob_sha, sizeof(current_sha));
+    char current_sha[GM_SHA1_STRING_SIZE];
+    strncpy(current_sha, edge_blob_sha, sizeof(current_sha) - 1);
+    current_sha[sizeof(current_sha) - 1] = '\0';
     
     // Build trees from deepest to root
     for (int i = comp_count - 1; i >= 0; i--) {
-        char new_tree[41];
+        char new_tree[GM_SHA1_STRING_SIZE];
         
         // Create tree with current item
         if (i == comp_count - 1) {
@@ -177,9 +178,11 @@ int gm_build_edge_tree(const char* edge_path, const char* edge_blob_sha,
             if (nl) *nl = '\0';
         }
         
-        strncpy(current_sha, new_tree, sizeof(current_sha));
+        strncpy(current_sha, new_tree, sizeof(current_sha) - 1);
+        current_sha[sizeof(current_sha) - 1] = '\0';
     }
     
-    strncpy(out_tree_sha, current_sha, 41);
+    strncpy(out_tree_sha, current_sha, GM_SHA1_STRING_SIZE - 1);
+    out_tree_sha[GM_SHA1_STRING_SIZE - 1] = '\0';
     return GM_OK;
 }
