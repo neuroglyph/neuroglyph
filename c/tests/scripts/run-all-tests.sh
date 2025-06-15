@@ -60,6 +60,7 @@ run_test() {
 # Define all test suites
 INTEGRATION_DIR="$SCRIPT_DIR/../integration"
 declare -a TEST_SUITES=(
+    "Newline Check|$SCRIPT_DIR/test-newlines.sh"
     "Core Commands|$INTEGRATION_DIR/test.sh"
     "Graph Traversal|$INTEGRATION_DIR/test-traverse.sh"
     "Path Security|$INTEGRATION_DIR/test-path-validation.sh"
