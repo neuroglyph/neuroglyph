@@ -130,12 +130,6 @@ int gm_build_edge_tree(const char* edge_path, const char* edge_blob_sha,
     strncpy(path_copy, edge_path, sizeof(path_copy) - 1);
     path_copy[sizeof(path_copy) - 1] = '\0';
     
-    // Count path components
-    int depth = 0;
-    for (const char* p = path_copy; *p; p++) {
-        if (*p == '/') depth++;
-    }
-    
     // Build from bottom up
     char* components[16];  // Max depth
     int comp_count = 0;
