@@ -12,7 +12,7 @@ if ! command -v pandoc &> /dev/null; then
 fi
 
 # Create man page directory
-MANDIR="../../c/man"
+MANDIR="../../man"
 mkdir -p "$MANDIR/man1"
 
 # Convert each markdown file to man page

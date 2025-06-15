@@ -181,3 +181,5 @@ vgcore.*
 # GitMind specific
 .gitmind
 .plans
+.audits
+.audits-c

@@ -7,6 +7,8 @@
 
 **Time-travel through your understanding of any codebase.**
 
+A blazing-fast CLI tool written in pure C. No dependencies. 130KB binary.
+
 ```bash
 git mind link design.md src/main.rs --type implements
 git checkout HEAD~10
@@ -144,7 +146,7 @@ curl -fsSL https://get.gitmind.dev | bash
 **From source:**
 ```bash
 git clone https://github.com/neuroglyph/neuroglyph
-cd neuroglyph/c
+cd neuroglyph
 make build  # Builds in Docker
 ```
 
@@ -196,10 +198,9 @@ git mind --help
 
 ## Contributing
 
-Pure C implementation for maximum performance and portability. All development happens in Docker for consistency.
+Written in pure C for maximum performance and portability. All development happens in Docker for consistency.
 
 ```bash
-cd c/
 make dev     # Development environment
 make test    # Full test suite  
 make build   # Production binary
