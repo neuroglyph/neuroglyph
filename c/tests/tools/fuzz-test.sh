@@ -5,7 +5,9 @@
 set -e
 
 echo "🔨 Building fuzzing image..."
-docker build -f ../../Dockerfile.fuzz -t git-mind-fuzz ../..
+# Get to project root
+cd "$(dirname "$0")/../.."
+docker build -f Dockerfile.fuzz -t git-mind-fuzz .
 
 echo "🎯 Starting fuzzer (press Ctrl+C to stop)..."
 echo "Results will be in the container at /fuzz/findings"

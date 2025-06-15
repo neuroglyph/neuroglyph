@@ -6,7 +6,7 @@ set -e
 
 # Source Docker guard - will exit if not in Docker
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/../docker-guard.sh"
+source "$SCRIPT_DIR/docker-guard.sh"
 
 # Colors
 GREEN='\033[0;32m'
@@ -58,18 +58,19 @@ run_test() {
 }
 
 # Define all test suites
+INTEGRATION_DIR="$SCRIPT_DIR/../integration"
 declare -a TEST_SUITES=(
-    "Core Commands|$SCRIPT_DIR/test.sh"
-    "Graph Traversal|$SCRIPT_DIR/test-traverse.sh"
-    "Path Security|$SCRIPT_DIR/test-path-validation.sh"
-    "Output Modes|$SCRIPT_DIR/test-output-modes.sh"
-    "Regression Suite|$SCRIPT_DIR/test-regression.sh"
-    "Depth Errors|$SCRIPT_DIR/test-depth-error.sh"
+    "Core Commands|$INTEGRATION_DIR/test.sh"
+    "Graph Traversal|$INTEGRATION_DIR/test-traverse.sh"
+    "Path Security|$INTEGRATION_DIR/test-path-validation.sh"
+    "Output Modes|$INTEGRATION_DIR/test-output-modes.sh"
+    "Regression Suite|$INTEGRATION_DIR/test-regression.sh"
+    "Depth Errors|$INTEGRATION_DIR/test-depth-error.sh"
 )
 
 # Add memory test if valgrind available
 if command -v valgrind >/dev/null 2>&1; then
-    TEST_SUITES+=("Memory Leaks|$SCRIPT_DIR/valgrind-test.sh")
+    TEST_SUITES+=("Memory Leaks|$INTEGRATION_DIR/valgrind-test.sh")
 else
     echo -e "${YELLOW}⚠️  Skipping memory tests (valgrind not available)${NC}"
 fi
