@@ -231,7 +231,7 @@ int gm_link_file_merge(gm_link_file_t* dest,
                       const gm_link_file_t* src2);
 
 // Internal - not part of public API
-void gm_set_error(const char* fmt, ...);
+void gm_set_error(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 
 // Version info
 const char* gm_version_string(void);
