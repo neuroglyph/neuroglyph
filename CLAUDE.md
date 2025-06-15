@@ -60,7 +60,7 @@ All new files MUST include SPDX headers:
 
 #### Testing
 - ALWAYS run, build, or test in Docker NO MATTER WHAT
-- Use `cd c && make test` to run the full test suite
+- Use `make test` to run the full test suite
 - Pre-push hooks enforce test passing
 - Write tests BEFORE implementation (TDD)
 - Each function should have corresponding tests
@@ -76,8 +76,8 @@ All new files MUST include SPDX headers:
 ##### Test Strategy - Three Levels
 Always have these three levels of tests, all focused on behavior:
 1. **Unit Tests** - Test individual components in isolation
-   - Located in `src/` files next to implementation (e.g., `#[cfg(test)] mod tests`)
-   - Test single structs/functions behavior
+   - Located in `tests/unit/` directory
+   - Test single functions/modules in isolation
    - Fast, focused on one thing
 2. **Integration Tests** - Test components working together
    - Located in `tests/` directory
